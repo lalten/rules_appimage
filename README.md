@@ -10,14 +10,22 @@ Add this to your `WORKSPACE`:
 ```py
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_APPIMAGE_VER = "6b437b63643bf23ff819a80553628e5fd1f183d0"
+RULES_APPIMAGE_VER = "main"
 
 http_archive(
     name = "rules_appimage",
-    sha = "",
+    # sha = "",
     urls = ["https://github.com/lalten/rules_appimage/archive/{}.tar.gz".format(RULES_APPIMAGE_VER)],
     strip_prefix = "rules_appimage-{}".format(RULES_APPIMAGE_VER),
 )
+
+load("@rules_appimage//:deps.bzl", "rules_appimage_deps")
+
+rules_appimage_deps()
+
+load("@rules_appimage//:setup.bzl", "rules_appimage_setup")
+
+rules_appimage_setup()
 ```
 
 To define AppImages in your `BUILD` files:
