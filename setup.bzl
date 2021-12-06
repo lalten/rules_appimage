@@ -7,5 +7,5 @@ def rules_appimage_setup():
     # third-party packages specified in the requirements.txt file.
     pip_install(
         name = "py_deps",
-        requirements = "//:requirements.txt",
+        requirements = "@rules_appimage//:requirements.txt",
     )
