@@ -24,5 +24,6 @@ py_binary(
     deps = [
         "@rules_python//python/runfiles",
         requirement("click"),
+        requirement("dataclasses_json"),
     ],
 )

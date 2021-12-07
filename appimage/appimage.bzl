@@ -1,32 +1,30 @@
 """Rule for creating AppImages."""
 
 load("@bazel_skylib//rules:native_binary.bzl", "native_test")
+load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info")
 
 def _appimage_impl(ctx):
     """Implementation of the appimage rule."""
-    manifest = ctx.attr.binary[DefaultInfo].files_to_run.runfiles_manifest
-    inputs = depset(
-        direct = [
-            ctx.executable.binary,
-            ctx.file.icon,
-        ] + ([manifest] if manifest else []),
-        # Need to explicitly depend on runfiles or they may not be generated/available when stealing the .runfiles dir.
-        transitive = [ctx.attr.binary[DefaultInfo].default_runfiles.files],
-    )
-
     tools = depset(
         direct = [ctx.executable._tool],
         transitive = [ctx.attr._tool[DefaultInfo].default_runfiles.files],
     )
 
+    runfile_info = collect_runfiles_info(ctx)
+    manifest_file = ctx.actions.declare_file(ctx.attr.name + "-manifest.json")
+    ctx.actions.write(manifest_file, json.encode_indent(runfile_info.manifest))
+    inputs = depset(
+        direct = [ctx.file.icon, manifest_file] + runfile_info.files,
+    )
+
     # TODO: Use Skylib's shell.quote?
     args = [
-        "--app={}".format(ctx.executable.binary.path),
-        "--app_path={}".format(ctx.attr.binary.label.package + "/" + ctx.attr.binary.label.name),
-        "--runfiles_manifest={}".format(manifest.path if manifest else ""),
+        "--manifest={}".format(manifest_file.path),
+        "--workdir={}".format(runfile_info.workdir),
+        "--entrypoint={}".format(runfile_info.entrypoint),
         "--icon={}".format(ctx.file.icon.path),
-        "--workspace_name={}".format(ctx.attr.binary.label.workspace_name or ctx.workspace_name),
     ]
+
     args.extend(["--extra_arg=" + arg for arg in ctx.attr.build_args])
     if ctx.attr.quiet:
         args.append("--quiet")
@@ -73,6 +71,7 @@ appimage = rule(
             executable = True,
             cfg = "exec",
         ),
+        "_directory": attr.string(default = "AppDir"),
     },
     executable = True,
 )
