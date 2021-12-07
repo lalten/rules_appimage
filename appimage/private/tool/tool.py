@@ -1,6 +1,6 @@
 """Tooling to prepare and build AppImages."""
 
-import dataclasses
+import json
 import os
 import shutil
 import subprocess
@@ -8,32 +8,12 @@ import sys
 import tempfile
 import textwrap
 from pathlib import Path
-from typing import Iterable, List, Tuple
+from typing import Iterable, Tuple
 
 import click
-import dataclasses_json
 from rules_python.python.runfiles import runfiles
 
 APPIMAGE_TOOL = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimagetool.bin"))
-
-
-@dataclasses.dataclass
-class FileMapEntry(dataclasses_json.DataClassJsonMixin):
-    dst: str
-    src: str
-
-
-@dataclasses.dataclass
-class SymlinksEntry(dataclasses_json.DataClassJsonMixin):
-    linkname: str
-    target: str
-
-
-@dataclasses.dataclass
-class Manifest(dataclasses_json.DataClassJsonMixin):
-    empty_files: List[str]
-    files: List[FileMapEntry]
-    symlinks: List[SymlinksEntry]
 
 
 def make_appimage(
@@ -52,23 +32,23 @@ def make_appimage(
     Returns:
         appimagetool return code
     """
-    manifest_data = Manifest.from_json(manifest.read_text())
+    manifest_data = json.loads(manifest.read_text())
     with tempfile.TemporaryDirectory() as tmpdir_name:
         tmpdir = Path(tmpdir_name)
         appdir = tmpdir / "AppDir"
 
-        for empty_file in manifest_data.empty_files:
+        for empty_file in manifest_data["empty_files"]:
             (tmpdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
             (tmpdir / empty_file).touch()
-        for file in manifest_data.files:
-            src = Path(file.src).resolve()
-            dst = (tmpdir / file.dst).resolve()
+        for file in manifest_data["files"]:
+            src = Path(file["src"]).resolve()
+            dst = (tmpdir / file["dst"]).resolve()
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(src=src, dst=dst, follow_symlinks=True)
-        for link in manifest_data.symlinks:
-            linkfile = (tmpdir / link.linkname).resolve()
+        for link in manifest_data["symlinks"]:
+            linkfile = (tmpdir / link["linkname"]).resolve()
             linkfile.parent.mkdir(parents=True, exist_ok=True)
-            linkfile.symlink_to(link.target)
+            linkfile.symlink_to(link["target"])
 
         apprun_path = appdir / "AppRun"
         apprun_path.write_text(
