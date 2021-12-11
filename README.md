@@ -1,8 +1,8 @@
 # rules_appimage
-![https://github.com/lalten/rules_appimage/actions](https://img.shields.io/github/workflow/status/lalten/rules_appimage/CI)
-![LICENSE](https://img.shields.io/github/license/lalten/rules_appimage)
+[![](https://img.shields.io/github/workflow/status/lalten/rules_appimage/CI)](https://github.com/lalten/rules_appimage/actions)
+[![](https://img.shields.io/github/license/lalten/rules_appimage)](https://github.com/lalten/rules_appimage/blob/main/LICENSE)
 
-Bazel rules for creating AppImage packages
+[Bazel](https://bazel.build/) rules for creating [AppImage](https://github.com/AppImage/AppImageKit) packages.
 
 ## Getting Started
 
