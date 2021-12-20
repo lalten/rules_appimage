@@ -1,6 +1,7 @@
 # rules_appimage
 [![](https://img.shields.io/github/workflow/status/lalten/rules_appimage/CI)](https://github.com/lalten/rules_appimage/actions)
 [![](https://img.shields.io/github/license/lalten/rules_appimage)](https://github.com/lalten/rules_appimage/blob/main/LICENSE)
+[![Awesome](https://awesome.re/badge.svg)](https://awesomebazel.com/)
 
 [Bazel](https://bazel.build/) rules for creating [AppImage](https://github.com/AppImage/AppImageKit) packages.
 
