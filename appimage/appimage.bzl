@@ -71,7 +71,6 @@ appimage = rule(
             executable = True,
             cfg = "exec",
         ),
-        "_directory": attr.string(default = "AppDir"),
     },
     executable = True,
 )
