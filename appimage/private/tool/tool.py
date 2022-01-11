@@ -36,19 +36,22 @@ def make_appimage(
     with tempfile.TemporaryDirectory() as tmpdir_name:
         tmpdir = Path(tmpdir_name)
         appdir = tmpdir / "AppDir"
+        appdir.mkdir()
 
         for empty_file in manifest_data["empty_files"]:
-            (tmpdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
-            (tmpdir / empty_file).touch()
+            (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
+            (appdir / empty_file).touch()
         for file in manifest_data["files"]:
             src = Path(file["src"]).resolve()
-            dst = (tmpdir / file["dst"]).resolve()
+            dst = (appdir / file["dst"]).resolve()
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(src=src, dst=dst, follow_symlinks=True)
         for link in manifest_data["symlinks"]:
-            linkfile = (tmpdir / link["linkname"]).resolve()
+            linkfile = (appdir / Path(link["linkname"])).resolve()
             linkfile.parent.mkdir(parents=True, exist_ok=True)
-            linkfile.symlink_to(link["target"])
+            abs_link_target = (appdir / Path(link["target"])).resolve()
+            rel_link_target = os.path.relpath(abs_link_target, linkfile.parent)
+            linkfile.symlink_to(rel_link_target)
 
         apprun_path = appdir / "AppRun"
         apprun_path.write_text(
@@ -57,8 +60,8 @@ def make_appimage(
                 #!/bin/sh
                 set -eu
                 HERE="$(dirname $0)"
-                cd "${{HERE}}/{workdir.relative_to("AppDir")}"
-                exec "{entrypoint.relative_to("AppDir")}" "$@"
+                cd "${{HERE}}/{workdir}"
+                exec "{entrypoint}" "$@"
                 """
             )
         )

@@ -22,11 +22,7 @@ All docker toolchain and layer info provider references were removed and the met
 
 def _binary_name(ctx):
     """For //foo/bar/baz:blah this would translate to /app/foo/bar/baz/blah"""
-    return "/".join([
-        ctx.attr._directory,
-        ctx.attr.binary.label.package,
-        ctx.attr.binary.label.name,
-    ])
+    return "/".join([ctx.attr.binary.label.package, ctx.attr.binary.label.name])
 
 def _runfiles_dir(ctx):
     """For @foo//bar/baz:blah this would translate to /app/bar/baz/blah.runfiles"""
@@ -70,7 +66,7 @@ def _final_file_path(ctx, f):
 def _layer_emptyfile_path(ctx, name):
     if not name.startswith("external/"):
         # Names that don't start with external are relative to our own workspace.
-        return "/".join([ctx.attr.directory, ctx.workspace_name, name])
+        return "/".join([ctx.workspace_name, name])
 
     # References to workspace-external dependencies, which are identifiable
     # because their path begins with external/, are inconsistent with the
@@ -81,11 +77,11 @@ def _layer_emptyfile_path(ctx, name):
     # so we "fix" the empty files' paths by removing "external/" and basing them
     # directly on the runfiles path.
 
-    return "/".join([ctx.attr.directory, name[len("external/"):]])
+    return "/".join([name[len("external/"):]])
 
 def _layer_file_path(ctx, f):
     """The foo_binary independent location in which we store a particular dependency's file such that it can be shared."""
-    return "/".join([ctx.attr._directory, ctx.workspace_name, f.short_path])
+    return "/".join([ctx.workspace_name, f.short_path])
 
 def _default_runfiles(dep):
     return dep[DefaultInfo].default_runfiles.files
