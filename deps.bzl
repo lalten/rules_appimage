@@ -31,16 +31,19 @@ def rules_appimage_deps():
         )
 
     for arch, sha in APPIMAGETOOL_RELEASES.items():
-        http_file(
-            name = "appimagetool_release_" + arch,
-            sha256 = sha,
-            urls = ["https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-{}.AppImage".format(arch)],
-        )
+        name = "appimagetool_release_" + arch
+        if name not in excludes:
+            http_file(
+                name = name,
+                sha256 = sha,
+                urls = ["https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-{}.AppImage".format(arch)],
+            )
 
-    http_archive(
-        name = "AppImageKit",
-        sha256 = "51b837c78dd99ecc1cf3dd283f4a98a1be665b01457da0edc1ff736d12974b1a",
-        urls = ["https://github.com/AppImage/AppImageKit/archive/refs/tags/13.tar.gz"],
-        build_file_content = 'exports_files(glob(["**"]))',
-        strip_prefix = "AppImageKit-13",
-    )
+    if "AppImageKit" not in excludes:
+        http_archive(
+            name = "AppImageKit",
+            sha256 = "51b837c78dd99ecc1cf3dd283f4a98a1be665b01457da0edc1ff736d12974b1a",
+            urls = ["https://github.com/AppImage/AppImageKit/archive/refs/tags/13.tar.gz"],
+            build_file_content = 'exports_files(glob(["**"]))',
+            strip_prefix = "AppImageKit-13",
+        )
