@@ -91,7 +91,7 @@ def make_appimage(
         ]
         proc = subprocess.run(cmd, check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if not quiet or proc.returncode:
-            print(proc.stdout)
+            print(proc.stdout, file=sys.stderr)
         return proc.returncode
 
 
