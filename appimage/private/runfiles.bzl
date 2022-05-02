@@ -22,7 +22,9 @@ All docker toolchain and layer info provider references were removed and the met
 
 def _binary_name(ctx):
     """For //foo/bar/baz:blah this would translate to /app/foo/bar/baz/blah"""
-    return "/".join([ctx.attr.binary.label.package, ctx.attr.binary.label.name])
+    if ctx.attr.binary.label.package:
+        return "/".join([ctx.attr.binary.label.package, ctx.attr.binary.label.name])
+    return ctx.attr.binary.label.name
 
 def _runfiles_dir(ctx):
     """For @foo//bar/baz:blah this would translate to /app/bar/baz/blah.runfiles"""
