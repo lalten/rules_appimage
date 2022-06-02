@@ -45,7 +45,10 @@ def make_appimage(
             src = Path(file["src"]).resolve()
             dst = (appdir / file["dst"]).resolve()
             dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(src=src, dst=dst, follow_symlinks=True)
+            try:
+                shutil.copy(src=src, dst=dst, follow_symlinks=True)
+            except IsADirectoryError:
+                shutil.copytree(src=src, dst=dst, symlinks=True)
         for link in manifest_data["symlinks"]:
             linkfile = (appdir / Path(link["linkname"])).resolve()
             linkfile.parent.mkdir(parents=True, exist_ok=True)
