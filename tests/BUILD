@@ -15,7 +15,10 @@ appimage_test(
 py_binary(
     name = "test_py",
     srcs = ["test.py"],
-    data = ["data.txt"],
+    data = [
+        "data.txt",
+        "dir",  # this is a relative directory, not a target label
+    ],
     main = "test.py",
     deps = [requirement("click")],
 )
