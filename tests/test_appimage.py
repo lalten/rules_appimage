@@ -29,7 +29,7 @@ def test_symlinks() -> None:
         symlinks_present = False
         for file in Path("squashfs-root").glob("**/*"):
             if file.is_symlink():
-                assert file.resolve().exists()
+                assert file.resolve().exists(), f"{file=} resolves to {file.resolve()=}, which does not exist!"
                 symlinks_present = True
         assert symlinks_present
     finally:
