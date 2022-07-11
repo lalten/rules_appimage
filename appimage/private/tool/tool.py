@@ -32,7 +32,7 @@ def copy(src: Path, dst: Path, *, follow_symlinks: bool = True) -> None:
 
     # Fix breaking relative symlinks
     if follow_symlinks and src.is_symlink():
-        link = src.readlink()
+        link = Path(os.readlink(src))
         if not link.is_absolute() and not (dst / link).exists():  # Symlink would dangle
             src = src.resolve()  # So we copy the target instead of linking to it
 
