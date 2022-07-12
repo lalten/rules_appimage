@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import click
@@ -17,21 +18,21 @@ def test_symlinks() -> None:
     link_to_link_to_undeclared_dep = Path("tests/dir/symlink_to_file_in_dir")
     assert link_to_link_to_undeclared_dep.is_file()
     assert link_to_link_to_undeclared_dep.is_symlink()
-    assert link_to_link_to_undeclared_dep.readlink() == Path("../dir/file_in_dir.txt")
+    assert os.readlink(link_to_link_to_undeclared_dep) == "../dir/file_in_dir.txt"
 
     link_to_declared_dep = Path("tests/dir/subdir/symlink_to_local_file")
     assert link_to_declared_dep.is_file()
     assert link_to_declared_dep.is_symlink()
-    assert link_to_declared_dep.readlink() == Path("../local_file")
+    assert os.readlink(link_to_declared_dep) == "../local_file"
 
     abs_link = Path("tests/dir/binsh")
     assert abs_link.is_file()
     assert abs_link.is_symlink()
-    assert abs_link.readlink() == Path("/bin/sh")
+    assert os.readlink(abs_link) == "/bin/sh"
 
     invalid_link = Path("tests/dir/subdir/invalid_link")
     assert invalid_link.is_symlink()
-    assert invalid_link.readlink() == Path("invalid/target")
+    assert os.readlink(invalid_link) == "invalid/target"
     assert not invalid_link.is_file()
 
 
