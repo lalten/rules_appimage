@@ -1,15 +1,39 @@
+import os
 from pathlib import Path
 
 import click
 
-DATA_DEP = Path("tests/data.txt")
-DIR_DEP = Path("tests/dir/file_in_dir.txt")
-
 
 def test_datadep() -> None:
-    assert DATA_DEP.is_file(), f"{DATA_DEP} does not exist"
-    assert (s := DATA_DEP.stat().st_size) == 591, f"{DATA_DEP} has wrong size {s}"
-    assert DIR_DEP.is_file(), f"{DIR_DEP} does not exist"
+    data_dep = Path("tests/data.txt")
+    assert data_dep.is_file(), f"{data_dep} does not exist"
+    assert (s := data_dep.stat().st_size) == 591, f"{data_dep} has wrong size {s}"
+
+
+def test_symlinks() -> None:
+    link_to_undeclared_dep = Path("tests/dir/file_in_dir.txt")
+    assert link_to_undeclared_dep.is_file()
+    assert not link_to_undeclared_dep.is_symlink()
+    
+    link_to_link_to_undeclared_dep = Path("tests/dir/symlink_to_file_in_dir")
+    assert link_to_link_to_undeclared_dep.is_file()
+    assert link_to_link_to_undeclared_dep.is_symlink()
+    assert os.readlink(link_to_link_to_undeclared_dep) == "../dir/file_in_dir.txt"
+
+    link_to_declared_dep = Path("tests/dir/subdir/symlink_to_local_file")
+    assert link_to_declared_dep.is_file()
+    assert link_to_declared_dep.is_symlink()
+    assert os.readlink(link_to_declared_dep) == "../local_file"
+
+    abs_link = Path("tests/dir/binsh")
+    assert abs_link.is_file()
+    assert abs_link.is_symlink()
+    assert os.readlink(abs_link) == "/bin/sh"
+
+    invalid_link = Path("tests/dir/subdir/invalid_link")
+    assert invalid_link.is_symlink()
+    assert os.readlink(invalid_link) == "invalid/target"
+    assert not invalid_link.is_file()
 
 
 @click.command()
@@ -21,4 +45,5 @@ def greeter(name: str) -> None:
 
 if __name__ == "__main__":
     test_datadep()
+    test_symlinks()
     greeter()

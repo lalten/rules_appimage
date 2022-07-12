@@ -28,8 +28,8 @@ def test_symlinks() -> None:
         subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
         symlinks_present = False
         for file in Path("squashfs-root").glob("**/*"):
-            if file.is_symlink():
-                assert file.resolve().exists()
+            if file.is_symlink() and file.name != "invalid_link":
+                assert file.resolve().exists(), f"{file=} resolves to {file.resolve()=}, which does not exist!"
                 symlinks_present = True
         assert symlinks_present
     finally:

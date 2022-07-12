@@ -16,6 +16,42 @@ from rules_python.python.runfiles import runfiles
 APPIMAGE_TOOL = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimagetool.bin"))
 
 
+def copy(src: Path, dst: Path, *, follow_symlinks: bool = True) -> None:
+    """Copy a file or dir preserving symlinks only where possible.
+
+    Absolute symlinks are kept, relative symlinks are replaced with copies of the target if they would otherwise dangle.
+    """
+    dst.parent.mkdir(parents=True, exist_ok=True)
+
+    # Recurse into dirs
+    if src.is_dir():
+        for dirsrc in src.glob("*"):
+            dirdst = dst / dirsrc.relative_to(src)
+            copy(dirsrc, dirdst, follow_symlinks=follow_symlinks)
+        return
+
+    # Fix breaking relative symlinks
+    if follow_symlinks and src.is_symlink():
+        link = Path(os.readlink(src))
+        target = dst.parent / link
+
+        # Copy symlinks by creating new ones at the destination
+        if target.exists():
+            dst.symlink_to(link)
+            return
+        
+        # If the relative target does not exist at dst we copy the target instead of linking to it
+        src = src.resolve()
+
+        # Bazel does not allow broken symlinks in srcs, but a subdir may contain one. Just recreate the broken link.
+        if not src.exists():
+            dst.symlink_to(link)
+            return
+
+    # Regular file or symlink that would be broken, copy the file
+    shutil.copy2(src, dst, follow_symlinks=follow_symlinks)
+
+
 def make_appimage(
     manifest: Path,
     workdir: Path,
@@ -41,14 +77,12 @@ def make_appimage(
         for empty_file in manifest_data["empty_files"]:
             (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
             (appdir / empty_file).touch()
+
         for file in manifest_data["files"]:
             src = Path(file["src"]).resolve()
-            dst = (appdir / file["dst"]).resolve()
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                shutil.copy(src=src, dst=dst, follow_symlinks=True)
-            except IsADirectoryError:
-                shutil.copytree(src=src, dst=dst, symlinks=True)
+            dst = Path(appdir / file["dst"]).resolve()
+            copy(src, dst)
+
         for link in manifest_data["symlinks"]:
             linkfile = (appdir / Path(link["linkname"])).resolve()
             linkfile.parent.mkdir(parents=True, exist_ok=True)
