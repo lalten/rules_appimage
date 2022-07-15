@@ -1,11 +1,11 @@
 filegroup(
     name = "dir",
     srcs = [
-        "binsh",
-        "file_in_dir.txt",
+        "link_to_bin_sh",
+        "link_to_file_in_dir2",
+        "link_to_link_to_file_in_dir2",
         "local_file",
         "subdir",
-        "symlink_to_file_in_dir",
     ],
     visibility = ["//tests:__subpackages__"],
 )

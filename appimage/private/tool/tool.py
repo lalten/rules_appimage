@@ -1,5 +1,6 @@
 """Tooling to prepare and build AppImages."""
 
+import hashlib
 import json
 import os
 import shutil
@@ -8,7 +9,7 @@ import sys
 import tempfile
 import textwrap
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple
 
 import click
 from rules_python.python.runfiles import runfiles
@@ -16,40 +17,67 @@ from rules_python.python.runfiles import runfiles
 APPIMAGE_TOOL = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimagetool.bin"))
 
 
-def copy(src: Path, dst: Path, *, follow_symlinks: bool = True) -> None:
-    """Copy a file or dir preserving symlinks only where possible.
+def relative_path(target: Path, origin: Path):
+    """Return path of target relative to origin."""
+    try:
+        return target.resolve().relative_to(origin.resolve())
+    except ValueError:  # target does not start with origin
+        return Path("..").joinpath(relative_path(target, origin.parent))
 
-    Absolute symlinks are kept, relative symlinks are replaced with copies of the target if they would otherwise dangle.
-    """
+
+def is_inside_bazel_cache(path: Path) -> bool:
+    """Check whether a path is inside the Bazel cache."""
+    return "/.cache/bazel/" in os.fspath(path) and "bazel-out" in path.parts
+
+
+def copy_and_link(src: Path, dst: Path) -> List[Tuple[Path, Path]]:
+    """Copy links and files, and return a list of recreated symlinks."""
     dst.parent.mkdir(parents=True, exist_ok=True)
+
+    # Recreate existing symlinks (Note: symlinks only remain inside /dirs/ that are declared as Bazel dep)
+    if src.is_symlink():
+        link = Path(os.readlink(src))
+        dst.symlink_to(link)
+        return [(src, dst)]
 
     # Recurse into dirs
     if src.is_dir():
+        dst.mkdir(parents=True, exist_ok=True)  # make dir, even if there are no files in it
+        linkpairs: List[Tuple[Path, Path]] = []
         for dirsrc in src.glob("*"):
             dirdst = dst / dirsrc.relative_to(src)
-            copy(dirsrc, dirdst, follow_symlinks=follow_symlinks)
-        return
+            linkpairs.extend(copy_and_link(dirsrc, dirdst))
+        return linkpairs
 
-    # Fix breaking relative symlinks
-    if follow_symlinks and src.is_symlink():
+    # Regular file
+    shutil.copy2(src, dst)
+    return []
+
+
+def fix_linkpair(linkpairs: Iterable[Tuple[Path, Path]]) -> None:
+    """If the link would break, copy over the target as well."""
+    copied_src_targets: Dict[Path, Optional[Path]] = {}
+    for src, dst in linkpairs:
         link = Path(os.readlink(src))
-        target = dst.parent / link
-
-        # Copy symlinks by creating new ones at the destination
-        if target.exists():
-            dst.symlink_to(link)
-            return
-        
-        # If the relative target does not exist at dst we copy the target instead of linking to it
-        src = src.resolve()
-
-        # Bazel does not allow broken symlinks in srcs, but a subdir may contain one. Just recreate the broken link.
-        if not src.exists():
-            dst.symlink_to(link)
-            return
-
-    # Regular file or symlink that would be broken, copy the file
-    shutil.copy2(src, dst, follow_symlinks=follow_symlinks)
+        target = (dst.parent / link).resolve()
+        target_in_bazel_cache = is_inside_bazel_cache(target)
+        if dst.exists() and not target_in_bazel_cache:
+            continue
+        if existing_copy := copied_src_targets.get(src.resolve(), None):
+            dst.unlink()
+            dst.symlink_to(existing_copy)
+        else:
+            copy_dst = dst if target_in_bazel_cache else target
+            if copy_dst.exists():
+                copy_dst.unlink()
+            else:
+                copy_dst.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.copy2(src.resolve(), copy_dst, follow_symlinks=False)
+            except FileNotFoundError:
+                pass  # broken symlinks are allowed
+            else:
+                copied_src_targets[src.resolve()] = copy_dst
 
 
 def make_appimage(
@@ -78,10 +106,12 @@ def make_appimage(
             (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
             (appdir / empty_file).touch()
 
+        linkpairs: List[Tuple[Path, Path]] = []
         for file in manifest_data["files"]:
             src = Path(file["src"]).resolve()
             dst = Path(appdir / file["dst"]).resolve()
-            copy(src, dst)
+            linkpairs.extend(copy_and_link(src, dst))
+        fix_linkpair(linkpairs)
 
         for link in manifest_data["symlinks"]:
             linkfile = (appdir / Path(link["linkname"])).resolve()
