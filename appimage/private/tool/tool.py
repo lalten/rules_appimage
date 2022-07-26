@@ -30,9 +30,23 @@ def is_inside_bazel_cache(path: Path) -> bool:
     return "/.cache/bazel/" in os.fspath(path) and "bazel-out" in path.parts
 
 
-def copy_and_link(src: Path, dst: Path) -> List[Tuple[Path, Path]]:
+def copy_and_link(src: Path, dst: Path, *, dedup_map: Optional[Mapping[bytes, Path]] = None) -> List[Tuple[Path, Path]]:
     """Copy links and files, and return a list of recreated symlinks."""
     dst.parent.mkdir(parents=True, exist_ok=True)
+
+    # Deduplicate files using symlinks
+    if dedup_map is not None and src.is_file() and (file_content := src.read_bytes()):
+        hasher = hashlib.sha1()
+        hasher.update(dst.name.encode())
+        hasher.update(file_content)
+        file_hash = hasher.digest()
+        if file_hash in dedup_map:
+            dedup_target = dedup_map[file_hash]
+            relative_link = relative_path(dedup_target, dst.parent)
+            dst.symlink_to(relative_link)
+            return []
+        else:
+            dedup_map[file_hash] = dst
 
     # Recreate existing symlinks (Note: symlinks only remain inside /dirs/ that are declared as Bazel dep)
     if src.is_symlink():
@@ -46,7 +60,7 @@ def copy_and_link(src: Path, dst: Path) -> List[Tuple[Path, Path]]:
         linkpairs: List[Tuple[Path, Path]] = []
         for dirsrc in src.glob("*"):
             dirdst = dst / dirsrc.relative_to(src)
-            linkpairs.extend(copy_and_link(dirsrc, dirdst))
+            linkpairs.extend(copy_and_link(dirsrc, dirdst, dedup_map=dedup_map))
         return linkpairs
 
     # Regular file
@@ -107,10 +121,11 @@ def make_appimage(
             (appdir / empty_file).touch()
 
         linkpairs: List[Tuple[Path, Path]] = []
+        dedup_map: Mapping[bytes, Path] = {}
         for file in manifest_data["files"]:
             src = Path(file["src"]).resolve()
             dst = Path(appdir / file["dst"]).resolve()
-            linkpairs.extend(copy_and_link(src, dst))
+            linkpairs.extend(copy_and_link(src, dst, dedup_map=dedup_map))
         fix_linkpair(linkpairs)
 
         for link in manifest_data["symlinks"]:
