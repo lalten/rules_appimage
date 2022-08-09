@@ -141,7 +141,7 @@ def collect_runfiles_info(ctx):
         symlinks = [struct(linkname = k, target = symlinks[k]) for k in symlinks],
         empty_files = empty_files,
     )
-    workdir = "/".join([_runfiles_dir(ctx), ctx.workspace_name])
+    workdir = "/".join([_runfiles_dir(ctx), ctx.attr.binary.label.workspace_name or ctx.workspace_name])
     return struct(
         files = runfiles_list,
         manifest = manifest,

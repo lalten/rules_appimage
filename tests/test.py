@@ -1,4 +1,5 @@
 import os
+import subprocess
 from pathlib import Path
 
 import click
@@ -8,6 +9,14 @@ def test_datadep() -> None:
     data_dep = Path("tests/data.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
     assert (s := data_dep.stat().st_size) == 591, f"{data_dep} has wrong size {s}"
+
+
+def test_external_bin() -> None:
+    external_bin_appimage = Path("tests/external_bin.appimage")
+    assert external_bin_appimage.is_file()
+    cmd = [os.fspath(external_bin_appimage), "--appimage-extract-and-run", "-h"]
+    p = subprocess.run(cmd, text=True, check=False, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    assert "Builds a python wheel" in p.stdout, p.stdout
 
 
 def test_symlinks() -> None:
@@ -49,5 +58,6 @@ def greeter(name: str) -> None:
 
 if __name__ == "__main__":
     test_datadep()
+    test_external_bin()
     test_symlinks()
     greeter()

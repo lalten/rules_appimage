@@ -18,6 +18,7 @@ py_binary(
     data = [
         "data.txt",
         "dir",  # this is a relative directory, not a target label
+        ":external_bin.appimage",
     ],
     main = "test.py",
     deps = [requirement("click")],
@@ -38,4 +39,9 @@ py_test(
     srcs = ["test_appimage.py"],
     data = [":appimage_py"],
     deps = [requirement("pytest")],
+)
+
+appimage(
+    name = "external_bin.appimage",
+    binary = "@rules_python//tools:wheelmaker",
 )
