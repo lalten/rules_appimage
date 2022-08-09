@@ -1,6 +1,5 @@
 """Tooling to prepare and build AppImages."""
 
-import hashlib
 import json
 import os
 import shutil
@@ -9,7 +8,7 @@ import sys
 import tempfile
 import textwrap
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import click
 from rules_python.python.runfiles import runfiles
@@ -128,7 +127,7 @@ def make_appimage(
                 set -eu
                 HERE="$(dirname $0)"
                 cd "${{HERE}}/{workdir}"
-                exec "{entrypoint}" "$@"
+                exec "./{entrypoint}" "$@"
                 """
             )
         )
