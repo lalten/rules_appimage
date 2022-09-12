@@ -1,6 +1,7 @@
 load("//appimage:appimage.bzl", "appimage", "appimage_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@py_deps//:requirements.bzl", "requirement")
+load(":testrules.bzl", "rules_appimage_test_rule")
 
 sh_binary(
     name = "test_sh",
@@ -19,6 +20,7 @@ py_binary(
         "data.txt",
         "dir",  # this is a relative directory, not a target label
         ":external_bin.appimage",
+        ":symlink_and_emptyfile",
     ],
     main = "test.py",
     deps = [requirement("click")],
@@ -44,4 +46,9 @@ py_test(
 appimage(
     name = "external_bin.appimage",
     binary = "@rules_python//tools:wheelmaker",
+)
+
+rules_appimage_test_rule(
+    name = "symlink_and_emptyfile",
+    symlink = "data.txt",
 )
