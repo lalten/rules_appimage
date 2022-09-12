@@ -65,26 +65,6 @@ def _final_file_path(ctx, f):
     """The final location that this file needs to exist for the foo_binary target to properly execute."""
     return "/".join([_reference_dir(ctx), f.short_path])
 
-def _layer_emptyfile_path(ctx, name):
-    if not name.startswith("external/"):
-        # Names that don't start with external are relative to our own workspace.
-        return "/".join([ctx.workspace_name, name])
-
-    # References to workspace-external dependencies, which are identifiable
-    # because their path begins with external/, are inconsistent with the
-    # form of their File counterparts, whose ".short_form" is relative to
-    #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
-    # whereas we see:
-    #    external/foreign-workspace/...
-    # so we "fix" the empty files' paths by removing "external/" and basing them
-    # directly on the runfiles path.
-
-    return "/".join([name[len("external/"):]])
-
-def _layer_file_path(ctx, f):
-    """The foo_binary independent location in which we store a particular dependency's file such that it can be shared."""
-    return "/".join([ctx.workspace_name, f.short_path])
-
 def _default_runfiles(dep):
     return dep[DefaultInfo].default_runfiles.files
 
@@ -113,21 +93,10 @@ def collect_runfiles_info(ctx):
     emptyfiles_list = _default_emptyfiles(ctx.attr.binary).to_list()
     empty_files = [_final_emptyfile_path(ctx, f) for f in emptyfiles_list]
 
-    symlinks = {}
-    symlinks.update({
-        (_reference_dir(ctx) + "/" + s.path): _layer_file_path(ctx, s.target_file)
-        for s in _default_symlinks(ctx.attr.binary).to_list()
-    })
-    symlinks.update({
-        _final_file_path(ctx, f): _layer_file_path(ctx, f)
-        for f in runfiles_list
-        if _final_file_path(ctx, f) not in file_map
-    })
-    symlinks.update({
-        _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
-        for f in emptyfiles_list
-        if _final_emptyfile_path(ctx, f) not in empty_files
-    })
+    symlinks = {
+        (_reference_dir(ctx) + "/" + sl.path): _final_file_path(ctx, sl.target_file)
+        for sl in _default_symlinks(ctx.attr.binary).to_list()
+    }
     entrypoint = _binary_name(ctx)
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.

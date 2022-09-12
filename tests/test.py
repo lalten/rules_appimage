@@ -48,6 +48,11 @@ def test_symlinks() -> None:
     assert os.readlink(dir_link) == "dir"
     assert dir_link.resolve().is_dir()
 
+def test_runfiles_symlinks() -> None:
+    runfiles_symlink = Path("path/to/the/runfiles_symlink")
+    assert runfiles_symlink.is_symlink()
+    assert os.readlink(runfiles_symlink) == "../../../tests/data.txt"
+    assert runfiles_symlink.resolve().is_file()
 
 @click.command()
 @click.option("--name", default="world")
@@ -60,4 +65,5 @@ if __name__ == "__main__":
     test_datadep()
     test_external_bin()
     test_symlinks()
+    test_runfiles_symlinks()
     greeter()
