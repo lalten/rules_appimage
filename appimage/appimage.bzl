@@ -1,6 +1,5 @@
 """Rule for creating AppImages."""
 
-load("@bazel_skylib//rules:native_binary.bzl", "native_test")
 load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info")
 
 def _appimage_impl(ctx):
@@ -40,51 +39,59 @@ def _appimage_impl(ctx):
         tools = tools,
     )
 
+    return [
+        DefaultInfo(
+            executable = ctx.outputs.executable,
+            files = depset([ctx.outputs.executable]),
+            runfiles = ctx.runfiles(files = [ctx.outputs.executable]),
+        ),
+        RunEnvironmentInfo(
+            environment = ctx.attr.env,
+        ),
+    ]
+
+_ATTRS = {
+    "binary": attr.label(
+        executable = True,
+        cfg = "target",
+    ),
+    "icon": attr.label(
+        default = "@AppImageKit//:resources/appimagetool.png",
+        allow_single_file = True,
+    ),
+    "build_args": attr.string_list(
+        default = [
+            "--appimage-extract-and-run",
+            "--no-appstream",
+        ],
+    ),
+    "build_env": attr.string_dict(
+        default = {
+            "ARCH": "x86_64",
+            "NO_CLEANUP": "1",
+        },
+    ),
+    "quiet": attr.bool(
+        default = True,
+    ),
+    "_tool": attr.label(
+        default = "//appimage/private/tool",
+        executable = True,
+        cfg = "exec",
+    ),
+    "env": attr.string_dict(
+        doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests",
+    ),
+}
+
 appimage = rule(
     implementation = _appimage_impl,
-    attrs = {
-        "binary": attr.label(
-            executable = True,
-            cfg = "target",
-        ),
-        "icon": attr.label(
-            default = "@AppImageKit//:resources/appimagetool.png",
-            allow_single_file = True,
-        ),
-        "build_args": attr.string_list(
-            default = [
-                "--appimage-extract-and-run",
-                "--no-appstream",
-            ],
-        ),
-        "build_env": attr.string_dict(
-            default = {
-                "ARCH": "x86_64",
-                "NO_CLEANUP": "1",
-            },
-        ),
-        "quiet": attr.bool(
-            default = True,
-        ),
-        "_tool": attr.label(
-            default = "//appimage/private/tool",
-            executable = True,
-            cfg = "exec",
-        ),
-    },
+    attrs = _ATTRS,
     executable = True,
 )
 
-def appimage_test(name, **kwargs):
-    """AppImage test rule."""
-    appimage(
-        name = name + ".AppImage",
-        **kwargs
-    )
-
-    native_test(
-        name = name,
-        args = ["--appimage-extract-and-run"],
-        src = name + ".AppImage",
-        out = name + ".AppImage.test",
-    )
+appimage_test = rule(
+    implementation = _appimage_impl,
+    attrs = _ATTRS,
+    test = True,
+)
