@@ -10,6 +10,7 @@ sh_binary(
 
 appimage_test(
     name = "appimage_test_sh",
+    args = ["--appimage-extract-and-run"],
     binary = ":test_sh",
 )
 
@@ -29,6 +30,7 @@ py_binary(
 appimage_test(
     name = "appimage_test_py",
     binary = ":test_py",
+    env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},
 )
 
 appimage(
