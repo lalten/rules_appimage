@@ -10,7 +10,7 @@ sh_binary(
 
 appimage_test(
     name = "appimage_test_sh",
-    args = ["--appimage-extract-and-run"],
+    args = ["--appimage-extract-and-run"],  # One way to run if no libfuse2 is available
     binary = ":test_sh",
 )
 
@@ -30,12 +30,17 @@ py_binary(
 appimage_test(
     name = "appimage_test_py",
     binary = ":test_py",
-    env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},
+    env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
 )
 
 appimage(
     name = "appimage_py",
     binary = ":test_py",
+    build_args = [
+        # Example: Compress the squashfs inside with xz instead of gzip.
+        "-comp",
+        "xz",
+    ],
 )
 
 py_test(
@@ -48,6 +53,10 @@ py_test(
 appimage(
     name = "external_bin.appimage",
     binary = "@rules_python//tools:wheelmaker",
+    build_env = {
+        # Example: Set environment variable for mksquashfs to set all file timestamps to 1970-01-01.
+        "SOURCE_DATE_EPOCH": "0",
+    },
 )
 
 rules_appimage_test_rule(

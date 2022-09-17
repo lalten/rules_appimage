@@ -23,10 +23,9 @@ def _appimage_impl(ctx):
         "--entrypoint={}".format(runfile_info.entrypoint),
         "--icon={}".format(ctx.file.icon.path),
     ]
-
-    args.extend(["--extra_arg=" + arg for arg in ctx.attr.build_args])
-    if ctx.attr.quiet:
-        args.append("--quiet")
+    if ctx.attr.mksquashfs:
+        args.append("--mksquashfs_path={}".format(ctx.attr.mksquashfs))
+    args.extend(["--mksquashfs_arg=" + arg for arg in ctx.attr.build_args])
     args.append(ctx.outputs.executable.path)
 
     ctx.actions.run(
@@ -51,37 +50,13 @@ def _appimage_impl(ctx):
     ]
 
 _ATTRS = {
-    "binary": attr.label(
-        executable = True,
-        cfg = "target",
-    ),
-    "icon": attr.label(
-        default = "@AppImageKit//:resources/appimagetool.png",
-        allow_single_file = True,
-    ),
-    "build_args": attr.string_list(
-        default = [
-            "--appimage-extract-and-run",
-            "--no-appstream",
-        ],
-    ),
-    "build_env": attr.string_dict(
-        default = {
-            "ARCH": "x86_64",
-            "NO_CLEANUP": "1",
-        },
-    ),
-    "quiet": attr.bool(
-        default = True,
-    ),
-    "_tool": attr.label(
-        default = "//appimage/private/tool",
-        executable = True,
-        cfg = "exec",
-    ),
-    "env": attr.string_dict(
-        doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests",
-    ),
+    "binary": attr.label(executable = True, cfg = "target"),
+    "icon": attr.label(default = "@appimagetool.png//file", allow_single_file = True),
+    "mksquashfs": attr.label(default = None, executable = True, allow_single_file = True, cfg = "host"),
+    "build_args": attr.string_list(),
+    "build_env": attr.string_dict(),
+    "_tool": attr.label(default = "//appimage/private/tool", executable = True, cfg = "exec"),
+    "env": attr.string_dict(doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests"),
 }
 
 appimage = rule(

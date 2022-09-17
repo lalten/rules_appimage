@@ -4,16 +4,31 @@ import json
 import os
 import shutil
 import subprocess
-import sys
 import tempfile
 import textwrap
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, NamedTuple, Optional, Tuple
 
 import click
 from rules_python.python.runfiles import runfiles
 
-APPIMAGE_TOOL = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimagetool.bin"))
+APPIMAGE_RUNTIME = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimage_runtime"))
+
+
+class AppDirParams(NamedTuple):
+    """Parameters for the AppDir."""
+
+    manifest: Path
+    workdir: Path
+    entrypoint: Path
+    icon: Path
+
+
+class MksquashfsParams(NamedTuple):
+    """Parameters for mksquashfs."""
+
+    path: str
+    args: Iterable[str]
 
 
 def relative_path(target: Path, origin: Path):
@@ -79,86 +94,77 @@ def fix_linkpair(linkpairs: Iterable[Tuple[Path, Path]]) -> None:
                 copied_src_targets[src.resolve()] = copy_dst
 
 
-def make_appimage(
-    manifest: Path,
-    workdir: Path,
-    entrypoint: Path,
-    icon: Path,
-    extra_args: Iterable[str],
-    output_file: Path,
-    quiet: bool,
-) -> int:
-    """Make an AppImage.
+def populate_appdir(appdir: Path, params: AppDirParams) -> None:
+    """Make the AppDir that will be squashfs'd into the AppImage."""
+    appdir.mkdir(parents=True, exist_ok=True)
+    manifest_data = json.loads(params.manifest.read_text())
 
-    See cli() for args.
+    for empty_file in manifest_data["empty_files"]:
+        (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
+        (appdir / empty_file).touch()
 
-    Returns:
-        appimagetool return code
-    """
-    manifest_data = json.loads(manifest.read_text())
-    with tempfile.TemporaryDirectory() as tmpdir_name:
-        tmpdir = Path(tmpdir_name)
-        appdir = tmpdir / "AppDir"
-        appdir.mkdir()
+    linkpairs: List[Tuple[Path, Path]] = []
+    for file in manifest_data["files"]:
+        src = Path(file["src"]).resolve()
+        dst = Path(appdir / file["dst"]).resolve()
+        linkpairs.extend(copy_and_link(src, dst))
+    fix_linkpair(linkpairs)
 
-        for empty_file in manifest_data["empty_files"]:
-            (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
-            (appdir / empty_file).touch()
+    for link in manifest_data["symlinks"]:
+        linkfile = (appdir / Path(link["linkname"])).resolve()
+        linkfile.parent.mkdir(parents=True, exist_ok=True)
+        abs_link_target = (appdir / Path(link["target"])).resolve()
+        rel_link_target = os.path.relpath(abs_link_target, linkfile.parent)
+        linkfile.symlink_to(rel_link_target)
 
-        linkpairs: List[Tuple[Path, Path]] = []
-        for file in manifest_data["files"]:
-            src = Path(file["src"]).resolve()
-            dst = Path(appdir / file["dst"]).resolve()
-            linkpairs.extend(copy_and_link(src, dst))
-        fix_linkpair(linkpairs)
-
-        for link in manifest_data["symlinks"]:
-            linkfile = (appdir / Path(link["linkname"])).resolve()
-            linkfile.parent.mkdir(parents=True, exist_ok=True)
-            abs_link_target = (appdir / Path(link["target"])).resolve()
-            rel_link_target = os.path.relpath(abs_link_target, linkfile.parent)
-            linkfile.symlink_to(rel_link_target)
-
-        apprun_path = appdir / "AppRun"
-        apprun_path.write_text(
-            textwrap.dedent(
-                f"""\
-                #!/bin/sh
-                set -eu
-                HERE="$(dirname $0)"
-                cd "${{HERE}}/{workdir}"
-                exec "./{entrypoint}" "$@"
-                """
-            )
+    apprun_path = appdir / "AppRun"
+    apprun_path.write_text(
+        textwrap.dedent(
+            f"""\
+            #!/bin/sh
+            set -eu
+            HERE="$(dirname $0)"
+            cd "${{HERE}}/{params.workdir}"
+            exec "./{params.entrypoint}" "$@"
+            """
         )
-        apprun_path.chmod(0o751)
+    )
+    apprun_path.chmod(0o751)
 
-        apprun_path.with_suffix(".desktop").write_text(
-            textwrap.dedent(
-                """\
-                [Desktop Entry]
-                Type=Application
-                Name=AppRun
-                Exec=AppRun
-                Icon=AppRun
-                Categories=Development;
-                Terminal=true
-                """
-            )
+    apprun_path.with_suffix(".desktop").write_text(
+        textwrap.dedent(
+            """\
+            [Desktop Entry]
+            Type=Application
+            Name=AppRun
+            Exec=AppRun
+            Icon=AppRun
+            Categories=Development;
+            Terminal=true
+            """
         )
+    )
 
-        shutil.copy(src=icon, dst=appdir / f"AppRun{icon.suffix}", follow_symlinks=True)
+    shutil.copy(src=params.icon, dst=appdir / f"AppRun{params.icon.suffix or '.png'}", follow_symlinks=True)
 
-        cmd = [
-            os.fspath(APPIMAGE_TOOL),
-            *extra_args,
-            os.fspath(appdir),
-            os.fspath(output_file),
-        ]
-        proc = subprocess.run(cmd, check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        if not quiet or proc.returncode:
-            print(proc.stdout, file=sys.stderr)
-        return proc.returncode
+
+def make_squashfs(params: AppDirParams, mksquashfs_params: MksquashfsParams, output_path: str) -> None:
+    """Run mksquashfs to create the squashfs filesystem for the appimage."""
+    with tempfile.TemporaryDirectory(suffix="AppDir") as tmpdir_name:
+        populate_appdir(appdir=Path(tmpdir_name), params=params)
+        cmd = [mksquashfs_params.path, tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params.args]
+        try:
+            subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as exc:
+            raise RuntimeError(f"Failed to run {' '.join(cmd)!r} (returned {exc.returncode}): {exc.stdout}") from exc
+
+
+def make_appimage(params: AppDirParams, mksquashfs_params: MksquashfsParams, output_path: Path) -> None:
+    """Make the AppImage by concatenating the AppImage runtime and the AppDir squashfs."""
+    shutil.copy2(src=APPIMAGE_RUNTIME, dst=output_path)
+    with output_path.open(mode="ab") as output_file, tempfile.NamedTemporaryFile(mode="w+b") as tmp_squashfs:
+        make_squashfs(params, mksquashfs_params, tmp_squashfs.name)
+        shutil.copyfileobj(tmp_squashfs, output_file)
 
 
 @click.command()
@@ -187,17 +193,18 @@ def make_appimage(
     help="Icon to use in the AppImage, e.g. 'external/AppImageKit/resources/appimagetool.png'",
 )
 @click.option(
-    "--extra_arg",
-    "extra_args",
+    "--mksquashfs_path",
     required=False,
-    multiple=True,
-    help="Any extra arg to pass to appimagetool, e.g. '--no-appstream'. Can be used multiple times.",
+    default="mksquashfs",
+    show_default=True,
+    help="Path to mksquashfs program",
 )
 @click.option(
-    "--quiet",
-    is_flag=True,
-    show_default=True,
-    help="Don't print appimagetool output unless there is an error",
+    "--mksquashfs_arg",
+    "mksquashfs_args",
+    required=False,
+    multiple=True,
+    help="Extra arguments for mksquashfs, e.g. '-mem'. Can be used multiple times.",
 )
 @click.argument(
     "output",
@@ -208,15 +215,17 @@ def cli(
     workdir: Path,
     entrypoint: Path,
     icon: Path,
-    extra_args: Tuple[str],
-    quiet: bool,
+    mksquashfs_path: Path,
+    mksquashfs_args: Tuple[str, ...],
     output: Path,
 ) -> None:
     """Tool for rules_appimage.
 
     Writes the built AppImage to OUTPUT.
     """
-    sys.exit(make_appimage(manifest, workdir, entrypoint, icon, extra_args, output, quiet))
+    appdir_params = AppDirParams(manifest, workdir, entrypoint, icon)
+    mksquashfs_params = MksquashfsParams(os.fspath(mksquashfs_path), mksquashfs_args)
+    make_appimage(appdir_params, mksquashfs_params, output)
 
 
 if __name__ == "__main__":
