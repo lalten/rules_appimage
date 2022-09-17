@@ -2,11 +2,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
-APPIMAGETOOL_RELEASES = {
-    "aarch64": "334e77beb67fc1e71856c29d5f3f324ca77b0fde7a840fdd14bd3b88c25c341f",
-    "armhf": "36bb718f32002357375d77b082c264baba2a2dcf44ed1a27d51dbb528fbb60f6",
-    "i686": "104978205c888cb2ad42d1799e03d4621cb9a6027cfb375d069b394a82ff15d1",
-    "x86_64": "df3baf5ca5facbecfc2f3fa6713c29ab9cefa8fd8c1eac5d283b79cab33e4acb",
+APPIMAGE_RUNTIME_RELEASES = {
+    "aarch64": "d2624ce8cc2c64ef76ba986166ad67f07110cdbf85112ace4f91611bc634c96a",
+    "armhf": "c143d8981702b91cc693e5d31ddd91e8424fec5911fa2dda72082183b2523f47",
+    "i686": "5cbfd3c7e78d9ebb16b9620b28affcaa172f2166f1ef5fe7ef878699507bcd7f",
+    "x86_64": "328e0d745c5c6817048c27bc3e8314871703f8f47ffa81a37cb06cd95a94b323",
 }
 
 def rules_appimage_deps():
@@ -30,21 +30,19 @@ def rules_appimage_deps():
             sha256 = "cd6730ed53a002c56ce4e2f396ba3b3be262fd7cb68339f0377a45e8227fe332",
         )
 
-    for arch, sha in APPIMAGETOOL_RELEASES.items():
-        name = "appimagetool_release_" + arch
+    for arch, sha in APPIMAGE_RUNTIME_RELEASES.items():
+        name = "appimage_runtime_" + arch
         if name not in excludes:
             http_file(
                 name = name,
                 executable = True,
                 sha256 = sha,
-                urls = ["https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-{}.AppImage".format(arch)],
+                urls = ["https://github.com/AppImage/AppImageKit/releases/download/13/runtime-{}".format(arch)],
             )
 
-    if "AppImageKit" not in excludes:
-        http_archive(
-            name = "AppImageKit",
-            sha256 = "51b837c78dd99ecc1cf3dd283f4a98a1be665b01457da0edc1ff736d12974b1a",
-            urls = ["https://github.com/AppImage/AppImageKit/archive/refs/tags/13.tar.gz"],
-            build_file_content = 'exports_files(glob(["**"]))',
-            strip_prefix = "AppImageKit-13",
+    if "appimagetool.png" not in excludes:
+        http_file(
+            name = "appimagetool.png",
+            sha256 = "0c23daaf7665216a8e8f9754c904ec18b2dfa376af2479601a571e504239fae6",
+            urls = ["https://raw.githubusercontent.com/AppImage/AppImageKit/b51f685/resources/appimagetool.png"],
         )

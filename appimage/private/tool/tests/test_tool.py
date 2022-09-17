@@ -10,10 +10,10 @@ import rules_appimage.appimage.private.tool.tool as tool
 
 
 def test_appimagetool() -> None:
-    cmd = [tool.APPIMAGE_TOOL, "--appimage-extract-and-run", "--version"]
+    cmd = [os.fspath(tool.APPIMAGE_RUNTIME), "--appimage-version"]
     output = subprocess.run(cmd, check=True, text=True, stderr=subprocess.PIPE).stderr
 
-    assert output.splitlines()[-1].startswith("appimagetool")
+    assert output.splitlines()[-1].startswith("Version: ")
 
 
 def test_cli() -> None:
