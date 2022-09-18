@@ -150,9 +150,13 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
 
 def make_squashfs(params: AppDirParams, mksquashfs_params: MksquashfsParams, output_path: str) -> None:
     """Run mksquashfs to create the squashfs filesystem for the appimage."""
+    mksquashfs_prog = shutil.which(mksquashfs_params.path)
+    mksquashfs_prog = mksquashfs_prog or runfiles.Create().Rlocation(mksquashfs_params.path.removeprefix("../"))
+    if not Path(mksquashfs_prog).is_file():
+        raise FileNotFoundError(f"Could not find {mksquashfs_params.path!r} in runfiles or $PATH")
     with tempfile.TemporaryDirectory(suffix="AppDir") as tmpdir_name:
         populate_appdir(appdir=Path(tmpdir_name), params=params)
-        cmd = [mksquashfs_params.path, tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params.args]
+        cmd = [mksquashfs_prog, tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params.args]
         try:
             subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
