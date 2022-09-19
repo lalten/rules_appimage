@@ -13,7 +13,9 @@ APPIMAGE = "tests/appimage_py"
 def test_file() -> None:
     cmd = ["file", "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
-    assert out.startswith("tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked")
+    assert out.startswith(
+        "tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped"
+    )
 
 
 def test_run() -> None:
