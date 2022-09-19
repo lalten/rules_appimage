@@ -150,13 +150,9 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
 
 def make_squashfs(params: AppDirParams, mksquashfs_params: MksquashfsParams, output_path: str) -> None:
     """Run mksquashfs to create the squashfs filesystem for the appimage."""
-    mksquashfs_prog = shutil.which(mksquashfs_params.path)
-    mksquashfs_prog = mksquashfs_prog or runfiles.Create().Rlocation(mksquashfs_params.path.removeprefix("../"))
-    if not Path(mksquashfs_prog).is_file():
-        raise FileNotFoundError(f"Could not find {mksquashfs_params.path!r} in runfiles or $PATH")
     with tempfile.TemporaryDirectory(suffix="AppDir") as tmpdir_name:
         populate_appdir(appdir=Path(tmpdir_name), params=params)
-        cmd = [mksquashfs_prog, tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params.args]
+        cmd = [mksquashfs_params.path, tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params.args]
         try:
             subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
@@ -169,6 +165,17 @@ def make_appimage(params: AppDirParams, mksquashfs_params: MksquashfsParams, out
     with output_path.open(mode="ab") as output_file, tempfile.NamedTemporaryFile(mode="w+b") as tmp_squashfs:
         make_squashfs(params, mksquashfs_params, tmp_squashfs.name)
         shutil.copyfileobj(tmp_squashfs, output_file)
+
+
+def _get_mksquashfs_path(path: str) -> str:
+    """Figure out what is the actual path to mksquashfs."""
+    if system_path := shutil.which(path):
+        return system_path
+    runfiles_path = path.replace("../", "", 1) if path.startswith("../") else path
+    runfiles_path = runfiles.Create().Rlocation(runfiles_path)
+    if Path(runfiles_path).is_file():
+        return runfiles_path
+    raise FileNotFoundError(f"Could not find {path!r} in runfiles or $PATH")
 
 
 @click.command()
@@ -228,7 +235,7 @@ def cli(
     Writes the built AppImage to OUTPUT.
     """
     appdir_params = AppDirParams(manifest, workdir, entrypoint, icon)
-    mksquashfs_params = MksquashfsParams(os.fspath(mksquashfs_path), mksquashfs_args)
+    mksquashfs_params = MksquashfsParams(_get_mksquashfs_path(os.fspath(mksquashfs_path)), mksquashfs_args)
     make_appimage(appdir_params, mksquashfs_params, output)
 
 
