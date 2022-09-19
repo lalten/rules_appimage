@@ -37,9 +37,9 @@ appimage(
     name = "appimage_py",
     binary = ":test_py",
     build_args = [
-        # Example: Compress the squashfs with gzip (this is usually the default).
+        # Example: Compress the squashfs with zstd (gzip is usually the default).
         "-comp",
-        "gzip",
+        "zstd",
     ],
 )
 

@@ -13,6 +13,7 @@ import click
 from rules_python.python.runfiles import runfiles
 
 APPIMAGE_RUNTIME = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimage_runtime"))
+MKSQUASHFS = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/mksquashfs"))
 
 
 class AppDirParams(NamedTuple):
@@ -148,34 +149,23 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
     shutil.copy(src=params.icon, dst=appdir / f"AppRun{params.icon.suffix or '.png'}", follow_symlinks=True)
 
 
-def make_squashfs(params: AppDirParams, mksquashfs_params: MksquashfsParams, output_path: str) -> None:
+def make_squashfs(params: AppDirParams, mksquashfs_params: Iterable[str], output_path: str) -> None:
     """Run mksquashfs to create the squashfs filesystem for the appimage."""
     with tempfile.TemporaryDirectory(suffix="AppDir") as tmpdir_name:
         populate_appdir(appdir=Path(tmpdir_name), params=params)
-        cmd = [mksquashfs_params.path, tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params.args]
+        cmd = [os.fspath(MKSQUASHFS), tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params]
         try:
             subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
             raise RuntimeError(f"Failed to run {' '.join(cmd)!r} (returned {exc.returncode}): {exc.stdout}") from exc
 
 
-def make_appimage(params: AppDirParams, mksquashfs_params: MksquashfsParams, output_path: Path) -> None:
+def make_appimage(params: AppDirParams, mksquashfs_params: Iterable[str], output_path: Path) -> None:
     """Make the AppImage by concatenating the AppImage runtime and the AppDir squashfs."""
     shutil.copy2(src=APPIMAGE_RUNTIME, dst=output_path)
     with output_path.open(mode="ab") as output_file, tempfile.NamedTemporaryFile(mode="w+b") as tmp_squashfs:
         make_squashfs(params, mksquashfs_params, tmp_squashfs.name)
         shutil.copyfileobj(tmp_squashfs, output_file)
-
-
-def _get_mksquashfs_path(path: str) -> str:
-    """Figure out what is the actual path to mksquashfs."""
-    if system_path := shutil.which(path):
-        return system_path
-    runfiles_path = path.replace("../", "", 1) if path.startswith("../") else path
-    runfiles_path = runfiles.Create().Rlocation(runfiles_path)
-    if Path(runfiles_path).is_file():
-        return runfiles_path
-    raise FileNotFoundError(f"Could not find {path!r} in runfiles or $PATH")
 
 
 @click.command()
@@ -204,13 +194,6 @@ def _get_mksquashfs_path(path: str) -> str:
     help="Icon to use in the AppImage, e.g. 'external/AppImageKit/resources/appimagetool.png'",
 )
 @click.option(
-    "--mksquashfs_path",
-    required=False,
-    default="mksquashfs",
-    show_default=True,
-    help="Path to mksquashfs program",
-)
-@click.option(
     "--mksquashfs_arg",
     "mksquashfs_args",
     required=False,
@@ -226,7 +209,6 @@ def cli(
     workdir: Path,
     entrypoint: Path,
     icon: Path,
-    mksquashfs_path: Path,
     mksquashfs_args: Tuple[str, ...],
     output: Path,
 ) -> None:
@@ -235,8 +217,7 @@ def cli(
     Writes the built AppImage to OUTPUT.
     """
     appdir_params = AppDirParams(manifest, workdir, entrypoint, icon)
-    mksquashfs_params = MksquashfsParams(_get_mksquashfs_path(os.fspath(mksquashfs_path)), mksquashfs_args)
-    make_appimage(appdir_params, mksquashfs_params, output)
+    make_appimage(appdir_params, mksquashfs_args, output)
 
 
 if __name__ == "__main__":

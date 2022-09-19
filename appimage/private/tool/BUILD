@@ -15,10 +15,26 @@ copy_file(
     is_executable = True,
 )
 
+copy_file(
+    name = "mksquashfs_copy",
+    src = select({
+        "@platforms//cpu:x86_64": "@mksquashfs_x86_64//file",
+        "@platforms//cpu:arm64": "@mksquashfs_aarch64//file",
+        "@platforms//cpu:armv7e-m": "@mksquashfs_armhf//file",
+        "@platforms//cpu:i386": "@mksquashfs_i686//file",
+    }),
+    out = "mksquashfs",
+    allow_symlink = True,
+    is_executable = True,
+)
+
 py_binary(
     name = "tool",
     srcs = ["tool.py"],
-    data = [":appimage_runtime"],
+    data = [
+        ":appimage_runtime",
+        ":mksquashfs",
+    ],
     python_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
