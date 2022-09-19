@@ -24,7 +24,7 @@ jobs:
           path: |
             ~/.cache/bazelisk
             ~/.cache/bazel
-          key: ${{ runner.os }}-bazel-cache
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-bazel-cache
 
       - name: Run tests
         run: bazel test --test_output=all //...
