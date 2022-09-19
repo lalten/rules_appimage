@@ -27,6 +27,4 @@ jobs:
           key: ${{ runner.os }}-py${{ matrix.python-version }}-bazel-cache
 
       - name: Run tests
-        run: bazel test --test_output=all //...
-        env:
-          NO_CLEANUP: 1
+        run: bazel test --test_env=NO_CLEANUP=1 --test_output=all //...
