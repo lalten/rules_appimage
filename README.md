@@ -56,12 +56,12 @@ There is also a `appimage_test` rule that takes the same arguments but runs the 
 ### Via Bazel
 You can `bazel run` AppImages directly:
 ```
-❯ bazel run -- //tests:appimage_py                       
+❯ bazel run -- //tests:appimage_py
 (...)
 Hello, world!
 ```
 ```
-❯ bazel run -- //tests:appimage_py --name TheAssassin       
+❯ bazel run -- //tests:appimage_py --name TheAssassin
 (...)
 Hello, TheAssassin!
 ```
@@ -70,15 +70,13 @@ Hello, TheAssassin!
 The resulting AppImage file is a portable standalone executable (which is kind of the point of the whole thing!)
 ```
 ❯ file bazel-bin/tests/appimage_py
-bazel-bin/tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=9fdbc145689e0fb79cb7291203431012ae8e1911, stripped
+bazel-bin/tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped
 
-❯ bazel-bin/tests/appimage_py --name GitHub    
+❯ bazel-bin/tests/appimage_py --name GitHub
 Hello, GitHub!
 ```
 ```
-❯ rsync bazel-bin/tests/appimage_py my-server:.     
-
-❯ ssh my-server ./appimage_py
+❯ rsync bazel-bin/tests/appimage_py my-server:. && ssh my-server ./appimage_py
 Hello, world!
 ```
 
@@ -88,27 +86,27 @@ They'll still work. Try `--appimage-help`.
 ```
 ❯ bazel run -- //tests:appimage_py --appimage-version
 (...)
-Version: 8bbf694
+AppImage runtime version: https://github.com/lalten/type2-runtime/releases/tag/build-2022-10-03-c5c7b07
 ```
 
 ## Troubleshooting
 
-### Missing libfuse
-rules_appimage builds `type-2 AppImages` via AppImageKit.
-By default, the packaged application will try to load libfuse.so.2 on startup.
-It does this to mount all the application files in a temporary directory, from which it will run.
-If libfuse2 is not available, you'll get an error like this:
+### Missing `fusermount`
+rules_appimage builds `type-2 AppImages` using a statically-linked appimage runtime.
+The only runtime dependency is either `fusermount` (from fuse2) or `fusermount3` (from fuse3).
+If neither is not available, you'll get an error like this:
 ```
-dlopen(): error loading libfuse.so.2
+fuse: failed to exec fusermount3: No such file or directory
 
-AppImages require FUSE to run. 
-You might still be able to extract the contents of this AppImage 
-if you run it with the --appimage-extract option. 
-See https://github.com/AppImage/AppImageKit/wiki/FUSE 
+Cannot mount AppImage, please check your FUSE setup.
+You might still be able to extract the contents of this AppImage
+if you run it with the --appimage-extract option.
+See https://github.com/AppImage/AppImageKit/wiki/FUSE
 for more information
+open dir error: No such file or directory
 ```
-In this case, you can:, which
- * Install [libfuse2](https://pkgs.org/search/?q=libfuse): ```sudo apt install libfuse2```
+In this case, you can:
+ * Install [libfuse3](https://pkgs.org/search/?q=libfuse3): ```sudo apt install libfuse3```
  * Run the application with `--appimage-extract-and-run` as the first command-line argument.
  * Set the `APPIMAGE_EXTRACT_AND_RUN` environment variable.
 
