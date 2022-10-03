@@ -3,14 +3,14 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 _SHAS = {
-    "appimage_runtime_aarch64": "d2624ce8cc2c64ef76ba986166ad67f07110cdbf85112ace4f91611bc634c96a",
-    "appimage_runtime_armhf": "c143d8981702b91cc693e5d31ddd91e8424fec5911fa2dda72082183b2523f47",
-    "appimage_runtime_i686": "5cbfd3c7e78d9ebb16b9620b28affcaa172f2166f1ef5fe7ef878699507bcd7f",
-    "appimage_runtime_x86_64": "4aa4ff1da357d4a46dea9bcf1ab15edfccb7b0fb36afdfe0688ce19495e6ed24",
+    "appimage_runtime_aarch64": "df1dcce6992a23cdf8728e88ed24f71b3c385f6384f3484ff66f45b9c97f00f2",
+    "appimage_runtime_armhf": "dc6a546bd38a2df4cc6b14b0f2bcf925b0452e8a70d05b6027a631d60d26039b",
+    "appimage_runtime_i686": "480017cfe6fa81785954c4ea39e4d06bc3b8fc287a55082ae781069c5d399116",
+    "appimage_runtime_x86_64": "b86ac7572bb0b3ead120b09430a9dbeadde2f76ae54c1e30659cb54992d60ec1",
     "mksquashfs_aarch64": "9cbe4cf6d6b83ac906cd4232192e532493285d2a499ebc31b6d7536957dcbf21",
     "mksquashfs_armhf": "36e95cc77948cb74b1496ddcda3540b7265d734a022854434693a2fcd3c5bd32",
-    "mksquashfs_i686": "ff9f701d500979cee3c118d5f46e26e239ce015a37621b500188059e41194ca3",
-    "mksquashfs_x86_64": "398f58d4217d4a942f1680ed8433ed2c9bb389782c81fe9cc4637872a1c66787",
+    "mksquashfs_i686": "55f8a7f915bf2b526148d7ed393787f683db59b69e0a4ec4e5d6345d999ee0e2",
+    "mksquashfs_x86_64": "64a10d2f0dbd0c49753d10fef1afe615d4936794a942f40792f4fa3016199d6c",
 }
 
 def rules_appimage_deps():
@@ -41,7 +41,7 @@ def rules_appimage_deps():
                 name = name,
                 executable = True,
                 sha256 = _SHAS[name],
-                urls = ["https://github.com/probonopd/static-tools/releases/download/continuous/runtime-fuse2-{}".format(arch)],
+                urls = ["https://github.com/lalten/type2-runtime/releases/download/build-2022-10-03-c5c7b07/runtime-{}".format(arch)],
             )
 
         name = "mksquashfs_" + arch
@@ -50,7 +50,7 @@ def rules_appimage_deps():
                 name = name,
                 executable = True,
                 sha256 = _SHAS[name],
-                urls = ["https://github.com/probonopd/static-tools/releases/download/continuous/mksquashfs-{}".format(arch)],
+                urls = ["https://github.com/lalten/static-tools/releases/download/build-2022-10-02-970eff7/mksquashfs-{}".format(arch)],
             )
 
     if "appimagetool.png" not in excludes:
