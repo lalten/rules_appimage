@@ -5,10 +5,13 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
 
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
+        bazel-version: ["4.x", "5.2.0", "latest"]
 
     steps:
       - uses: actions/checkout@v3
@@ -24,7 +27,6 @@ jobs:
           path: |
             ~/.cache/bazelisk
             ~/.cache/bazel
-          key: ${{ runner.os }}-py${{ matrix.python-version }}-bazel-cache
-
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache
       - name: Run tests
         run: bazel test --test_env=NO_CLEANUP=1 --test_output=all //...
