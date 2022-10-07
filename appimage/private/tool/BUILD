@@ -28,17 +28,22 @@ copy_file(
     is_executable = True,
 )
 
-py_binary(
-    name = "tool",
-    srcs = ["tool.py"],
+py_library(
+    name = "mkappimage",
+    srcs = ["mkappimage.py"],
     data = [
         ":appimage_runtime",
         ":mksquashfs",
     ],
+    visibility = ["//visibility:public"],
+    deps = ["@rules_python//python/runfiles"],
+)
+
+py_binary(
+    name = "tool",
+    srcs = ["cli.py"],
+    main = "cli.py",
     python_version = "PY3",
     visibility = ["//visibility:public"],
-    deps = [
-        "@rules_python//python/runfiles",
-        requirement("click"),
-    ],
+    deps = [":mkappimage"],
 )

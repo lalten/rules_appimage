@@ -1,4 +1,4 @@
-"""Tooling to prepare and build AppImages."""
+"""Library to prepare and build AppImages."""
 
 import json
 import os
@@ -9,7 +9,6 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Iterable, List, NamedTuple, Optional, Tuple
 
-import click
 from rules_python.python.runfiles import runfiles
 
 APPIMAGE_RUNTIME = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimage_runtime"))
@@ -166,59 +165,3 @@ def make_appimage(params: AppDirParams, mksquashfs_params: Iterable[str], output
     with output_path.open(mode="ab") as output_file, tempfile.NamedTemporaryFile(mode="w+b") as tmp_squashfs:
         make_squashfs(params, mksquashfs_params, tmp_squashfs.name)
         shutil.copyfileobj(tmp_squashfs, output_file)
-
-
-@click.command()
-@click.option(
-    "--manifest",
-    required=True,
-    type=click.Path(exists=True, path_type=Path),
-    help="Path to manifest json with file and link defintions, e.g. 'bazel-out/k8-fastbuild/bin/tests/appimage_py-manifest.json'",
-)
-@click.option(
-    "--workdir",
-    required=True,
-    type=click.Path(path_type=Path),
-    help="Path to working dir, e.g. 'AppDir/tests/test_py.runfiles/rules_appimage'",
-)
-@click.option(
-    "--entrypoint",
-    required=True,
-    type=click.Path(path_type=Path),
-    help="Path to entrypoint, e.g. 'AppDir/tests/test_py'",
-)
-@click.option(
-    "--icon",
-    required=True,
-    type=click.Path(exists=True, path_type=Path),
-    help="Icon to use in the AppImage, e.g. 'external/AppImageKit/resources/appimagetool.png'",
-)
-@click.option(
-    "--mksquashfs_arg",
-    "mksquashfs_args",
-    required=False,
-    multiple=True,
-    help="Extra arguments for mksquashfs, e.g. '-mem'. Can be used multiple times.",
-)
-@click.argument(
-    "output",
-    type=click.Path(path_type=Path),
-)
-def cli(
-    manifest: Path,
-    workdir: Path,
-    entrypoint: Path,
-    icon: Path,
-    mksquashfs_args: Tuple[str, ...],
-    output: Path,
-) -> None:
-    """Tool for rules_appimage.
-
-    Writes the built AppImage to OUTPUT.
-    """
-    appdir_params = AppDirParams(manifest, workdir, entrypoint, icon)
-    make_appimage(appdir_params, mksquashfs_args, output)
-
-
-if __name__ == "__main__":
-    cli()
