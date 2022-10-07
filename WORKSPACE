@@ -4,6 +4,9 @@ load("//:deps.bzl", "rules_appimage_deps")
 
 rules_appimage_deps()
 
-load("//:setup.bzl", "rules_appimage_setup")
+load("@rules_python//python:pip.bzl", "pip_install")
 
-rules_appimage_setup()
+pip_install(
+    name = "py_deps",
+    requirements = "@rules_appimage//:requirements.txt",
+)

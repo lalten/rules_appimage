@@ -32,10 +32,6 @@ http_archive(
 load("@rules_appimage//:deps.bzl", "rules_appimage_deps")
 
 rules_appimage_deps()
-
-load("@rules_appimage//:setup.bzl", "rules_appimage_setup")
-
-rules_appimage_setup()
 ```
 
 ### Usage
