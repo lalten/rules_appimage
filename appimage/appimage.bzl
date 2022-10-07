@@ -39,9 +39,7 @@ def _appimage_impl(ctx):
             files = depset([ctx.outputs.executable]),
             runfiles = ctx.runfiles(files = [ctx.outputs.executable]),
         ),
-        RunEnvironmentInfo(
-            environment = ctx.attr.env,
-        ),
+        testing.TestEnvironment(ctx.attr.env),
     ]
 
 _ATTRS = {
