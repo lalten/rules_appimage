@@ -24,7 +24,6 @@ py_binary(
         ":symlink_and_emptyfile",
     ],
     main = "test.py",
-    deps = [requirement("click")],
 )
 
 appimage_test(

@@ -1,8 +1,7 @@
+import argparse
 import os
 import subprocess
 from pathlib import Path
-
-import click
 
 
 def test_datadep() -> None:
@@ -48,17 +47,20 @@ def test_symlinks() -> None:
     assert os.readlink(dir_link) == "dir"
     assert dir_link.resolve().is_dir()
 
+
 def test_runfiles_symlinks() -> None:
     runfiles_symlink = Path("path/to/the/runfiles_symlink")
     assert runfiles_symlink.is_symlink()
     assert os.readlink(runfiles_symlink) == "../../../tests/data.txt"
     assert runfiles_symlink.resolve().is_file()
 
-@click.command()
-@click.option("--name", default="world")
-def greeter(name: str) -> None:
+
+def greeter() -> None:
     """A simple greeter."""
-    click.echo(f"Hello, {name}!")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", default="world")
+    name = parser.parse_args().name
+    print(f"Hello, {name}!")
 
 
 if __name__ == "__main__":
