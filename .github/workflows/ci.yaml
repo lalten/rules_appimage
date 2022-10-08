@@ -3,11 +3,10 @@ name: CI
 on: [push, workflow_dispatch]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
-
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
@@ -15,18 +14,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-
-      # Caches and restores the bazelisk download directory, the bazel build directory.
-      - name: Cache bazel
-        uses: actions/cache@v2.1.5
+      - uses: actions/cache@v2.1.5
         with:
           path: |
             ~/.cache/bazelisk
             ~/.cache/bazel
           key: ${{ runner.os }}-py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache
+
       - name: Run tests
         run: bazel test --test_env=NO_CLEANUP=1 --test_output=all //...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: github/super-linter/slim@v4
+        env:
+          FILTER_REGEX_EXCLUDE: .mypy_cache/.*
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
