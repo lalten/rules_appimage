@@ -4,8 +4,9 @@ import argparse
 import sys
 from pathlib import Path
 
-import appimage.private.tool.cli as cli
 import pytest
+
+import appimage.private.tool.cli as cli
 
 
 def test_cli() -> None:
