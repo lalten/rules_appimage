@@ -31,8 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - run: cat .github/super-linter.env >> "$GITHUB_ENV"
       - uses: github/super-linter/slim@v4
         env:
-          FILTER_REGEX_EXCLUDE: .mypy_cache/.*
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
