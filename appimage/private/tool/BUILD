@@ -1,6 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
-load("@py_deps//:requirements.bzl", "requirement")
 
 copy_file(
     name = "appimage_runtime_copy",
