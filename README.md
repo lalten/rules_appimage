@@ -150,3 +150,19 @@ This will extract the bundled squashfs blob into a `squashfs-root` dir in the cu
 You can look at those files and see exactly what's going on.
 In fact, you can even run `squashfs-root/AppRun` and it will run exactly the same as with the packaged appimage.
 This can be very handy when rebuilding the Bazel target is not the best option but you need to modify a file inside.
+
+## Contributing
+
+Issue reports and pull requests are welcome.
+
+Please test your changes:
+
+```sh
+bazel test //...
+```
+
+And run the [linters](https://github.com/github/super-linter):
+
+```sh
+docker run --rm -e RUN_LOCAL=true --env-file ".github/super-linter.env" -v `pwd`:/tmp/lint github/super-linter
+```
