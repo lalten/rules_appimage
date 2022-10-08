@@ -2,3 +2,6 @@
 line-length = 120
 
 [tool.pytest.ini_options]
+
+[tool.isort]
+line_length = 120
