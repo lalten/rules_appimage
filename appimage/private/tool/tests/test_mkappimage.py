@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Iterable
 from unittest import mock
 
-import appimage.private.tool.mkappimage as mkappimage
 import pytest
+
+import appimage.private.tool.mkappimage as mkappimage
 
 
 def test_deps() -> None:
