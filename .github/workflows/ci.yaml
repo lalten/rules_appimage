@@ -17,12 +17,11 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: actions/cache@v2.1.5
+      - uses: actions/cache@v3
         with:
-          path: |
-            ~/.cache/bazelisk
-            ~/.cache/bazel
-          key: ${{ runner.os }}-py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache
+          path: "~/.cache/bazelisk\n~/.cache/bazel\n"
+          key: py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
+          restore-keys: py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache-
 
       - name: Run tests
         run: bazel test --test_env=NO_CLEANUP=1 --test_output=all //...
@@ -31,8 +30,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: cat .github/super-linter.env >> "$GITHUB_ENV"
-      - uses: github/super-linter/slim@v4
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/cache@v3
+        with:
+          path: "~/.cache\n~/.mypy_cache\n~/go\n"
+          key: lint-${{ github.run_id }}
+          restore-keys: lint-
+
+      - run: go install github.com/bazelbuild/buildtools/buildifier@latest
+      - run: ~/go/bin/buildifier --lint=warn --mode=check -v -r .
+
+      - uses: actions/setup-node@v3
+      - uses: xt0rted/markdownlint-problem-matcher@v1
+      - run: npm install -g markdownlint-cli
+      - run: markdownlint .
+
+      - run: pip install -U yamllint
+      - run: yamllint --strict .
+
+      - run: mkdir -p .mypy_cache
+      - run: bazel build @rules_python//python/runfiles
+      - uses: lalten/python-lint-annotate@master
