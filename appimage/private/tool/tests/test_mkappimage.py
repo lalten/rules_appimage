@@ -9,10 +9,11 @@ from unittest import mock
 
 import pytest
 
-import appimage.private.tool.mkappimage as mkappimage
+from appimage.private.tool import mkappimage
 
 
 def test_deps() -> None:
+    """Test that the runtime and mksquashfs can be executed."""
     cmd = [os.fspath(mkappimage.APPIMAGE_RUNTIME), "--appimage-version"]
     output = subprocess.run(cmd, check=True, text=True, stderr=subprocess.PIPE).stderr
     assert output.startswith("AppImage runtime version")
@@ -22,13 +23,16 @@ def test_deps() -> None:
     assert output.startswith("mksquashfs version")
 
 
-def fake_make_squashfs(params: mkappimage.AppDirParams, mksquashfs_params: Iterable[str], output_path: str) -> None:
+def fake_make_squashfs(_params: mkappimage.AppDirParams, _mksquashfs_params: Iterable[str], output_path: str) -> None:
+    """Fake the make_squashfs function."""
     Path(output_path).write_bytes(b"fake squashfs")
 
 
 @mock.patch("appimage.private.tool.mkappimage.make_squashfs", fake_make_squashfs)
 def test_make_appimage() -> None:
-    mkappimage.make_appimage(mkappimage.AppDirParams("", "", "", ""), [], Path("fake.appimage"))
+    """Test that the AppImage is created by concatenating the runtime and the squashfs."""
+    params = mkappimage.AppDirParams(Path(), Path(), Path(), Path())
+    mkappimage.make_appimage(params, [], Path("fake.appimage"))
     appimage = Path("fake.appimage").read_bytes()
     assert appimage.startswith(mkappimage.APPIMAGE_RUNTIME.read_bytes())
     assert appimage.endswith(b"fake squashfs")
