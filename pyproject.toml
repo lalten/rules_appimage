@@ -1,7 +1,22 @@
 [tool.black]
 line-length = 120
 
-[tool.pytest.ini_options]
-
 [tool.isort]
+extend_skip_glob = ["bazel-*"]
 line_length = 120
+profile = "black"
+
+[tool.mypy]
+allow_untyped_calls = true
+exclude = "bazel-.*"
+explicit_package_bases = true
+follow_imports = "silent"
+ignore_missing_imports = false
+mypy_path = ["bazel-rules_appimage/external"]
+namespace_packages = true
+strict = true
+
+[tool.pylint]
+init-hook = "import sys; sys.path += ['.', 'bazel-rules_appimage/external']"
+max-line-length = 120
+recursive = true

@@ -161,8 +161,18 @@ Please test your changes:
 bazel test //...
 ```
 
-And run the [linters](https://github.com/github/super-linter):
+And run the [linters](.github/workflows/ci.yaml):
 
 ```sh
-docker run --rm -e RUN_LOCAL=true --env-file ".github/super-linter.env" -v `pwd`:/tmp/lint github/super-linter
+buildifier lint=warn -r .
+markdownlint .
+yamllint --strict .
+pylint .
+pycodestyle .
+flake8 .
+black .
+mypy --install-types .
+isort .
+vulture .
+pydocstyle .
 ```
