@@ -44,11 +44,11 @@ def _appimage_impl(ctx):
 
 _ATTRS = {
     "binary": attr.label(executable = True, cfg = "target"),
-    "icon": attr.label(default = "@appimagetool.png//file", allow_single_file = True),
     "build_args": attr.string_list(),
     "build_env": attr.string_dict(),
-    "_tool": attr.label(default = "//appimage/private/tool", executable = True, cfg = "exec"),
     "env": attr.string_dict(doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests"),
+    "icon": attr.label(default = "@appimagetool.png//file", allow_single_file = True),
+    "_tool": attr.label(default = "//appimage/private/tool", executable = True, cfg = "exec"),
 }
 
 appimage = rule(

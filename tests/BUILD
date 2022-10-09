@@ -1,6 +1,6 @@
-load("//appimage:appimage.bzl", "appimage", "appimage_test")
-load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("//appimage:appimage.bzl", "appimage", "appimage_test")
 load(":testrules.bzl", "rules_appimage_test_rule")
 
 sh_binary(
