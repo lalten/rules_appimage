@@ -164,7 +164,7 @@ bazel test //...
 And run the [linters](.github/workflows/ci.yaml):
 
 ```sh
-buildifier lint=warn -r .
+buildifier -lint=fix -warnings all -r .
 markdownlint .
 yamllint --strict .
 pylint .
