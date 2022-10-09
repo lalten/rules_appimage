@@ -24,14 +24,7 @@ class AppDirParams(NamedTuple):
     icon: Path
 
 
-class MksquashfsParams(NamedTuple):
-    """Parameters for mksquashfs."""
-
-    path: str
-    args: Iterable[str]
-
-
-def relative_path(target: Path, origin: Path):
+def relative_path(target: Path, origin: Path) -> Path:
     """Return path of target relative to origin."""
     try:
         return target.resolve().relative_to(origin.resolve())

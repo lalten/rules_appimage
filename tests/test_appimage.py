@@ -11,6 +11,7 @@ APPIMAGE = "tests/appimage_py"
 
 
 def test_file() -> None:
+    """Test that the appimage has the expected magic."""
     cmd = ["file", "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
     assert out.startswith(
@@ -19,12 +20,14 @@ def test_file() -> None:
 
 
 def test_run() -> None:
+    """Test that the appimage can be run."""
     cmd = [APPIMAGE, "--appimage-extract-and-run", "--name", "Simon Peter"]
     output = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
     assert output == "Hello, Simon Peter!\n"
 
 
 def test_symlinks() -> None:
+    """Test that the appimage has the expected symlinks and none are broken."""
     cmd = [APPIMAGE, "--appimage-extract"]
     try:
         subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)

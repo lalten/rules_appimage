@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-import appimage.private.tool.cli as cli
+from appimage.private.tool import cli
 
 
 def test_cli() -> None:
