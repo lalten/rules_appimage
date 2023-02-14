@@ -22,13 +22,13 @@ Add this to your `WORKSPACE`:
 ```py
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_APPIMAGE_VER = "main"
+RULES_APPIMAGE_VER = "1.0.0"
 
 http_archive(
     name = "rules_appimage",
-    # sha = "",
-    urls = ["https://github.com/lalten/rules_appimage/archive/{}.tar.gz".format(RULES_APPIMAGE_VER)],
+    sha256 = "3a8abc9093eb920f045de1d623bf10f8950c3cf7fb9e13ef35c5d06f634ccb37",
     strip_prefix = "rules_appimage-{}".format(RULES_APPIMAGE_VER),
+    urls = ["https://github.com/lalten/rules_appimage/archive/refs/tags/v{}.tar.gz".format(RULES_APPIMAGE_VER)],
 )
 
 load("@rules_appimage//:deps.bzl", "rules_appimage_deps")
