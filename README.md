@@ -1,6 +1,6 @@
 # rules_appimage
 
-[![CI status](https://img.shields.io/github/workflow/status/lalten/rules_appimage/CI)](https://github.com/lalten/rules_appimage/actions)
+[![CI status](https://img.shields.io/github/actions/workflow/status/lalten/rules_appimage/ci.yaml?branch=main)](https://github.com/lalten/rules_appimage/actions)
 [![MIT License](https://img.shields.io/github/license/lalten/rules_appimage)](https://github.com/lalten/rules_appimage/blob/main/LICENSE)
 [![Awesome](https://awesome.re/badge.svg)](https://awesomebazel.com/)
 
