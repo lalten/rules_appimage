@@ -9,8 +9,8 @@ jobs:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
-        bazel-version: ["4.x", "5.2.0", "latest"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        bazel-version: ["5.x", "6.x", "latest"]
 
     steps:
       - uses: actions/checkout@v3
@@ -24,7 +24,7 @@ jobs:
           restore-keys: py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache-
 
       - name: Run tests
-        run: bazel test --test_env=NO_CLEANUP=1 --test_output=all //...
+        run: bazel test --test_env=NO_CLEANUP=1 //...
 
   lint:
     runs-on: ubuntu-latest
@@ -50,3 +50,5 @@ jobs:
       - run: mkdir -p .mypy_cache
       - run: bazel build @rules_python//python/runfiles
       - uses: lalten/python-lint-annotate@master
+        with:
+          python-version: 3.11
