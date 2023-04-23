@@ -45,7 +45,7 @@ jobs:
       - run: ~/go/bin/buildifier --lint=warn --mode=check -warnings all -v -r .
 
       - uses: actions/setup-node@v3
-      - uses: xt0rted/markdownlint-problem-matcher@v1
+      - uses: xt0rted/markdownlint-problem-matcher@v2
       - run: npm install -g markdownlint-cli
       - run: markdownlint .
 
