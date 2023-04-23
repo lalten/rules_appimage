@@ -8,20 +8,25 @@ jobs:
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         bazel-version: ["5.x", "6.x", "latest"]
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
       - uses: actions/cache@v3
         with:
           path: "~/.cache/bazelisk\n~/.cache/bazel\n"
           key: py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
           restore-keys: py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache-
+      - name: Set things up for the Python version to be used
+        run: |
+          TO_REPLACE='python_version = "3.11"'
+          REPLACE_WITH='python_version = "${{ matrix.python-version }}"'
+          grep -q "${TO_REPLACE}" WORKSPACE
+          sed --in-place "s/${TO_REPLACE}/${REPLACE_WITH}/" WORKSPACE
+          bazel run //:requirements.update
 
       - name: Run tests
         run: bazel test --test_env=NO_CLEANUP=1 //...
