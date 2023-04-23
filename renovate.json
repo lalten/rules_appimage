@@ -2,5 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
-  ]
+  ],
+  "pip-compile": {
+    "fileMatch": [
+      "(^|/)requirements\\.in$"
+    ],
+    "lockFileMaintenance": {
+      "enabled": true,
+      "branchTopic": "pip-compile-refresh",
+      "commitMessageAction": "Refresh pip-compile outputs"
+    }
+  }
 }
