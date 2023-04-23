@@ -17,18 +17,18 @@ In fact, any *lang*_binary should be compatible.
 
 ### Installation
 
-Add this to your `WORKSPACE`:
+See the [latest release notes](https://github.com/lalten/rules_appimage/releases/latest) for a snippet to add to your `WORKSPACE`, or use the following:
 
 ```py
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_APPIMAGE_VER = "1.0.0"
+RULES_APPIMAGE_VER = "1.0.1"
 
 http_archive(
     name = "rules_appimage",
-    sha256 = "3a8abc9093eb920f045de1d623bf10f8950c3cf7fb9e13ef35c5d06f634ccb37",
+    # sha256 = "",  # FIXME: Bazel will print the proper value to add here during the first build.
     strip_prefix = "rules_appimage-{}".format(RULES_APPIMAGE_VER),
-    urls = ["https://github.com/lalten/rules_appimage/archive/refs/tags/v{}.tar.gz".format(RULES_APPIMAGE_VER)],
+    url = "https://github.com/lalten/rules_appimage/archive/refs/tags/v{}.tar.gz".format(RULES_APPIMAGE_VER),
 )
 
 load("@rules_appimage//:deps.bzl", "rules_appimage_deps")
