@@ -1,44 +1,45 @@
 """Test appimages as data deps."""
 
-import shutil
 import subprocess
 import sys
 from pathlib import Path
+import os
 
 import pytest
 
-APPIMAGE = "tests/appimage_py"
+APPIMAGE = str(Path.cwd() / "tests/appimage_py")
+_TMPDIR = os.environ.get("TEST_TMPDIR", "")
+assert _TMPDIR
+_ENV = os.environ.copy()
+_ENV.update({"TMPDIR": _TMPDIR})
 
 
 def test_file() -> None:
     """Test that the appimage has the expected magic."""
     cmd = ["file", "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
-    assert out.startswith(
-        "tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped"
-    )
+    expected = "tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped"
+    assert expected in out
 
 
 def test_run() -> None:
     """Test that the appimage can be run."""
     cmd = [APPIMAGE, "--appimage-extract-and-run", "--name", "Simon Peter"]
-    output = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
+    output = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, cwd=_TMPDIR, env=_ENV).stdout
     assert output == "Hello, Simon Peter!\n"
 
 
 def test_symlinks() -> None:
     """Test that the appimage has the expected symlinks and none are broken."""
     cmd = [APPIMAGE, "--appimage-extract"]
-    try:
-        subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
-        symlinks_present = False
-        for file in Path("squashfs-root").glob("**/*"):
-            if file.is_symlink() and file.name != "invalid_link":
-                assert file.resolve().exists(), f"{file} resolves to {file.resolve()}, which does not exist!"
-                symlinks_present = True
-        assert symlinks_present
-    finally:
-        shutil.rmtree("squashfs-root")
+    subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, cwd=_TMPDIR, env=_ENV)
+    extracted_path = Path(_TMPDIR) / "squashfs-root"
+    symlinks_present = False
+    for file in extracted_path.glob("**/*"):
+        if file.is_symlink() and file.name != "invalid_link":
+            assert file.resolve().exists(), f"{file} resolves to {file.resolve()}, which does not exist!"
+            symlinks_present = True
+    assert symlinks_present
 
 
 if __name__ == "__main__":

@@ -5,6 +5,11 @@ import os
 import subprocess
 from pathlib import Path
 
+_TMPDIR = os.environ.get("TEST_TMPDIR", "")
+assert _TMPDIR
+_ENV = os.environ.copy()
+_ENV.update({"TMPDIR": _TMPDIR})
+
 
 def test_datadep() -> None:
     """Test that the data dependency is bundled."""
@@ -15,10 +20,13 @@ def test_datadep() -> None:
 
 def test_external_bin() -> None:
     """Test that the external binary is bundled."""
-    external_bin_appimage = Path("tests/external_bin.appimage")
+    external_bin_appimage = Path.cwd() / "tests/external_bin.appimage"
     assert external_bin_appimage.is_file()
-    cmd = [os.fspath(external_bin_appimage), "--appimage-extract-and-run", "-h"]
-    proc = subprocess.run(cmd, text=True, check=False, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    assert os.access(external_bin_appimage, os.X_OK)
+    cmd = [os.fspath(external_bin_appimage), "--appimage-extract-and-run", "--help"]
+    proc = subprocess.run(
+        cmd, text=True, check=False, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, cwd=_TMPDIR, env=_ENV
+    )
     assert "Builds a python wheel" in proc.stdout, proc.stdout
 
 

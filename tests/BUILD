@@ -10,6 +10,7 @@ sh_binary(
 
 appimage_test(
     name = "appimage_test_sh",
+    size = "small",
     args = ["--appimage-extract-and-run"],  # One way to run if no libfuse2 is available
     binary = ":test_sh",
 )
@@ -28,6 +29,7 @@ py_binary(
 
 appimage_test(
     name = "appimage_test_py",
+    size = "small",
     binary = ":test_py",
     env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
 )
@@ -44,6 +46,7 @@ appimage(
 
 py_test(
     name = "test_appimage",
+    size = "small",
     srcs = ["test_appimage.py"],
     data = [":appimage_py"],
     deps = [requirement("pytest")],
