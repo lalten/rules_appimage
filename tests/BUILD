@@ -15,6 +15,18 @@ appimage_test(
     binary = ":test_sh",
 )
 
+sh_binary(
+    name = "test_mount-is-readonly",
+    srcs = ["test_mount-is-readonly.sh"],
+)
+
+appimage_test(
+    name = "test_mount-is-readonly.appimage",
+    size = "small",
+    binary = ":test_mount-is-readonly",
+    tags = ["requires-fakeroot"],  # This helps tests failing with `fusermount3: mount failed: Operation not permitted`
+)
+
 py_binary(
     name = "test_py",
     srcs = ["test.py"],
