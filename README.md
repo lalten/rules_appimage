@@ -100,6 +100,15 @@ AppImage runtime version: https://github.com/lalten/type2-runtime/releases/tag/b
 
 ## Troubleshooting
 
+### `$PWD` is a `Read-only file system`
+
+When the AppImage is run, it will mount contained the SquashFS image via FUSE as read-only file system.
+
+If this causes problems, you can:
+
+* Write to `$BUILD_WORKING_DIRECTORY` instead, which is set by Bazel when running `bazel run`, and set by `rules_appimage` when running as pure AppImage.
+* Set the `APPIMAGE_EXTRACT_AND_RUN` env var or pass the `--appimage-extract-and-run` CLI arg to extract the AppImage into a temporary directory and run it from there.
+
 ### Missing `fusermount`
 
 rules_appimage builds `type-2 AppImages` using a statically-linked appimage runtime.
