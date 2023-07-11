@@ -118,10 +118,13 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
                 # If running as AppImage outside Bazel, conveniently set BUILD_WORKING_DIRECTORY, like `bazel run` would
                 # `$OWD` ("Original Working Directory") is set by the AppImage runtime in
                 # https://github.com/lalten/type2-runtime/blob/84f7a00/src/runtime/runtime.c#L1757
-                # Note that we can not set BUILD_WORKSPACE_DIRECTORY as it's not known if the AppImage is deployed
+                # Note that we can not set BUILD_WORKSPACE_DIRECTORY as it's not known when the AppImage is deployed
                 '[ "${BUILD_WORKING_DIRECTORY+1}" ] || export BUILD_WORKING_DIRECTORY="$OWD"',
+                # Explicitly set RUNFILES_DIR to the runfiles dir of the binary instead of the appimage rule itself
+                f'workdir="$(dirname $0)/{params.workdir}"',
+                'export RUNFILES_DIR="$(dirname "${workdir}")"',
                 # Run under runfiles
-                f'cd "$(dirname $0)/{params.workdir}"',
+                'cd "${workdir}"',
                 # Launch the actual binary
                 f'exec "./{params.entrypoint}" "$@"',
             ]
