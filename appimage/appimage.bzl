@@ -33,13 +33,17 @@ def _appimage_impl(ctx):
         tools = tools,
     )
 
+    env = dict(ctx.attr.env)
+    if RunEnvironmentInfo in ctx.attr.binary:
+        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
+
     return [
         DefaultInfo(
             executable = ctx.outputs.executable,
             files = depset([ctx.outputs.executable]),
             runfiles = ctx.runfiles(files = [ctx.outputs.executable]),
         ),
-        testing.TestEnvironment(ctx.attr.env),
+        RunEnvironmentInfo(env),
     ]
 
 _ATTRS = {

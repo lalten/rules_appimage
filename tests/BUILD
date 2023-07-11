@@ -27,6 +27,23 @@ appimage_test(
     tags = ["requires-fakeroot"],  # This helps tests failing with `fusermount3: mount failed: Operation not permitted`
 )
 
+cc_binary(
+    name = "test_cc",
+    srcs = ["test.cc"],
+    env = {
+        "MY_BINARY_ENV": "not lost",
+        "MY_APPIMAGE_ENV": "original",
+    },
+)
+
+appimage_test(
+    name = "appimage_test_cc",
+    size = "small",
+    binary = ":test_cc",
+    env = {"MY_APPIMAGE_ENV": "overwritten"},  # environment variables are propagated from the binary target env attr
+    tags = ["requires-fakeroot"],
+)
+
 py_binary(
     name = "test_py",
     srcs = ["test.py"],
@@ -36,6 +53,10 @@ py_binary(
         ":external_bin.appimage",
         ":symlink_and_emptyfile",
     ],
+    env = {
+        "MY_BINARY_ENV": "not lost",
+        "MY_APPIMAGE_ENV": "original",
+    },
     main = "test.py",
 )
 
@@ -43,7 +64,10 @@ appimage_test(
     name = "appimage_test_py",
     size = "small",
     binary = ":test_py",
-    env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
+    env = {
+        "APPIMAGE_EXTRACT_AND_RUN": "1",  # Another way to run if no libfuse2 is available
+        "MY_APPIMAGE_ENV": "overwritten",
+    },
 )
 
 appimage(
