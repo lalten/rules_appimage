@@ -44,6 +44,13 @@ appimage_test(
     tags = ["requires-fakeroot"],
 )
 
+sh_test(
+    name = "appimage_test_cc_with_sh_test",
+    size = "small",
+    srcs = ["appimage_test_cc_with_sh_test.sh"],
+    data = [":appimage_test_cc"],
+)
+
 py_binary(
     name = "test_py",
     srcs = ["test.py"],
