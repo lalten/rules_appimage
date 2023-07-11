@@ -11,11 +11,13 @@ def _appimage_impl(ctx):
     runfile_info = collect_runfiles_info(ctx)
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-manifest.json")
     ctx.actions.write(manifest_file, json.encode_indent(runfile_info.manifest))
-    inputs = depset(direct = [ctx.file.icon, manifest_file] + runfile_info.files)
+    env_file = ctx.actions.declare_file(ctx.attr.name + "-env.sh")
+    inputs = depset(direct = [ctx.file.icon, manifest_file, env_file] + runfile_info.files)
 
     # TODO: Use Skylib's shell.quote?
     args = [
         "--manifest={}".format(manifest_file.path),
+        "--envfile={}".format(env_file.path),
         "--workdir={}".format(runfile_info.workdir),
         "--entrypoint={}".format(runfile_info.entrypoint),
         "--icon={}".format(ctx.file.icon.path),
@@ -23,6 +25,19 @@ def _appimage_impl(ctx):
     args.extend(["--mksquashfs_arg=" + arg for arg in ctx.attr.build_args])
     args.append(ctx.outputs.executable.path)
 
+    env = {}
+    if RunEnvironmentInfo in ctx.attr.binary:
+        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
+    env.update(ctx.attr.env)
+
+    # Export the current environment to a file so that it can be re-sourced in AppRun
+    ctx.actions.run_shell(
+        outputs = [env_file],
+        env = env,
+        command = "export -p > " + env_file.path,
+    )
+
+    # Run our tool to create the AppImage
     ctx.actions.run(
         mnemonic = "AppImage",
         inputs = inputs,
@@ -32,11 +47,6 @@ def _appimage_impl(ctx):
         outputs = [ctx.outputs.executable],
         tools = tools,
     )
-
-    env = {}
-    if RunEnvironmentInfo in ctx.attr.binary:
-        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
-    env.update(ctx.attr.env)
 
     return [
         DefaultInfo(

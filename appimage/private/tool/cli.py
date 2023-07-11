@@ -15,7 +15,13 @@ def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--manifest",
         required=True,
         type=Path,
-        help="Path to manifest json with file and link defintions, e.g. 'bazel-bin/tests/appimage_py-manifest.json'",
+        help="Path to manifest json with file and link definitions, e.g. 'bazel-bin/tests/appimage_py-manifest.json'",
+    )
+    parser.add_argument(
+        "--envfile",
+        required=True,
+        type=Path,
+        help="Path to sourcable envfile with runtime environment definition, e.g. 'bazel-bin/tests/appimage_py-env.sh'",
     )
     parser.add_argument(
         "--workdir",
@@ -45,7 +51,9 @@ def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def cli(args: Optional[Sequence[str]] = None) -> None:
     """CLI entrypoint for mkappimage."""
     parsed_args = parse_args(args)
-    appdir_params = AppDirParams(parsed_args.manifest, parsed_args.workdir, parsed_args.entrypoint, parsed_args.icon)
+    appdir_params = AppDirParams(
+        parsed_args.manifest, parsed_args.envfile, parsed_args.workdir, parsed_args.entrypoint, parsed_args.icon
+    )
     make_appimage(appdir_params, parsed_args.mksquashfs_arg or [], parsed_args.output)
 
 

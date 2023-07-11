@@ -31,7 +31,7 @@ def fake_make_squashfs(_params: mkappimage.AppDirParams, _mksquashfs_params: Ite
 @mock.patch("appimage.private.tool.mkappimage.make_squashfs", fake_make_squashfs)
 def test_make_appimage() -> None:
     """Test that the AppImage is created by concatenating the runtime and the squashfs."""
-    params = mkappimage.AppDirParams(Path(), Path(), Path(), Path())
+    params = mkappimage.AppDirParams(Path(), Path(), Path(), Path(), Path())
     mkappimage.make_appimage(params, [], Path("fake.appimage"))
     appimage = Path("fake.appimage").read_bytes()
     assert appimage.startswith(mkappimage.APPIMAGE_RUNTIME.read_bytes())
