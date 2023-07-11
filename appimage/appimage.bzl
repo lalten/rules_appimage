@@ -35,7 +35,13 @@ def _appimage_impl(ctx):
     ctx.actions.run_shell(
         outputs = [env_file],
         env = env,
-        command = "export -p > " + env_file.path,
+        command = "".join([
+            "export -p",
+            # Some shells like to use `declare -x` instead of `export`. However there is no guarantee that `declare` is
+            # available at runtime. So let's use `export` instead.
+            " | sed 's/^declare -x/export/'",
+            " > " + env_file.path,
+        ]),
     )
 
     # Run our tool to create the AppImage
