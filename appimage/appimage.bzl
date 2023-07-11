@@ -25,6 +25,7 @@ def _appimage_impl(ctx):
     args.extend(["--mksquashfs_arg=" + arg for arg in ctx.attr.build_args])
     args.append(ctx.outputs.executable.path)
 
+    # Take the `binary` env and add the appimage target's env on top of it
     env = {}
     if RunEnvironmentInfo in ctx.attr.binary:
         env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
