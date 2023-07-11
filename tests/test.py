@@ -69,6 +69,14 @@ def test_runfiles_symlinks() -> None:
     assert runfiles_symlink.resolve().is_file()
 
 
+def test_binary_env() -> None:
+    """Test that env attr on the binary target is handled."""
+    # Unfortunately rules_python does not seem to set the RunEnvironmentInfo provider.
+    # See https://github.com/bazelbuild/rules_python/issues/901
+    assert "MY_BINARY_ENV" not in os.environ
+    # assert os.environ["MY_BINARY_ENV"] == "not lost"
+
+
 def greeter() -> None:
     """Greet the user."""
     parser = argparse.ArgumentParser()
@@ -82,4 +90,5 @@ if __name__ == "__main__":
     test_external_bin()
     test_symlinks()
     test_runfiles_symlinks()
+    test_binary_env()
     greeter()
