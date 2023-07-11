@@ -1,8 +1,5 @@
 #!/bin/bash
 
-set -euxo pipefail
-env | sort
-
 # --- begin runfiles.bash initialization v3 ---
 # Copy-pasted from the Bazel Bash runfiles library v3.
 set -uo pipefail
