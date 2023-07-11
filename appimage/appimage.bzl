@@ -33,9 +33,10 @@ def _appimage_impl(ctx):
         tools = tools,
     )
 
-    env = dict(ctx.attr.env)
+    env = {}
     if RunEnvironmentInfo in ctx.attr.binary:
         env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
+    env.update(ctx.attr.env)
 
     return [
         DefaultInfo(

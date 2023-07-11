@@ -16,8 +16,13 @@ int main(int argc, char** argv, char** envp) {
       have_appimage_env = true;
     }
   }
-  if (have_binary_env && have_appimage_env) {
-    return EXIT_SUCCESS;
+  if (!have_binary_env) {
+    std::cerr << "MY_BINARY_ENV not found or has wrong value" << std::endl;
+    return EXIT_FAILURE;
   }
-  return EXIT_FAILURE;
+  if (!have_appimage_env) {
+    std::cerr << "MY_APPIMAGE_ENV not found or has wrong value" << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }
