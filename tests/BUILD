@@ -77,3 +77,18 @@ rules_appimage_test_rule(
     name = "symlink_and_emptyfile",
     symlink = "data.txt",
 )
+
+sh_test(
+    name = "runfiles_test_sh",
+    size = "small",
+    srcs = ["runfiles_test.sh"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+appimage_test(
+    name = "runfiles_test_sh.appimage",
+    size = "small",
+    binary = ":runfiles_test_sh",
+    env = {"RUNFILES_LIB_DEBUG": "1"},
+    tags = ["requires-fakeroot"],
+)
