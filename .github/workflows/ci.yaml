@@ -28,6 +28,9 @@ jobs:
           sed --in-place "s/${TO_REPLACE}/${REPLACE_WITH}/" WORKSPACE
           bazel run //:requirements.update
 
+      - run: sed -i '/remove if Bazel version < 6/d' tests/test.cc
+        if: ${{ startsWith(matrix.bazel-version, '5') }}
+
       - name: Run tests
         run: bazel test --test_env=NO_CLEANUP=1 //...
 

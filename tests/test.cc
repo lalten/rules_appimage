@@ -18,7 +18,7 @@ int main(int argc, char** argv, char** envp) {
   }
   if (!have_binary_env) {
     std::cerr << "MY_BINARY_ENV not found or has wrong value" << std::endl;
-    return EXIT_FAILURE;
+    return EXIT_FAILURE;  // remove if Bazel version < 6
   }
   if (!have_appimage_env) {
     std::cerr << "MY_APPIMAGE_ENV not found or has wrong value" << std::endl;
