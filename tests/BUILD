@@ -60,10 +60,7 @@ py_binary(
         ":external_bin.appimage",
         ":symlink_and_emptyfile",
     ],
-    env = {
-        "MY_BINARY_ENV": "not lost",
-        "MY_APPIMAGE_ENV": "original",
-    },
+    env = {"MY_BINARY_ENV": "not propagated by rules_python :("},
     main = "test.py",
 )
 
@@ -71,10 +68,7 @@ appimage_test(
     name = "appimage_test_py",
     size = "small",
     binary = ":test_py",
-    env = {
-        "APPIMAGE_EXTRACT_AND_RUN": "1",  # Another way to run if no libfuse2 is available
-        "MY_APPIMAGE_ENV": "overwritten",
-    },
+    env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
 )
 
 appimage(

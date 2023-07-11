@@ -116,6 +116,7 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
         "\n".join(
             [
                 "#!/bin/sh",
+                # Set up the previously `export -p`ed environment
                 *params.envfile.read_text().splitlines(),
                 # If running as AppImage outside Bazel, conveniently set BUILD_WORKING_DIRECTORY, like `bazel run` would
                 # `$OWD` ("Original Working Directory") is set by the AppImage runtime in
