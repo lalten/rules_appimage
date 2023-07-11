@@ -19,6 +19,7 @@ class AppDirParams(NamedTuple):
     """Parameters for the AppDir."""
 
     manifest: Path
+    envfile: Path
     workdir: Path
     entrypoint: Path
     icon: Path
@@ -115,6 +116,7 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
         "\n".join(
             [
                 "#!/bin/sh",
+                *params.envfile.read_text().splitlines(),
                 # If running as AppImage outside Bazel, conveniently set BUILD_WORKING_DIRECTORY, like `bazel run` would
                 # `$OWD` ("Original Working Directory") is set by the AppImage runtime in
                 # https://github.com/lalten/type2-runtime/blob/84f7a00/src/runtime/runtime.c#L1757

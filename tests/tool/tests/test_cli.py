@@ -15,6 +15,8 @@ def test_cli() -> None:
         [
             "--manifest",
             "manifest.json",
+            "--envfile",
+            "envfile.sh",
             "--workdir",
             "workdir",
             "--entrypoint",
@@ -28,6 +30,7 @@ def test_cli() -> None:
     )
     assert args == argparse.Namespace(
         manifest=Path("manifest.json"),
+        envfile=Path("envfile.sh"),
         workdir=Path("workdir"),
         entrypoint=Path("entrypoint"),
         icon=Path("icon"),
