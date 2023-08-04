@@ -17,12 +17,10 @@ def test_datadep() -> None:
     assert data_dep.is_file(), f"{data_dep} does not exist"
     assert (size := data_dep.stat().st_size) == 591, f"{data_dep} has wrong size {size}"
 
-    """Test that the data dependency to the appimage itself is bundled."""
     data_dep = Path("tests/appimage_data_file.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
     assert (size := data_dep.stat().st_size) == 13, f"{data_dep} has wrong size {size}"
 
-    """Test that the data dependency to the appimage itself is bundled."""
     data_dep = Path("tests/appimage_data_filegroup.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
     assert (size := data_dep.stat().st_size) == 22, f"{data_dep} has wrong size {size}"
