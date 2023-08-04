@@ -87,6 +87,8 @@ def collect_runfiles_info(ctx):
     Returns:
         struct with infos about files needed by app.
     """
+
+    # Collect everything that needs to be in the appimage and deduplicate using depset.
     runfiles_list = depset(ctx.files.data, transitive = [_default_runfiles(ctx.attr.binary)] + [_default_runfiles(d) for d in ctx.attr.data]).to_list()
     symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
     emptyfiles_list = depset(transitive = [_default_emptyfiles(ctx.attr.binary)] + [_default_emptyfiles(d) for d in ctx.attr.data]).to_list()
