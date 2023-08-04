@@ -12,11 +12,14 @@ _ENV.update({"TMPDIR": _TMPDIR})
 
 
 def test_datadep() -> None:
-    """Test that the data dependency is bundled."""
+    """Test that the data dependency of the binary is bundled."""
     data_dep = Path("tests/data.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
     assert (size := data_dep.stat().st_size) == 591, f"{data_dep} has wrong size {size}"
 
+
+def test_appimage_datadep() -> None:
+    """Test that data deps to the appimage itself are bundled."""
     data_dep = Path("tests/appimage_data_file.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
     assert (size := data_dep.stat().st_size) == 13, f"{data_dep} has wrong size {size}"
@@ -95,6 +98,7 @@ def greeter() -> None:
 
 if __name__ == "__main__":
     test_datadep()
+    test_appimage_datadep()
     test_external_bin()
     test_symlinks()
     test_runfiles_symlinks()
