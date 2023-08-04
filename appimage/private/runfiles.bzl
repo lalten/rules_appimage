@@ -87,15 +87,16 @@ def collect_runfiles_info(ctx):
     Returns:
         struct with infos about files needed by app.
     """
-    runfiles_list = _default_runfiles(ctx.attr.binary).to_list()
-    file_map = {_final_file_path(ctx, f): f for f in runfiles_list}
+    runfiles_list = depset(ctx.files.data, transitive = [_default_runfiles(ctx.attr.binary)] + [_default_runfiles(d) for d in ctx.attr.data]).to_list()
+    symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
+    emptyfiles_list = depset(transitive = [_default_emptyfiles(ctx.attr.binary)] + [_default_emptyfiles(d) for d in ctx.attr.data]).to_list()
 
-    emptyfiles_list = _default_emptyfiles(ctx.attr.binary).to_list()
+    file_map = {_final_file_path(ctx, f): f for f in runfiles_list}
     empty_files = [_final_emptyfile_path(ctx, f) for f in emptyfiles_list]
 
     symlinks = {
         (_reference_dir(ctx) + "/" + sl.path): _final_file_path(ctx, sl.target_file)
-        for sl in _default_symlinks(ctx.attr.binary).to_list()
+        for sl in symlinks_list
     }
     entrypoint = _binary_name(ctx)
     symlinks.update({

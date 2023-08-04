@@ -68,6 +68,7 @@ _ATTRS = {
     "binary": attr.label(executable = True, cfg = "target"),
     "build_args": attr.string_list(),
     "build_env": attr.string_dict(),
+    "data": attr.label_list(allow_files = True, doc = "Any additional data that will be made available inside the appimage"),
     "env": attr.string_dict(doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests"),
     "icon": attr.label(default = "@appimagetool.png//file", allow_single_file = True),
     "_tool": attr.label(default = "//appimage/private/tool", executable = True, cfg = "exec"),
