@@ -65,10 +65,19 @@ py_binary(
     main = "test.py",
 )
 
+filegroup(
+    name = "appimage_data_filegroup",
+    srcs = ["appimage_data_filegroup.txt"],
+)
+
 appimage_test(
     name = "appimage_test_py",
     size = "small",
     binary = ":test_py",
+    data = [
+        "appimage_data_file.txt",
+        ":appimage_data_filegroup",
+    ],
     env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
 )
 
@@ -79,6 +88,10 @@ appimage(
         # Example: Compress the squashfs with zstd (gzip is usually the default).
         "-comp",
         "zstd",
+    ],
+    data = [
+        "appimage_data_file.txt",
+        ":appimage_data_filegroup",
     ],
 )
 
