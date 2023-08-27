@@ -1,9 +1,12 @@
 """Rule for creating AppImages."""
 
 load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info")
+load(":toolchain.bzl", "appimage_toolchain")
 
 def _appimage_impl(ctx):
     """Implementation of the appimage rule."""
+    toolchain = ctx.toolchains["//appimage:appimage_toolchain_type"]
+
     tools = depset(
         direct = [ctx.executable._tool],
         transitive = [ctx.attr._tool[DefaultInfo].default_runfiles.files],
@@ -12,7 +15,7 @@ def _appimage_impl(ctx):
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-manifest.json")
     ctx.actions.write(manifest_file, json.encode_indent(runfile_info.manifest))
     env_file = ctx.actions.declare_file(ctx.attr.name + "-env.sh")
-    inputs = depset(direct = [ctx.file.icon, manifest_file, env_file] + runfile_info.files)
+    inputs = depset(direct = [ctx.file.icon, manifest_file, env_file, toolchain.appimage_runtime] + runfile_info.files)
 
     # TODO: Use Skylib's shell.quote?
     args = [
@@ -21,6 +24,7 @@ def _appimage_impl(ctx):
         "--workdir={}".format(runfile_info.workdir),
         "--entrypoint={}".format(runfile_info.entrypoint),
         "--icon={}".format(ctx.file.icon.path),
+        "--runtime={}".format(toolchain.appimage_runtime.path),
     ]
     args.extend(["--mksquashfs_arg=" + arg for arg in ctx.attr.build_args])
     args.append(ctx.outputs.executable.path)
@@ -78,10 +82,12 @@ appimage = rule(
     implementation = _appimage_impl,
     attrs = _ATTRS,
     executable = True,
+    toolchains = ["//appimage:appimage_toolchain_type"],
 )
 
 appimage_test = rule(
     implementation = _appimage_impl,
     attrs = _ATTRS,
     test = True,
+    toolchains = ["//appimage:appimage_toolchain_type"],
 )

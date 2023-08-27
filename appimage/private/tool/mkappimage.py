@@ -23,7 +23,6 @@ def _get_path_or_raise(path: str) -> Path:
     return Path(runfile)
 
 
-APPIMAGE_RUNTIME = _get_path_or_raise("rules_appimage/appimage/private/tool/appimage_runtime")
 MKSQUASHFS = _get_path_or_raise("squashfs-tools/mksquashfs")
 
 
@@ -35,6 +34,7 @@ class AppDirParams(NamedTuple):
     workdir: Path
     entrypoint: Path
     icon: Path
+    runtime: Path
 
 
 def relative_path(target: Path, origin: Path) -> Path:
@@ -178,7 +178,7 @@ def make_squashfs(params: AppDirParams, mksquashfs_params: Iterable[str], output
 
 def make_appimage(params: AppDirParams, mksquashfs_params: Iterable[str], output_path: Path) -> None:
     """Make the AppImage by concatenating the AppImage runtime and the AppDir squashfs."""
-    shutil.copy2(src=APPIMAGE_RUNTIME, dst=output_path)
+    shutil.copy2(src=params.runtime, dst=output_path)
     with output_path.open(mode="ab") as output_file, tempfile.NamedTemporaryFile(mode="w+b") as tmp_squashfs:
         make_squashfs(params, mksquashfs_params, tmp_squashfs.name)
         shutil.copyfileobj(tmp_squashfs, output_file)
