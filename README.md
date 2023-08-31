@@ -22,7 +22,7 @@ See the [latest release notes](https://github.com/lalten/rules_appimage/releases
 ```py
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_APPIMAGE_VER = "1.1.0"
+RULES_APPIMAGE_VER = "1.2.0"
 
 http_archive(
     name = "rules_appimage",
