@@ -1,9 +1,9 @@
 """Test appimages as data deps."""
 
+import os
 import subprocess
 import sys
 from pathlib import Path
-import os
 
 import pytest
 

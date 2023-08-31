@@ -12,7 +12,7 @@ from typing import Dict, Iterable, List, NamedTuple, Optional, Tuple
 from rules_python.python.runfiles import runfiles
 
 APPIMAGE_RUNTIME = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimage_runtime"))
-MKSQUASHFS = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/mksquashfs"))
+MKSQUASHFS = Path(runfiles.Create().Rlocation("squashfs-tools/mksquashfs"))
 
 
 class AppDirParams(NamedTuple):
