@@ -17,7 +17,6 @@ lint:
     - black@23.7.0
     - buildifier@6.3.3
     - checkov@2.4.9
-    - flake8@6.1.0
     - git-diff-check
     - isort@5.12.0
     - markdownlint@0.35.0
