@@ -9,10 +9,22 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Iterable, List, NamedTuple, Optional, Tuple
 
-from rules_python.python.runfiles import runfiles
+import rules_python.python.runfiles.runfiles
 
-APPIMAGE_RUNTIME = Path(runfiles.Create().Rlocation("rules_appimage/appimage/private/tool/appimage_runtime"))
-MKSQUASHFS = Path(runfiles.Create().Rlocation("squashfs-tools/mksquashfs"))
+
+def _get_path_or_raise(path: str) -> Path:
+    """Return a Path to a file in the runfiles, or raise FileNotFoundError."""
+    runfiles = rules_python.python.runfiles.runfiles.Create()
+    if not runfiles:
+        raise FileNotFoundError("Could not find runfiles")
+    runfile = runfiles.Rlocation(path)
+    if not runfile:
+        raise FileNotFoundError(f"Could not find {path} in runfiles")
+    return Path(runfile)
+
+
+APPIMAGE_RUNTIME = _get_path_or_raise("rules_appimage/appimage/private/tool/appimage_runtime")
+MKSQUASHFS = _get_path_or_raise("squashfs-tools/mksquashfs")
 
 
 class AppDirParams(NamedTuple):
