@@ -30,7 +30,10 @@ def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="Path to working dir, e.g. 'AppDir/tests/test_py.runfiles/rules_appimage'",
     )
     parser.add_argument(
-        "--entrypoint", required=True, type=Path, help="Path to entrypoint, e.g. 'AppDir/tests/test_py'"
+        "--entrypoint",
+        required=True,
+        type=Path,
+        help="Path to entrypoint, e.g. 'AppDir/tests/test_py'",
     )
     parser.add_argument(
         "--icon",
@@ -52,7 +55,11 @@ def cli(args: Optional[Sequence[str]] = None) -> None:
     """CLI entrypoint for mkappimage."""
     parsed_args = parse_args(args)
     appdir_params = AppDirParams(
-        parsed_args.manifest, parsed_args.envfile, parsed_args.workdir, parsed_args.entrypoint, parsed_args.icon
+        parsed_args.manifest,
+        parsed_args.envfile,
+        parsed_args.workdir,
+        parsed_args.entrypoint,
+        parsed_args.icon,
     )
     make_appimage(appdir_params, parsed_args.mksquashfs_arg or [], parsed_args.output)
 

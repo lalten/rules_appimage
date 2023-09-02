@@ -22,6 +22,32 @@ max-line-length = 120
 recursive = true
 
 [tool.ruff]
-select = ["E", "F", "B", "Q"]
+select = [
+  "B",
+  "D",
+  "E",
+  "F",
+  "I",
+  "N",
+  "Q",
+  "W",
+  "UP",
+  "COM",
+  "C4",
+  "DTZ",
+  "PIE",
+  "PT",
+  "SIM",
+  "TID",
+  "TCH",
+  "ARG",
+  "PTH",
+  "ERA",
+  "PL",
+  "TRY",
+  "PERF",
+  "RUF",
+]
+ignore = ["D203", "D213", "PLR2004", "TRY003"]
 line-length = 120
 fix = true

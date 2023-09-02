@@ -26,7 +26,7 @@ def test_cli() -> None:
             "--mksquashfs_arg=-mem",
             "--mksquashfs_arg=500M",
             "output",
-        ]
+        ],
     )
     assert args == argparse.Namespace(
         manifest=Path("manifest.json"),

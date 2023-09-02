@@ -36,7 +36,13 @@ def test_external_bin() -> None:
     assert os.access(external_bin_appimage, os.X_OK)
     cmd = [os.fspath(external_bin_appimage), "--appimage-extract-and-run", "--help"]
     proc = subprocess.run(
-        cmd, text=True, check=False, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, cwd=_TMPDIR, env=_ENV
+        cmd,
+        text=True,
+        check=False,
+        stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        cwd=_TMPDIR,
+        env=_ENV,
     )
     assert "Builds a python wheel" in proc.stdout, proc.stdout
 
@@ -85,7 +91,6 @@ def test_binary_env() -> None:
     # Unfortunately rules_python does not seem to set the RunEnvironmentInfo provider.
     # See https://github.com/bazelbuild/rules_python/issues/901
     assert "MY_BINARY_ENV" not in os.environ
-    # assert os.environ["MY_BINARY_ENV"] == "not lost"
 
 
 def greeter() -> None:
