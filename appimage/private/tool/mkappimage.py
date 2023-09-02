@@ -142,9 +142,9 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
                 'cd "${workdir}"',
                 # Launch the actual binary
                 f'exec "./{params.entrypoint}" "$@"',
-            ]
+            ],
         )
-        + "\n"
+        + "\n",
     )
     apprun_path.chmod(0o751)
 
@@ -158,8 +158,8 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
             Icon=AppRun
             Categories=Development;
             Terminal=true
-            """
-        )
+            """,
+        ),
     )
 
     shutil.copy(src=params.icon, dst=appdir / f"AppRun{params.icon.suffix or '.png'}", follow_symlinks=True)
