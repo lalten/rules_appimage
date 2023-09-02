@@ -14,7 +14,6 @@ runtimes:
 lint:
   enabled:
     - actionlint@1.6.25
-    # - bandit@1.7.5
     - black@23.7.0
     - buildifier@6.3.3
     - checkov@2.4.9
@@ -25,7 +24,6 @@ lint:
     - mypy@1.5.1
     - osv-scanner@1.3.6
     - prettier@3.0.3
-    # - pylint@2.17.5
     - renovate@36.78.7
     - ruff@0.0.287
     - shellcheck@0.9.0
