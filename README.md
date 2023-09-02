@@ -170,18 +170,9 @@ Please test your changes:
 bazel test //...
 ```
 
-And run the [linters](.github/workflows/ci.yaml):
+And run the [linters/formatters](.github/workflows/ci.yaml):
 
 ```sh
-buildifier -lint=fix -warnings all -r .
-markdownlint .
-yamllint --strict .
-pylint .
-pycodestyle .
-flake8 .
-black .
-mypy --install-types .
-isort .
-vulture .
-pydocstyle .
+trunk check
+trunk fmt
 ```
