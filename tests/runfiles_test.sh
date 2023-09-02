@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# shellcheck disable=SC2250,SC1090
+# shellcheck disable=SC1090,SC2250,SC2312
 
 # --- begin runfiles.bash initialization v3 ---
 # Copy-pasted from the Bazel Bash runfiles library v3.

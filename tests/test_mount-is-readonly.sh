@@ -20,4 +20,4 @@ pwd
 
 # Note that the latter is not a writable directory, so creating a file in the current directory will fail like
 #   touch: cannot touch 'file': Read-only file system
-touch "file" && exit 1 || true
+if touch "file"; then exit 1; fi
