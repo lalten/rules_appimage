@@ -11,7 +11,7 @@ No application source modifications are required.
 No existing Bazel targets have to be modified.
 
 The `appimage` rule has been used successfully with `py_binary`, `ruby_binary`, `sh_binary`, and `cc_binary`.
-In fact, any *lang*_binary should be compatible.
+In fact, any _lang_\_binary should be compatible.
 
 ## Getting Started
 
@@ -106,8 +106,8 @@ When the AppImage is run, it will mount contained the SquashFS image via FUSE as
 
 If this causes problems, you can:
 
-* Write to `$BUILD_WORKING_DIRECTORY` instead, which is set by Bazel when running `bazel run`, and set by `rules_appimage` when running as pure AppImage.
-* Set the `APPIMAGE_EXTRACT_AND_RUN` env var or pass the `--appimage-extract-and-run` CLI arg to extract the AppImage into a temporary directory and run it from there.
+- Write to `$BUILD_WORKING_DIRECTORY` instead, which is set by Bazel when running `bazel run`, and set by `rules_appimage` when running as pure AppImage.
+- Set the `APPIMAGE_EXTRACT_AND_RUN` env var or pass the `--appimage-extract-and-run` CLI arg to extract the AppImage into a temporary directory and run it from there.
 
 ### Missing `fusermount`
 
@@ -128,9 +128,9 @@ open dir error: No such file or directory
 
 In this case, you can:
 
-* Install [libfuse3](https://pkgs.org/search/?q=libfuse3): ```sudo apt install libfuse3```
-* Run the application with `--appimage-extract-and-run` as the first command-line argument.
-* Set the `APPIMAGE_EXTRACT_AND_RUN` environment variable.
+- Install [libfuse3](https://pkgs.org/search/?q=libfuse3): `sudo apt install libfuse3`
+- Run the application with `--appimage-extract-and-run` as the first command-line argument.
+- Set the `APPIMAGE_EXTRACT_AND_RUN` environment variable.
 
 The latter two options will cause the appimage to extract the files instead of mounting them directly.
 This may take slightly longer and consume more disk space.
