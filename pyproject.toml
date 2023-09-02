@@ -20,3 +20,8 @@ strict = true
 init-hook = "import sys; sys.path += ['.', 'bazel-rules_appimage/external']"
 max-line-length = 120
 recursive = true
+
+[tool.ruff]
+select = ["E", "F", "B", "Q"]
+line-length = 120
+fix = true
