@@ -2,6 +2,8 @@ name: CI
 
 "on": [push, pull_request, workflow_dispatch]
 
+permissions: read-all
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,27 +38,10 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        with:
-          path: "~/.cache\n~/.mypy_cache\n~/go\n"
-          key: lint-${{ github.run_id }}
-          restore-keys: lint-
-
-      - run: go install github.com/bazelbuild/buildtools/buildifier@latest
-      - run: ~/go/bin/buildifier --lint=warn --mode=check -warnings all -v -r .
-
-      - uses: actions/setup-node@v3
-      - uses: xt0rted/markdownlint-problem-matcher@v2
-      - run: npm install -g markdownlint-cli
-      - run: markdownlint .
-
-      - run: pip install -U yamllint
-      - run: yamllint --strict .
-
-      - run: mkdir -p .mypy_cache
       - run: bazel build @rules_python//python/runfiles
-      - uses: lalten/python-lint-annotate@master
-        with:
-          python-version: 3.11
+      - uses: trunk-io/trunk-action@v1
