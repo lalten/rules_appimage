@@ -8,7 +8,7 @@ set -eux
 # (see https://bazel.build/docs/user-manual#running-executables).
 # If not running with Bazel, rules_appimage sets this env var to $OWD, which is the dir in which the AppImage was run.
 # We can test that rules_appimage sets it because Bazel would not be set in a "bazel test" run.
-[ -v BUILD_WORKING_DIRECTORY ]
+[[ -v BUILD_WORKING_DIRECTORY ]]
 
 # The actual current working directory is
 pwd
