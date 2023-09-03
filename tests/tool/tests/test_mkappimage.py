@@ -9,14 +9,18 @@ from unittest import mock
 
 import pytest
 
+from rules_python.python.runfiles import runfiles
+
 from appimage.private.tool import mkappimage
+
 
 
 def test_deps() -> None:
     """Test that the runtime and mksquashfs can be executed."""
-    # cmd = [os.fspath(mkappimage.APPIMAGE_RUNTIME), "--appimage-version"]
-    # output = subprocess.run(cmd, check=True, text=True, stderr=subprocess.PIPE).stderr
-    # assert output.startswith("AppImage runtime version")
+    runtime_path = Path(runfiles.Create().Rlocation("rules_appimage/tests/tool/tests/appimage_runtime_native"))
+    cmd = [os.fspath(runtime_path), "--appimage-version"]
+    output = subprocess.run(cmd, check=True, text=True, stderr=subprocess.PIPE).stderr
+    assert output.startswith("AppImage runtime version")
 
     cmd = [os.fspath(mkappimage.MKSQUASHFS), "-version"]
     output = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
@@ -31,10 +35,11 @@ def fake_make_squashfs(_params: mkappimage.AppDirParams, _mksquashfs_params: Ite
 @mock.patch("appimage.private.tool.mkappimage.make_squashfs", fake_make_squashfs)
 def test_make_appimage() -> None:
     """Test that the AppImage is created by concatenating the runtime and the squashfs."""
-    params = mkappimage.AppDirParams(Path(), Path(), Path(), Path(), Path())
+    runtime_path = Path(runfiles.Create().Rlocation("rules_appimage/tests/tool/tests/appimage_runtime_x86_64"))
+    params = mkappimage.AppDirParams(Path(), Path(), Path(), Path(), Path(), Path(runtime_path))
     mkappimage.make_appimage(params, [], Path("fake.appimage"))
     appimage = Path("fake.appimage").read_bytes()
-    # assert appimage.startswith(mkappimage.APPIMAGE_RUNTIME.read_bytes())
+    assert appimage.startswith(runtime_path.read_bytes())
     assert appimage.endswith(b"fake squashfs")
 
 

@@ -1,15 +1,6 @@
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
-# TODO(lgarbarini): add other host platforms
-config_setting(
-    name = "aarch64_darwin",
-    constraint_values = [
-        "@platforms//os:macos",
-        "@platforms//cpu:arm64",
-    ],
-)
-
 py_library(
     name = "mkappimage",
     srcs = ["mkappimage.py"],

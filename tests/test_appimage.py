@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import platform
 from pathlib import Path
 
 import pytest
@@ -13,12 +14,22 @@ assert _TMPDIR
 _ENV = os.environ.copy()
 _ENV.update({"TMPDIR": _TMPDIR})
 
+# from UNIX file command source: `magic/Magdir/elf`
+UNAME_TO_FILE = {
+    "x86_64": "x86-64",
+    "aarch64": "ARM aarch64",
+    "i386": "Intel 80386",
+    "armv7l": "ARM",
+    "arm": "ARM"
+}
 
 def test_file() -> None:
     """Test that the appimage has the expected magic."""
     cmd = ["file", "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
-    expected = "tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped"
+    uname_arch = platform.uname().machine
+    march = UNAME_TO_FILE[uname_arch]
+    expected = f"tests/appimage_py: ELF 64-bit LSB executable, {march}, version 1 (SYSV), statically linked, stripped"
     assert expected in out
 
 
