@@ -2,15 +2,6 @@ workspace(name = "rules_appimage")
 
 load("//:deps.bzl", "rules_appimage_deps")
 
-# TODO(lgarbarini): delete me once we have a better source for mksquashfs for darwin
-new_local_repository(
-    name = "mksquashfs_aarch64_darwin",
-    path = "/opt/homebrew/bin",
-    build_file_content = """
-exports_files(["mksquashfs"])
-""",
-)
-
 rules_appimage_deps()
 
 register_toolchains("//appimage:all")

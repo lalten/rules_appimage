@@ -1,7 +1,6 @@
 """Rule for creating AppImages."""
 
 load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info")
-load(":toolchain.bzl", "appimage_toolchain")
 
 def _appimage_impl(ctx):
     """Implementation of the appimage rule."""

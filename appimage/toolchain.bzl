@@ -1,3 +1,5 @@
+""" Toolchain for the AppImage runtime """
+
 def _appimage_toolchain_impl(ctx):
     return [platform_common.ToolchainInfo(
         appimage_runtime = ctx.file.appimage_runtime,

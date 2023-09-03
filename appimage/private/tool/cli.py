@@ -66,7 +66,7 @@ def cli(args: Optional[Sequence[str]] = None) -> None:
         parsed_args.workdir,
         parsed_args.entrypoint,
         parsed_args.icon,
-        parsed_args.runtime
+        parsed_args.runtime,
     )
     make_appimage(appdir_params, parsed_args.mksquashfs_arg or [], parsed_args.output)
 

@@ -31,24 +31,30 @@ appimage_toolchain(
 # Register toolchain for linux, x86_64
 toolchain(
     name = "appimage_linux_x86_64_toolchain",
-    toolchain_type = ":appimage_toolchain_type",
-    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
     toolchain = ":appimage_linux_x86_64",
+    toolchain_type = ":appimage_toolchain_type",
 )
 
 # Register toolchain for linux, arm64
 toolchain(
     name = "appimage_linux_arm64_toolchain",
-    toolchain_type = ":appimage_toolchain_type",
-    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:arm64"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:arm64",
+    ],
     toolchain = ":appimage_linux_arm64",
+    toolchain_type = ":appimage_toolchain_type",
 )
 
 # Register toolchain for backwards compatability
 toolchain(
     name = "default_appimage_toolchain",
-    toolchain_type = ":appimage_toolchain_type",
     toolchain = ":default_appimage",
+    toolchain_type = ":appimage_toolchain_type",
 )
 
 bzl_library(

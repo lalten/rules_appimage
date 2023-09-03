@@ -25,7 +25,7 @@ def rules_appimage_deps():
     maybe(
         http_archive,
         name = "squashfs-tools",
-        build_file = "//third_party:squashfs-tools.BUILD",
+        build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
         sha256 = "94201754b36121a9f022a190c75f718441df15402df32c2b520ca331a107511c",
         strip_prefix = "squashfs-tools-4.6.1/squashfs-tools",
         url = "https://github.com/plougher/squashfs-tools/archive/refs/tags/4.6.1.tar.gz",
@@ -52,7 +52,7 @@ def rules_appimage_deps():
     maybe(
         http_archive,
         name = "zstd",
-        build_file = "//third_party:zstd.BUILD",
+        build_file = "@rules_appimage//third_party:zstd.BUILD",
         sha256 = "9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4",
         strip_prefix = "zstd-1.5.5",
         url = "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz",

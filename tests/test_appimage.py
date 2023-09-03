@@ -1,9 +1,9 @@
 """Test appimages as data deps."""
 
 import os
+import platform
 import subprocess
 import sys
-import platform
 from pathlib import Path
 
 import pytest
@@ -15,13 +15,8 @@ _ENV = os.environ.copy()
 _ENV.update({"TMPDIR": _TMPDIR})
 
 # from UNIX file command source: `magic/Magdir/elf`
-UNAME_TO_FILE = {
-    "x86_64": "x86-64",
-    "aarch64": "ARM aarch64",
-    "i386": "Intel 80386",
-    "armv7l": "ARM",
-    "arm": "ARM"
-}
+UNAME_TO_FILE = {"x86_64": "x86-64", "aarch64": "ARM aarch64", "i386": "Intel 80386", "armv7l": "ARM", "arm": "ARM"}
+
 
 def test_file() -> None:
     """Test that the appimage has the expected magic."""
