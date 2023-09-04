@@ -12,13 +12,18 @@ import pytest
 from appimage.private.tool import mkappimage
 
 
-def test_deps() -> None:
-    """Test that the runtime and mksquashfs can be executed."""
+# NOTE: mypy warns about `untyped decorator`. Since this is a test, just ignore typing on this line
+@pytest.mark.skipif(sys.platform.startswith("linux") is False, reason="AppImage can only run on Linux")  # type: ignore
+def test_appimage_deps() -> None:
+    """Test that the runtime can be executed on Linux."""
     runtime_path = mkappimage._get_path_or_raise("rules_appimage/tests/tool/tests/appimage_runtime_native")
     cmd = [os.fspath(runtime_path), "--appimage-version"]
     output = subprocess.run(cmd, check=True, text=True, stderr=subprocess.PIPE).stderr
     assert output.startswith("AppImage runtime version")
 
+
+def test_mksquashfs_deps() -> None:
+    """Test that mksquashfs can be executed."""
     cmd = [os.fspath(mkappimage.MKSQUASHFS), "-version"]
     output = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
     assert output.startswith("mksquashfs version")

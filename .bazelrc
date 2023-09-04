@@ -1,7 +1,6 @@
 test --announce_rc
 test --test_output=errors
 test --test_verbose_timeout_warnings
-test --spawn_strategy=linux-sandbox
 build --incompatible_strict_action_env
 build --keep_going
 test --keep_going
