@@ -17,7 +17,7 @@ def _get_path_or_raise(path: str) -> Path:
     runfiles = bazel_runfiles.Create()
     if not runfiles:
         raise FileNotFoundError("Could not find runfiles")
-    runfile = runfiles.Rlocation(path)
+    runfile = files.Rlocation(path)
     if not runfile:
         raise FileNotFoundError(f"Could not find {path} in runfiles")
     return Path(runfile)
