@@ -57,3 +57,36 @@ def rules_appimage_deps():
         strip_prefix = "zstd-1.5.5",
         url = "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz",
     )
+
+def _non_module_deps_impl(ctx):
+    """Fetch non-bzlmod-enabled dependencies."""
+
+    http_archive(
+        name = "squashfs-tools",
+        url = "https://github.com/plougher/squashfs-tools/archive/refs/tags/4.6.1.tar.gz",
+        sha256 = "94201754b36121a9f022a190c75f718441df15402df32c2b520ca331a107511c",
+        strip_prefix = "squashfs-tools-4.6.1/squashfs-tools",
+        build_file = "//third_party:squashfs-tools.BUILD",
+    )
+    http_archive(
+        name = "zstd",
+        url = "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz",
+        sha256 = "9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4",
+        strip_prefix = "zstd-1.5.5",
+        build_file = "//third_party:zstd.BUILD",
+    )
+    for arch in ("aarch64", "armhf", "i686", "x86_64"):
+        name = "appimage_runtime_" + arch
+        http_file(
+            name = name,
+            executable = True,
+            sha256 = _SHAS[name],
+            urls = ["https://github.com/lalten/type2-runtime/releases/download/build-2022-10-03-c5c7b07/runtime-{}".format(arch)],
+        )
+    http_file(
+        name = "appimagetool.png",
+        sha256 = "0c23daaf7665216a8e8f9754c904ec18b2dfa376af2479601a571e504239fae6",
+        urls = ["https://raw.githubusercontent.com/AppImage/AppImageKit/b51f685/resources/appimagetool.png"],
+    )
+
+non_module_deps = module_extension(implementation = _non_module_deps_impl)
