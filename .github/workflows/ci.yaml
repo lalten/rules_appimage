@@ -36,6 +36,9 @@ jobs:
       - name: Run tests
         run: bazel test --test_env=NO_CLEANUP=1 //...
 
+      - name: Run tests (bzlmod enabled)
+        run: bazel test --test_env=NO_CLEANUP=1 --enable_bzlmod //...
+
   lint:
     runs-on: ubuntu-latest
     permissions:
