@@ -58,7 +58,7 @@ def rules_appimage_deps():
         url = "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz",
     )
 
-def _non_module_deps_impl(ctx):
+def _non_module_deps_impl(_ctx):
     """Fetch non-bzlmod-enabled dependencies."""
 
     http_archive(
