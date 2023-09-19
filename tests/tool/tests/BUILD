@@ -37,10 +37,7 @@ py_test(
     name = "test_mkappimage",
     size = "small",
     srcs = ["test_mkappimage.py"],
-    data = [
-        "appimage_runtime_x86_64",
-        ":appimage_runtime_native",
-    ],
+    data = [":appimage_runtime_native"],
     deps = [
         requirement("pytest"),
         "//appimage/private/tool:mkappimage",
