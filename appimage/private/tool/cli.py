@@ -47,6 +47,12 @@ def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
         action="append",
         help="Extra arguments for mksquashfs, e.g. '-mem'. Can be used multiple times.",
     )
+    parser.add_argument(
+        "--runtime",
+        required=True,
+        type=Path,
+        help="AppImage runtime binary, needs to match target architecture",
+    )
     parser.add_argument("output", type=Path, help="Where to place output AppImage")
     return parser.parse_args(args)
 
@@ -60,6 +66,7 @@ def cli(args: Optional[Sequence[str]] = None) -> None:
         parsed_args.workdir,
         parsed_args.entrypoint,
         parsed_args.icon,
+        parsed_args.runtime,
     )
     make_appimage(appdir_params, parsed_args.mksquashfs_arg or [], parsed_args.output)
 

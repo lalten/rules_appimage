@@ -1,26 +1,9 @@
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
-
-copy_file(
-    name = "appimage_runtime_copy",
-    src = select({
-        "@platforms//cpu:arm64": "@appimage_runtime_aarch64//file",
-        "@platforms//cpu:armv7e-m": "@appimage_runtime_armhf//file",
-        "@platforms//cpu:i386": "@appimage_runtime_i686//file",
-        "@platforms//cpu:x86_64": "@appimage_runtime_x86_64//file",
-    }),
-    out = "appimage_runtime",
-    allow_symlink = True,
-    is_executable = True,
-)
 
 py_library(
     name = "mkappimage",
     srcs = ["mkappimage.py"],
-    data = [
-        ":appimage_runtime",
-        "@squashfs-tools//:mksquashfs",
-    ],
+    data = ["@squashfs-tools//:mksquashfs"],
     visibility = ["//visibility:public"],
     deps = ["@rules_python//python/runfiles"],
 )

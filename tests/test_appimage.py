@@ -1,6 +1,7 @@
 """Test appimages as data deps."""
 
 import os
+import platform
 import subprocess
 import sys
 from pathlib import Path
@@ -13,12 +14,21 @@ assert _TMPDIR
 _ENV = os.environ.copy()
 _ENV.update({"TMPDIR": _TMPDIR})
 
+EXPECTED_FILE = {
+    "x86_64": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped",
+    "aarch64": "ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped",
+    "i386": "ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, stripped",
+    "armv7l": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
+    "arm": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
+}
+
 
 def test_file() -> None:
     """Test that the appimage has the expected magic."""
     cmd = ["file", "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
-    expected = "tests/appimage_py: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped"
+    uname_arch = platform.uname().machine
+    expected = f"tests/appimage_py: {EXPECTED_FILE[uname_arch]}"
     assert expected in out
 
 

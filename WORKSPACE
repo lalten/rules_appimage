@@ -4,6 +4,8 @@ load("//:deps.bzl", "rules_appimage_deps")
 
 rules_appimage_deps()
 
+register_toolchains("//appimage:all")
+
 # Below this is the Python setup for testing the rules_appimage Python rules.
 # This is _not_ required for _using_ the rules_appimage rules.
 

@@ -6,7 +6,7 @@ permissions: read-all
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
     strategy:
@@ -14,6 +14,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         bazel-version: ["5.x", "6.x", "latest"]
+        os: ["ubuntu-latest", "macos-latest"]
 
     steps:
       - uses: actions/checkout@v3
@@ -27,10 +28,9 @@ jobs:
           TO_REPLACE='python_version = "3.11"'
           REPLACE_WITH='python_version = "${{ matrix.python-version }}"'
           grep -q "${TO_REPLACE}" WORKSPACE
-          sed --in-place "s/${TO_REPLACE}/${REPLACE_WITH}/" WORKSPACE
+          sed -i.bak "s/${TO_REPLACE}/${REPLACE_WITH}/" WORKSPACE && rm WORKSPACE.bak
           bazel run //:requirements.update
-
-      - run: sed -i '/remove if Bazel version < 6/d' tests/test.cc
+      - run: sed -i.bak '/remove if Bazel version < 6/d' tests/test.cc && rm tests/test.cc.bak
         if: ${{ startsWith(matrix.bazel-version, '5') }}
 
       - name: Run tests
