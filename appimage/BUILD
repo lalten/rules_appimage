@@ -1,21 +1,15 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//:deps.bzl", "RUNTIME_SHAS")
 load("toolchain.bzl", "appimage_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
 toolchain_type(name = "appimage_toolchain_type")
 
-# Toolchain for linux, x86_64
-appimage_toolchain(
-    name = "appimage_linux_x86_64",
-    appimage_runtime = "@appimage_runtime_x86_64//file",
-)
-
-# Toolchain for linux, arm64
-appimage_toolchain(
-    name = "appimage_linux_arm64",
-    appimage_runtime = "@appimage_runtime_aarch64//file",
-)
+[appimage_toolchain(
+    name = "appimage_linux_" + arch,
+    appimage_runtime = "@appimage_runtime_" + arch + "//file",
+) for arch in RUNTIME_SHAS.keys()]
 
 # default toolchain for backwards compatability
 appimage_toolchain(
@@ -28,27 +22,15 @@ appimage_toolchain(
     }),
 )
 
-# Register toolchain for linux, x86_64
-toolchain(
-    name = "appimage_linux_x86_64_toolchain",
+[toolchain(
+    name = "appimage_linux_" + arch + "_toolchain",
     target_compatible_with = [
         "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
+        "@platforms//cpu:" + arch,
     ],
-    toolchain = ":appimage_linux_x86_64",
+    toolchain = ":appimage_linux_" + arch,
     toolchain_type = ":appimage_toolchain_type",
-)
-
-# Register toolchain for linux, arm64
-toolchain(
-    name = "appimage_linux_arm64_toolchain",
-    target_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:arm64",
-    ],
-    toolchain = ":appimage_linux_arm64",
-    toolchain_type = ":appimage_toolchain_type",
-)
+) for arch in RUNTIME_SHAS.keys()]
 
 # Register toolchain for backwards compatability
 toolchain(

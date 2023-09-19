@@ -14,8 +14,13 @@ assert _TMPDIR
 _ENV = os.environ.copy()
 _ENV.update({"TMPDIR": _TMPDIR})
 
-# from UNIX file command source: `magic/Magdir/elf`
-UNAME_TO_FILE = {"x86_64": "x86-64", "aarch64": "ARM aarch64", "i386": "Intel 80386", "armv7l": "ARM", "arm": "ARM"}
+EXPECTED_FILE = {
+    "x86_64": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped",
+    "aarch64": "ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped",
+    "i386": "ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, stripped",
+    "armv7l": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
+    "arm": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
+}
 
 
 def test_file() -> None:
@@ -23,8 +28,7 @@ def test_file() -> None:
     cmd = ["file", "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
     uname_arch = platform.uname().machine
-    march = UNAME_TO_FILE[uname_arch]
-    expected = f"tests/appimage_py: ELF 64-bit LSB executable, {march}, version 1 (SYSV), statically linked, stripped"
+    expected = f"tests/appimage_py: {EXPECTED_FILE[uname_arch]}"
     assert expected in out
 
 
