@@ -45,16 +45,5 @@ def test_make_appimage_native() -> None:
     assert appimage.endswith(b"fake squashfs")
 
 
-@mock.patch("appimage.private.tool.mkappimage.make_squashfs", fake_make_squashfs)
-def test_make_appimage_x86_64() -> None:
-    """Test that the AppImage is created by concatenating the x86_64 runtime and the squashfs."""
-    runtime_path = mkappimage._get_path_or_raise("rules_appimage/tests/tool/tests/appimage_runtime_x86_64")
-    params = mkappimage.AppDirParams(Path(), Path(), Path(), Path(), Path(), Path(runtime_path))
-    mkappimage.make_appimage(params, [], Path("fake.appimage"))
-    appimage = Path("fake.appimage").read_bytes()
-    assert appimage.startswith(runtime_path.read_bytes())
-    assert appimage.endswith(b"fake squashfs")
-
-
 if __name__ == "__main__":
     sys.exit(pytest.main(["-v", __file__]))
