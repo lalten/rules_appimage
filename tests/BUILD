@@ -14,9 +14,7 @@ appimage_test(
     size = "small",
     args = ["--appimage-extract-and-run"],  # One way to run if no libfuse2 is available
     binary = ":test_sh",
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
 )
 
 sh_binary(
@@ -29,9 +27,7 @@ appimage_test(
     size = "small",
     binary = ":test_mount-is-readonly",
     tags = ["requires-fakeroot"],  # This helps tests failing with `fusermount3: mount failed: Operation not permitted`
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
 )
 
 cc_binary(
@@ -49,9 +45,7 @@ appimage_test(
     binary = ":test_cc",
     env = {"MY_APPIMAGE_ENV": "overwritten"},  # environment variables are propagated from the binary target env attr
     tags = ["requires-fakeroot"],
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
 )
 
 sh_test(
@@ -88,9 +82,7 @@ appimage_test(
         ":appimage_data_filegroup",
     ],
     env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
 )
 
 appimage(
@@ -112,9 +104,7 @@ py_test(
     size = "small",
     srcs = ["test_appimage.py"],
     data = [":appimage_py"],
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
     deps = [requirement("pytest")],
 )
 
@@ -145,7 +135,5 @@ appimage_test(
     binary = ":runfiles_test_sh",
     env = {"RUNFILES_LIB_DEBUG": "1"},
     tags = ["requires-fakeroot"],
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
 )

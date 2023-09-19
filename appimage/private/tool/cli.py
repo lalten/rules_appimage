@@ -51,7 +51,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--runtime",
         required=True,
         type=Path,
-        help="",
+        help="AppImage runtime binary, needs to match target architecture",
     )
     parser.add_argument("output", type=Path, help="Where to place output AppImage")
     return parser.parse_args(args)

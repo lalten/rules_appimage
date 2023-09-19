@@ -1,5 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//:deps.bzl", "RUNTIME_SHAS")
+load("//:deps.bzl", "ARCHS")
 load("toolchain.bzl", "appimage_toolchain")
 
 package(default_visibility = ["//visibility:public"])
@@ -9,7 +9,7 @@ toolchain_type(name = "appimage_toolchain_type")
 [appimage_toolchain(
     name = "appimage_linux_" + arch,
     appimage_runtime = "@appimage_runtime_" + arch + "//file",
-) for arch in RUNTIME_SHAS.keys()]
+) for arch in ARCHS.keys()]
 
 # default toolchain for backwards compatability
 appimage_toolchain(
@@ -30,7 +30,7 @@ appimage_toolchain(
     ],
     toolchain = ":appimage_linux_" + arch,
     toolchain_type = ":appimage_toolchain_type",
-) for arch in RUNTIME_SHAS.keys()]
+) for arch in ARCHS.keys()]
 
 # Register toolchain for backwards compatability
 toolchain(

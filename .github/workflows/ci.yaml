@@ -28,10 +28,8 @@ jobs:
           TO_REPLACE='python_version = "3.11"'
           REPLACE_WITH='python_version = "${{ matrix.python-version }}"'
           grep -q "${TO_REPLACE}" WORKSPACE
-          # sed command needs to work on both Linux and MacOS
           sed -i.bak "s/${TO_REPLACE}/${REPLACE_WITH}/" WORKSPACE && rm WORKSPACE.bak
           bazel run //:requirements.update
-
       - run: sed -i.bak '/remove if Bazel version < 6/d' tests/test.cc && rm tests/test.cc.bak
         if: ${{ startsWith(matrix.bazel-version, '5') }}
 

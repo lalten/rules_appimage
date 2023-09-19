@@ -1,5 +1,5 @@
 load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
-load("//:deps.bzl", "RUNTIME_SHAS")
+load("//:deps.bzl", "ARCHS")
 
 # platform definitions for cross-compiling
 [platform(
@@ -8,7 +8,7 @@ load("//:deps.bzl", "RUNTIME_SHAS")
         "@platforms//os:linux",
         "@platforms//cpu:" + arch,
     ],
-) for arch in RUNTIME_SHAS.keys()]
+) for arch in ARCHS.keys()]
 
 compile_pip_requirements(
     name = "requirements",
