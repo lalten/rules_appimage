@@ -4,7 +4,7 @@
 [![MIT License](https://img.shields.io/github/license/lalten/rules_appimage)](https://github.com/lalten/rules_appimage/blob/main/LICENSE)
 [![Awesome](https://awesome.re/badge.svg)](https://awesomebazel.com/)
 
-`rules_appimage` provides a [Bazel](https://bazel.build/) rule for packaging existing binary targets into [AppImage](https://github.com/AppImage/AppImageKit) packages.
+Create portable Linux applications by bundling a binary target and all its runfiles into a self-contained [AppImage](https://github.com/AppImage/AppImageKit) binary.
 
 AppImages are a great match for Bazel because the runfiles structure and launcher stub (where applicable) can be packaged into an AppRun structure relatively easily.
 No application source modifications are required.
@@ -12,6 +12,13 @@ No existing Bazel targets have to be modified.
 
 The `appimage` rule has been used successfully with `py_binary`, `ruby_binary`, `sh_binary`, and `cc_binary`.
 In fact, any _lang_\_binary should be compatible.
+
+AppImages are executable ELF format files with a static runtime at the front and a compressed SquashFS image containing the application files at the back.
+When run, the runtime will use FUSE to mount the SquashFS image and run the application from there.
+Alternatively, the runtime can extract the files into a temporary directory and run the application from there.
+There is no extra extraction or installation step.
+
+See also [Alternatives](#alternatives) below.
 
 ## Getting Started
 
@@ -159,6 +166,17 @@ This will extract the bundled squashfs blob into a `squashfs-root` dir in the cu
 You can look at those files and see exactly what's going on.
 In fact, you can even run `squashfs-root/AppRun` and it will run exactly the same as with the packaged appimage.
 This can be very handy when rebuilding the Bazel target is not the best option but you need to modify a file inside.
+
+## Alternatives
+
+There are a few other good ways to get you application and all its runfiles into a single portable executable.
+
+- python_zip / par_binary / subpar: Only applicable to Python. Needs system Python to extract contained zip on startup, which can be slow for large apps. Bazel's builtin ijar zipper will segfault on very large (multiple GB) runfiles.
+- [Kickoff Launcher](https://github.com/nimbus-build/kickoff):
+  Very similar idea to appimages, but works also for Windows and macOS.
+  Will always extract runfiles, no way to mount them like appimages do with squashfuse.
+  No Bazel rules, but a CLI tool that could be used in a `genrule`.
+  Check out @alloveras's talk at BazelCon 2023!
 
 ## Contributing
 
