@@ -9,12 +9,12 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Iterable, List, NamedTuple, Optional, Tuple
 
-import rules_python.python.runfiles.runfiles
+import runfiles as bazel_runfiles
 
 
 def _get_path_or_raise(path: str) -> Path:
     """Return a Path to a file in the runfiles, or raise FileNotFoundError."""
-    runfiles = rules_python.python.runfiles.runfiles.Create()
+    runfiles = bazel_runfiles.Create()
     if not runfiles:
         raise FileNotFoundError("Could not find runfiles")
     runfile = runfiles.Rlocation(path)
