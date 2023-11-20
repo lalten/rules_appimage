@@ -24,24 +24,7 @@ See also [Alternatives](#alternatives) below.
 
 ### Installation
 
-See the [latest release notes](https://github.com/lalten/rules_appimage/releases/latest) for a snippet to add to your `WORKSPACE`, or use the following:
-
-```py
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-RULES_APPIMAGE_VER = "1.2.0"
-
-http_archive(
-    name = "rules_appimage",
-    # sha256 = "",  # FIXME: Bazel will print the proper value to add here during the first build.
-    strip_prefix = "rules_appimage-{}".format(RULES_APPIMAGE_VER),
-    url = "https://github.com/lalten/rules_appimage/archive/refs/tags/v{}.tar.gz".format(RULES_APPIMAGE_VER),
-)
-
-load("@rules_appimage//:deps.bzl", "rules_appimage_deps")
-
-rules_appimage_deps()
-```
+See the [latest release notes](https://github.com/lalten/rules_appimage/releases/latest) for a snippet to add to your `WORKSPACE`.
 
 ### Usage
 
