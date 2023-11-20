@@ -68,4 +68,3 @@ def rules_appimage_deps():
         strip_prefix = "rules_python-0.26.0",
         url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
     )
-
