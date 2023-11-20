@@ -3,6 +3,8 @@
 #include <string>
 
 int main(int argc, char** argv, char** envp) {
+  (void)argc;
+  (void)argv;
   // Go through the environment variables and find the one we set in the BUILD.
   // When running inside the appimage, we want the env to not be lost.
   bool have_binary_env = false;
