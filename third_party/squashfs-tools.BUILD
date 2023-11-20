@@ -17,6 +17,17 @@ cc_library(
         ],
     ),
     hdrs = ["squashfs_fs.h"],
+    copts = [
+        "-Wno-gnu-pointer-arith",
+        "-Wno-gnu-statement-expression-from-macro-expansion",
+        "-Wno-gnu-zero-variadic-macro-arguments",
+        "-Wno-missing-field-initializers",
+        "-Wno-pedantic",
+        "-Wno-sign-compare",
+        "-Wno-unused-parameter",
+        "-Wno-variadic-macros",
+        "-Wno-zero-length-array",
+    ],
     defines = [
         'COMP_DEFAULT=\\"gzip\\"',
         'DATE=\\"redacted\\"',
