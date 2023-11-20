@@ -13,7 +13,7 @@ python_register_toolchains(
     python_version = "3.11",
 )
 
-load("@rules_appimage_python//:defs.bzl", rules_appimage_py_interpreter="interpreter")
+load("@rules_appimage_python//:defs.bzl", rules_appimage_py_interpreter = "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
