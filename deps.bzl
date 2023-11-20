@@ -58,3 +58,14 @@ def rules_appimage_deps():
         strip_prefix = "zstd-1.5.5",
         url = "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz",
     )
+
+    # rules python is needed to provide the bzlmod/workspace-agnostic bazel-runfiles pip requirement for mkappimage.
+    # Don't forget to add the setup steps to the main WORKSPACE file! You can find them in the release notes as well.
+    maybe(
+        http_archive,
+        name = "rules_python",
+        sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
+        strip_prefix = "rules_python-0.26.0",
+        url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
+    )
+
