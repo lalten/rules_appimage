@@ -1,6 +1,5 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("@rules_appimage_py_deps//:requirements.bzl", "requirement")
-
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 py_library(
     name = "mkappimage",
@@ -8,7 +7,7 @@ py_library(
     data = ["@squashfs-tools//:mksquashfs"],
     visibility = ["//visibility:public"],
     deps = [requirement("bazel-runfiles")],
-    )
+)
 
 py_binary(
     name = "tool",
