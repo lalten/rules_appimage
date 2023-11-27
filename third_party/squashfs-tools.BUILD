@@ -24,6 +24,7 @@ cc_library(
         "-Wno-missing-field-initializers",
         "-Wno-pedantic",
         "-Wno-sign-compare",
+        "-Wno-unused-but-set-variable",
         "-Wno-unused-parameter",
         "-Wno-variadic-macros",
         "-Wno-zero-length-array",
