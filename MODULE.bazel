@@ -4,6 +4,3 @@ bazel_dep(name = "bazel_skylib", version = "1.4.2")
 bazel_dep(name = "rules_python", version = "0.26.0")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.7")
-
-non_module_deps = use_extension("@rules_appimage//:deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "squashfs-tools", "zstd", "appimagetool.png", "appimage_runtime_aarch64", "appimage_runtime_armhf", "appimage_runtime_i686", "appimage_runtime_x86_64", "appimage_runtime_i386", "appimage_runtime_armv7e-m")
