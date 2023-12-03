@@ -1,26 +1,9 @@
 module(name = "rules_appimage", version = "1.2.0")
 
 bazel_dep(name = "bazel_skylib", version = "1.4.2")
-bazel_dep(name = "rules_python", version = "0.25.0")
+bazel_dep(name = "rules_python", version = "0.26.0")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.7")
 
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-
-# These pip deps are only used for the tests, hence the dev_dependency = True
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
-pip.parse(
-    hub_name = "rules_appimage_py_deps",
-    python_version = "3.11",
-    requirements_lock = "//:requirements.txt",
-)
-use_repo(pip, "rules_appimage_py_deps")
-
 non_module_deps = use_extension("@rules_appimage//:deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "squashfs-tools", "zstd", "appimagetool.png", "appimage_runtime_aarch64", "appimage_runtime_armhf", "appimage_runtime_i686", "appimage_runtime_x86_64", "appimage_runtime_i386", "appimage_runtime_armv7e-m")
-
-register_toolchains("@rules_appimage//appimage:all")
-
-python.toolchain(
-    python_version = "3.11",
-)
