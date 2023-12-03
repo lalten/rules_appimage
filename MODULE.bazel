@@ -20,3 +20,7 @@ non_module_deps = use_extension("@rules_appimage//:deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "squashfs-tools", "zstd", "appimagetool.png", "appimage_runtime_aarch64", "appimage_runtime_armhf", "appimage_runtime_i686", "appimage_runtime_x86_64", "appimage_runtime_i386", "appimage_runtime_armv7e-m")
 
 register_toolchains("@rules_appimage//appimage:all")
+
+python.toolchain(
+    python_version = "3.11",
+)
