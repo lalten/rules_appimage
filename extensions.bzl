@@ -1,3 +1,5 @@
+"""bzlmod Extensions."""
+
 load("//:deps.bzl", "rules_appimage_deps")
 
 def _appimage_ext_dependencies_impl(_):
