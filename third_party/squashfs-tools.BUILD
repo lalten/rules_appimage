@@ -1,5 +1,26 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
+_COPTS = [
+    "-O2",  # squashfs-tools/Makefile#L219
+    "-std=gnu17",  # GNU extensions are at play
+    "--no-warnings",  # We don't care about third-party warnings
+]
+
+_DEFINES = [
+    'COMP_DEFAULT=\\"gzip\\"',
+    'DATE=\\"redacted\\"',
+    'VERSION=\\"redacted\\"',
+    'YEAR=\\"redacted\\"',
+    "_FILE_OFFSET_BITS=64",
+    "_GNU_SOURCE",
+    "_LARGEFILE_SOURCE",
+    "GZIP_SUPPORT",
+    "REPRODUCIBLE_DEFAULT",
+    "XATTR_DEFAULT",
+    "XATTR_SUPPORT",
+    "ZSTD_SUPPORT",
+]
+
 cc_library(
     name = "common",
     srcs = glob(
@@ -17,32 +38,8 @@ cc_library(
         ],
     ),
     hdrs = ["squashfs_fs.h"],
-    copts = [
-        "-Wno-gnu-pointer-arith",
-        "-Wno-gnu-statement-expression-from-macro-expansion",
-        "-Wno-gnu-zero-variadic-macro-arguments",
-        "-Wno-missing-field-initializers",
-        "-Wno-pedantic",
-        "-Wno-sign-compare",
-        "-Wno-unused-but-set-variable",
-        "-Wno-unused-parameter",
-        "-Wno-variadic-macros",
-        "-Wno-zero-length-array",
-    ],
-    defines = [
-        'COMP_DEFAULT=\\"gzip\\"',
-        'DATE=\\"redacted\\"',
-        'VERSION=\\"redacted\\"',
-        'YEAR=\\"redacted\\"',
-        "_FILE_OFFSET_BITS=64",
-        "_GNU_SOURCE",
-        "_LARGEFILE_SOURCE",
-        "GZIP_SUPPORT",
-        "REPRODUCIBLE_DEFAULT",
-        "XATTR_DEFAULT",
-        "XATTR_SUPPORT",
-        "ZSTD_SUPPORT",
-    ],
+    copts = _COPTS,
+    defines = _DEFINES,
     deps = [
         "@bazel_tools//third_party/zlib",
         "@zstd",
@@ -56,6 +53,8 @@ cc_binary(
         "mksquashfs.h",
         "mksquashfs_error.h",
     ],
+    copts = _COPTS,
+    defines = _DEFINES,
     visibility = ["//visibility:public"],
     deps = [":common"],
 )
@@ -63,6 +62,8 @@ cc_binary(
 cc_binary(
     name = "unsquashfs",
     srcs = glob(["unsquash*"]),
+    copts = _COPTS,
+    defines = _DEFINES,
     visibility = ["//visibility:public"],
     deps = [":common"],
 )
