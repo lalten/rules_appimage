@@ -27,13 +27,12 @@ jobs:
           restore-keys: bazel-${{ matrix.bazel-version }}-cache-
 
       - run: sed -i.bak '/enable_bzlmod/d' .bazelrc && rm .bazelrc.bak
-        if: ${{ startsWith(matrix.bazel-version, '5') }}
+        if: ${{ matrix.bazel-version == '5.x' }}
 
       - run: bazel test //...
 
-      - name: Run tests (bzlmod enabled)
+      - run: bazel test --enable_bzlmod //...
         if: ${{ matrix.bazel-version != '5.x' }}
-        run: bazel test --test_env=NO_CLEANUP=1 --enable_bzlmod //...
 
   lint:
     runs-on: ubuntu-latest
