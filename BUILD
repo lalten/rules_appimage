@@ -12,8 +12,10 @@ load("//:deps.bzl", "ARCHS")
 
 compile_pip_requirements(
     name = "requirements",
+    src = "requirements.in",
     extra_args = [
         "--resolver=backtracking",
+        "--strip-extras",
         "--upgrade",
     ],
     tags = ["manual"],
