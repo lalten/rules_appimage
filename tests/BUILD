@@ -64,7 +64,7 @@ py_binary(
         ":external_bin.appimage",
         ":symlink_and_emptyfile",
     ],
-    env = {"MY_BINARY_ENV": "not propagated by rules_python :("},
+    env = {"MY_BINARY_ENV": "propagated only in Bazel 7+"},
     main = "test.py",
 )
 

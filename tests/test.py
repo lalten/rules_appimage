@@ -88,9 +88,15 @@ def test_runfiles_symlinks() -> None:
 
 def test_binary_env() -> None:
     """Test that env attr on the binary target is handled."""
-    # Unfortunately rules_python does not seem to set the RunEnvironmentInfo provider.
-    # See https://github.com/bazelbuild/rules_python/issues/901
-    assert "MY_BINARY_ENV" not in os.environ
+    bazel_version = os.getenv("USE_BAZEL_VERSION", "latest")
+    if bazel_version.startswith(("latest", "7.")):
+        # Bazel >= 7.0.0 does set the RunEnvironmentInfo provider 🎉.
+        assert os.getenv("MY_BINARY_ENV") == "propagated only in Bazel 7+"
+    else:
+        # Otherwise it seems rules_python does not set the RunEnvironmentInfo provider.
+        # See https://github.com/bazelbuild/rules_python/issues/901
+        val = os.getenv("MY_BINARY_ENV")
+        assert val is None, f"Expected env to be missing, but got {val}"
 
 
 def greeter() -> None:
