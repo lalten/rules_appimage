@@ -12,7 +12,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
         bazel-version: ["5.x", "6.x", "latest"]
         os: ["ubuntu-latest", "macos-latest"]
 
@@ -21,15 +20,8 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: "~/.cache/bazelisk\n~/.cache/bazel\n"
-          key: py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
-          restore-keys: py${{ matrix.python-version }}-bazel-${{ matrix.bazel-version }}-cache-
-      - name: Set things up for the Python version to be used
-        run: |
-          TO_REPLACE='python_version = "3.11"'
-          REPLACE_WITH='python_version = "${{ matrix.python-version }}"'
-          grep -q "${TO_REPLACE}" WORKSPACE
-          sed -i.bak "s/${TO_REPLACE}/${REPLACE_WITH}/" WORKSPACE && rm WORKSPACE.bak
-          bazel run //:requirements.update
+          key: bazel-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
+          restore-keys: bazel-${{ matrix.bazel-version }}-cache-
       - run: sed -i.bak '/remove if Bazel version < 6/d' tests/test.cc && rm tests/test.cc.bak
         if: ${{ startsWith(matrix.bazel-version, '5') }}
 
