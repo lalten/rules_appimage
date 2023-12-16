@@ -16,4 +16,5 @@ compile_pip_requirements(
         "--resolver=backtracking",
         "--upgrade",
     ],
+    tags = ["manual"],
 )
