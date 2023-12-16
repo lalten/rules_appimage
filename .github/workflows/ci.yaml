@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: ["5.x", "6.x", "latest"]
+        bazel-version: ["5.x", "6.x", "7.x"]
         os: ["ubuntu-latest", "macos-latest"]
 
     steps:
@@ -25,7 +25,8 @@ jobs:
           path: "~/.cache/bazelisk\n~/.cache/bazel\n"
           key: bazel-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
           restore-keys: bazel-${{ matrix.bazel-version }}-cache-
-      - run: sed -i.bak '/remove if Bazel version < 6/d' tests/test.cc && rm tests/test.cc.bak
+
+      - run: sed -i.bak '/enable_bzlmod/d' .bazelrc && rm .bazelrc.bak
         if: ${{ startsWith(matrix.bazel-version, '5') }}
 
       - run: bazel test //...
