@@ -24,7 +24,7 @@ See also [Alternatives](#alternatives) below.
 
 ### Installation
 
-See the [latest release notes](https://github.com/lalten/rules_appimage/releases/latest) for a snippet to add to your `WORKSPACE`.
+See the [latest release notes](https://github.com/lalten/rules_appimage/releases/latest) for a snippet to add to your `MODULE.bazel` or `WORKSPACE`.
 
 ### Usage
 
