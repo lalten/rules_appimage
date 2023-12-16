@@ -25,8 +25,7 @@ jobs:
       - run: sed -i.bak '/remove if Bazel version < 6/d' tests/test.cc && rm tests/test.cc.bak
         if: ${{ startsWith(matrix.bazel-version, '5') }}
 
-      - name: Run tests
-        run: bazel test --test_env=NO_CLEANUP=1 //...
+      - run: bazel test //...
 
   lint:
     runs-on: ubuntu-latest
