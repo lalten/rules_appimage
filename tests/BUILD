@@ -90,7 +90,8 @@ appimage(
     name = "appimage_py",
     binary = ":test_py",
     build_args = [
-        # Example: Compress the squashfs with zstd (gzip is usually the default).
+        # Example: Compress the squashfs with zstd. mksquashfs defaults to gzip, see
+        # https://github.com/lalten/rules_appimage/blob/0ba8e8b7f82e69c7aa6dfac62679bb3137ca4b02/third_party/squashfs-tools.BUILD#L10
         "-comp",
         "zstd",
     ],

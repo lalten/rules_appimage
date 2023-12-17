@@ -28,8 +28,9 @@ See the [latest release notes](https://github.com/lalten/rules_appimage/releases
 
 ### Usage
 
-To package a binary target into an AppImage, you add a `appimage` rule and point it at the target.
-So in your `BUILD` files you do:
+There is an example workspace in [`examples/`](https://github.com/lalten/rules_appimage/blob/main/examples/README.md).
+
+To package a binary target into an AppImage, add an `appimage` rule in a `BUILD` file and point it at the target.
 
 ```py
 load("@rules_appimage//appimage:appimage.bzl", "appimage")
@@ -42,7 +43,7 @@ appimage(
 
 There is also a `appimage_test` rule that takes the same arguments but runs the appimage as a Bazel test target.
 
-## How to use the appimage
+## How to run the appimage artifact
 
 ### Via Bazel
 

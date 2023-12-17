@@ -26,7 +26,8 @@ jobs:
             os: "macos-latest"
           # No Bzlmod with Bazel 5
           - bazel-version: "5.x"
-            bzlmod: "--enable_bzlmod"
+            bzlmod: "--enable_bzlmod"ble_bzlmod"
+            examples: True
 
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +41,9 @@ jobs:
         if: ${{ matrix.bazel-version != '5.x' }}
 
       - run: bazel test //...
+
+      - run: ./integration_test.sh
+        working-directory: examples
 
   lint:
     runs-on: ubuntu-latest
