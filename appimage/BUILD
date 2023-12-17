@@ -1,4 +1,3 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//:deps.bzl", "ARCHS")
 load("toolchain.bzl", "appimage_toolchain")
 
@@ -37,9 +36,4 @@ toolchain(
     name = "default_appimage_toolchain",
     toolchain = ":default_appimage",
     toolchain_type = ":appimage_toolchain_type",
-)
-
-bzl_library(
-    name = "appimage",
-    srcs = ["appimage.bzl"],
 )
