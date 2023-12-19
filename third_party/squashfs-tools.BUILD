@@ -7,6 +7,10 @@ _COPTS = [
     "--no-warnings",  # We don't care about third-party warnings
 ]
 
+_LINKOPTS = [
+    "-lpthread",
+]
+
 _DEFINES = [
     'COMP_DEFAULT=\\"gzip\\"',
     'DATE=\\"redacted\\"',
@@ -41,6 +45,7 @@ cc_library(
     hdrs = ["squashfs_fs.h"],
     copts = _COPTS,
     defines = _DEFINES,
+    linkopts = _LINKOPTS,
     deps = [
         "@bazel_tools//third_party/zlib",
         "@zstd",
@@ -56,6 +61,7 @@ cc_binary(
     ],
     copts = _COPTS,
     defines = _DEFINES,
+    linkopts = _LINKOPTS,
     visibility = ["//visibility:public"],
     deps = [":common"],
 )
@@ -65,6 +71,7 @@ cc_binary(
     srcs = glob(["unsquash*"]),
     copts = _COPTS,
     defines = _DEFINES,
+    linkopts = _LINKOPTS,
     visibility = ["//visibility:public"],
     deps = [":common"],
 )
