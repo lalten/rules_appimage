@@ -3,6 +3,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 _COPTS = [
     "-O2",  # squashfs-tools/Makefile#L219
     "-std=gnu17",  # GNU extensions are at play
+    "-pthread",
     "--no-warnings",  # We don't care about third-party warnings
 ]
 
