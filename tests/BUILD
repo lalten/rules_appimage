@@ -61,10 +61,9 @@ py_binary(
     data = [
         "data.txt",
         "dir",  # this is a relative directory, not a target label
-        ":absolutely_invalid_link",
+        ":dangling_symlink",
         ":external_bin.appimage",
         ":path/to/the/runfiles_symlink",
-        ":relatively_invalid_link",
     ],
     env = {"MY_BINARY_ENV": "propagated only in Bazel 7+"},
     main = "test.py",
@@ -136,13 +135,8 @@ appimage_test(
 )
 
 declared_symlink(
-    name = "relatively_invalid_link",
+    name = "dangling_symlink",
     target = "././.././idonotexist",
-)
-
-declared_symlink(
-    name = "absolutely_invalid_link",
-    target = "/💣",
 )
 
 runfiles_symlink(
