@@ -46,8 +46,11 @@ def test_symlinks() -> None:
     extracted_path = Path(_TMPDIR) / "squashfs-root"
     symlinks_present = False
     for file in extracted_path.glob("**/*"):
-        if file.is_symlink() and file.name != "invalid_link":
-            assert file.resolve().exists(), f"{file} resolves to {file.resolve()}, which does not exist!"
+        if file.is_symlink():
+            if file.name in {"relatively_invalid_link", "absolutely_invalid_link"}:
+                assert not file.resolve().exists(), f"{file} resolves to {file.resolve()}, which should not exist!"
+            else:
+                assert file.resolve().exists(), f"{file} resolves to {file.resolve()}, which does not exist!"
             symlinks_present = True
     assert symlinks_present
 

@@ -1,12 +1,32 @@
-"""Bazel rule that creates a runfile symlink."""
+"""Bazel rules that creates specific versions of symlinks."""
 
-def _rules_appimage_test_rule_impl(ctx):
-    runfiles = ctx.runfiles(symlinks = {"path/to/the/runfiles_symlink": ctx.files.symlink[0]})
+def _runfiles_symlink_impl(ctx):
+    symlinks_dict = {ctx.attr.name: ctx.file.target}
+    runfiles = ctx.runfiles(symlinks = symlinks_dict)
     return [DefaultInfo(runfiles = runfiles)]
 
-rules_appimage_test_rule = rule(
-    implementation = _rules_appimage_test_rule_impl,
+runfiles_symlink = rule(
+    implementation = _runfiles_symlink_impl,
     attrs = {
-        "symlink": attr.label(mandatory = True, allow_single_file = True),
+        "target": attr.label(mandatory = True, allow_single_file = True),
+    },
+)
+
+def _declared_symlink_impl(ctx):
+    declared_symlink = ctx.actions.declare_symlink(ctx.attr.name)
+    ctx.actions.run_shell(
+        outputs = [declared_symlink],
+        command = " ".join([
+            "ln -s",
+            repr(ctx.attr.target),
+            repr(declared_symlink.path),
+        ]),
+    )
+    return [DefaultInfo(files = depset([declared_symlink]))]
+
+declared_symlink = rule(
+    implementation = _declared_symlink_impl,
+    attrs = {
+        "target": attr.string(mandatory = True),
     },
 )
