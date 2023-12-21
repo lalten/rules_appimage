@@ -22,7 +22,8 @@ def _declared_symlink_impl(ctx):
             repr(declared_symlink.path),
         ]),
     )
-    return [DefaultInfo(files = depset([declared_symlink]))]
+    runfiles = ctx.runfiles(files = [declared_symlink])
+    return [DefaultInfo(runfiles = runfiles)]
 
 declared_symlink = rule(
     implementation = _declared_symlink_impl,

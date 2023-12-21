@@ -75,10 +75,6 @@ def test_symlinks() -> None:
 
 def test_declared_symlinks() -> None:
     """Test that symlinks declared via `ctx.actions.declare_symlink(...)` are handled correctly."""
-    if os.getenv("USE_BAZEL_VERSION", "latest").startswith("5."):
-        # It seems Bazel <6 does not support `declare_symlink`, even with --experimental_allow_unresolved_symlinks
-        return
-
     invalid_link = Path("tests/relatively_invalid_link")
     assert invalid_link.is_symlink()
     target = os.readlink(invalid_link)
