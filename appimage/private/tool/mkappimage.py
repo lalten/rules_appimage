@@ -111,7 +111,15 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
 
     linkpairs: List[Tuple[Path, Path]] = []
     for file in manifest_data["files"]:
-        src = Path(file["src"]).resolve()
+        src = Path(file["src"])
+        src_actual = src.resolve()
+        if not src_actual.exists():
+            # src is declared as an input, but is a dangling symlink. Let's keep it as is.
+            pass
+        else:
+            # It's ok to resolve the file here as it's supposed to be an actual input file.
+            # Runfile symlinks are handled below.
+            src = src_actual
         dst = Path(appdir / file["dst"]).resolve()
         linkpairs.extend(copy_and_link(src, dst))
     fix_linkpair(linkpairs)

@@ -2,7 +2,7 @@ load("@rules_appimage_py_deps//:requirements.bzl", "requirement")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("//appimage:appimage.bzl", "appimage", "appimage_test")
-load(":testrules.bzl", "rules_appimage_test_rule")
+load(":testrules.bzl", "declared_symlink", "runfiles_symlink")
 
 sh_binary(
     name = "test_sh",
@@ -61,8 +61,10 @@ py_binary(
     data = [
         "data.txt",
         "dir",  # this is a relative directory, not a target label
+        ":absolutely_invalid_link",
         ":external_bin.appimage",
-        ":symlink_and_emptyfile",
+        ":path/to/the/runfiles_symlink",
+        ":relatively_invalid_link",
     ],
     env = {"MY_BINARY_ENV": "propagated only in Bazel 7+"},
     main = "test.py",
@@ -117,11 +119,6 @@ appimage(
     },
 )
 
-rules_appimage_test_rule(
-    name = "symlink_and_emptyfile",
-    symlink = "data.txt",
-)
-
 sh_test(
     name = "runfiles_test_sh",
     size = "small",
@@ -136,4 +133,19 @@ appimage_test(
     env = {"RUNFILES_LIB_DEBUG": "1"},
     tags = ["requires-fakeroot"],
     target_compatible_with = ["@platforms//os:linux"],
+)
+
+declared_symlink(
+    name = "relatively_invalid_link",
+    target = "././.././idonotexist",
+)
+
+declared_symlink(
+    name = "absolutely_invalid_link",
+    target = "/💣",
+)
+
+runfiles_symlink(
+    name = "path/to/the/runfiles_symlink",
+    target = ":data.txt",
 )

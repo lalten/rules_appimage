@@ -67,19 +67,33 @@ def test_symlinks() -> None:
     assert abs_link.is_symlink()
     assert os.readlink(abs_link) == "/bin/sh"
 
-    invalid_link = Path("tests/dir/subdir/invalid_link")
-    assert invalid_link.is_symlink()
-    assert os.readlink(invalid_link) == "invalid/target"
-    assert not invalid_link.is_file()
-
     dir_link = Path("tests/dir/subdir/dir_link")
     assert dir_link.is_symlink()
     assert os.readlink(dir_link) == "dir"
     assert dir_link.resolve().is_dir()
 
 
+def test_declared_symlinks() -> None:
+    """Test that symlinks declared via `ctx.actions.declare_symlink(...)` are handled correctly."""
+    if os.getenv("USE_BAZEL_VERSION", "latest").startswith("5."):
+        # It seems Bazel <6 does not support `declare_symlink`, even with --experimental_allow_unresolved_symlinks
+        return
+
+    invalid_link = Path("tests/relatively_invalid_link")
+    assert invalid_link.is_symlink()
+    target = os.readlink(invalid_link)
+    assert target == "../idonotexist", target
+    assert not invalid_link.is_file()
+
+    invalid_link = Path("tests/absolutely_invalid_link")
+    assert invalid_link.is_symlink()
+    target = os.readlink(invalid_link)
+    assert target == "/💣", target
+    assert not invalid_link.is_file()
+
+
 def test_runfiles_symlinks() -> None:
-    """Test that runfiles symlinks are handled correctly."""
+    """Test that symlinks coming from `ctx.runfiles(symlinks = {...})` are handled correctly."""
     runfiles_symlink = Path("path/to/the/runfiles_symlink")
     assert runfiles_symlink.is_symlink()
     assert os.readlink(runfiles_symlink) == "../../../tests/data.txt"
@@ -112,6 +126,7 @@ if __name__ == "__main__":
     test_appimage_datadep()
     test_external_bin()
     test_symlinks()
+    test_declared_symlinks()
     test_runfiles_symlinks()
     test_binary_env()
     greeter()
