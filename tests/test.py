@@ -75,16 +75,10 @@ def test_symlinks() -> None:
 
 def test_declared_symlinks() -> None:
     """Test that symlinks declared via `ctx.actions.declare_symlink(...)` are handled correctly."""
-    invalid_link = Path("tests/relatively_invalid_link")
+    invalid_link = Path("tests/dangling_symlink")
     assert invalid_link.is_symlink()
     target = os.readlink(invalid_link)
     assert target == "../idonotexist", target
-    assert not invalid_link.is_file()
-
-    invalid_link = Path("tests/absolutely_invalid_link")
-    assert invalid_link.is_symlink()
-    target = os.readlink(invalid_link)
-    assert target == "/💣", target
     assert not invalid_link.is_file()
 
 

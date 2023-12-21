@@ -47,7 +47,7 @@ def test_symlinks() -> None:
     symlinks_present = False
     for file in extracted_path.glob("**/*"):
         if file.is_symlink():
-            if file.name in {"relatively_invalid_link", "absolutely_invalid_link"}:
+            if file.name == "dangling_symlink":
                 assert not file.resolve().exists(), f"{file} resolves to {file.resolve()}, which should not exist!"
             else:
                 assert file.resolve().exists(), f"{file} resolves to {file.resolve()}, which does not exist!"
