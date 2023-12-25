@@ -18,6 +18,5 @@ compile_pip_requirements(
         "--strip-extras",
         "--upgrade",
     ],
-    requirements_txt = "requirements.txt",
     tags = ["manual"],
 )
