@@ -78,6 +78,9 @@ def _default_emptyfiles(dep):
 def _default_symlinks(dep):
     return dep[DefaultInfo].default_runfiles.symlinks
 
+def _default_root_symlinks(dep):
+    return dep[DefaultInfo].default_runfiles.root_symlinks
+
 def collect_runfiles_info(ctx):
     """Collect application files and runfiles.
 
@@ -94,13 +97,17 @@ def collect_runfiles_info(ctx):
 
     # Collect everything that needs to be in the appimage and deduplicate using depset.
     runfiles_list = depset(ctx.files.data, transitive = [_default_runfiles(ctx.attr.binary)] + [_default_runfiles(d) for d in ctx.attr.data]).to_list()
-    symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
-    emptyfiles_list = depset(transitive = [_default_emptyfiles(ctx.attr.binary)] + [_default_emptyfiles(d) for d in ctx.attr.data]).to_list()
-
     file_map = {f.path: _final_file_path(ctx, f) for f in runfiles_list}
+
+    # Handle empty_filenames. This is used for some __init__.py files.
+    emptyfiles_list = depset(transitive = [_default_emptyfiles(ctx.attr.binary)] + [_default_emptyfiles(d) for d in ctx.attr.data]).to_list()
     empty_files = [_final_emptyfile_path(ctx, f) for f in emptyfiles_list]
 
+    # Handle symlinks. See https://bazel.build/extending/rules#runfiles_symlinks
+    symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
     symlinks = {_final_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in symlinks_list}
+    root_symlinks_list = depset(transitive = [_default_root_symlinks(ctx.attr.binary)] + [_default_root_symlinks(d) for d in ctx.attr.data]).to_list()
+    symlinks.update({sl.path: sl.target for sl in root_symlinks_list})
     entrypoint = _binary_name(ctx)
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.
