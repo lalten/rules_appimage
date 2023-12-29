@@ -12,7 +12,7 @@ load("//:deps.bzl", "ARCHS")
 
 compile_pip_requirements(
     name = "requirements",
-    src = "requirements.in",
+    requirements_in = "requirements.in",
     extra_args = [
         "--resolver=backtracking",
         "--strip-extras",
