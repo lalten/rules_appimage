@@ -45,7 +45,7 @@ def _external_dir(ctx):
     return "/".join([_reference_dir(ctx), "external"])
 
 def _final_emptyfile_path(ctx, name):
-    """The final location that this file needs to exist for the foo_binary target to properly execute."""
+    """The final location that this empty file needs to exist at for the foo_binary target to properly execute."""
     if not name.startswith("external/"):
         # Names that don't start with external are relative to our own workspace.
         return _reference_dir(ctx) + "/" + name
@@ -62,8 +62,12 @@ def _final_emptyfile_path(ctx, name):
     return "/".join([_runfiles_dir(ctx), name[len("external/"):]])
 
 def _final_file_path(ctx, f):
-    """The final location that this file needs to exist for the foo_binary target to properly execute."""
+    """The final location that this file needs to exist at for the foo_binary target to properly execute."""
     return "/".join([_reference_dir(ctx), f.short_path])
+
+def _final_symlink_path(ctx, sl):
+    """The final location that this symlink needs to exist at for the foo_binary target to properly execute."""
+    return "/".join([_reference_dir(ctx), sl.path])
 
 def _default_runfiles(dep):
     return dep[DefaultInfo].default_runfiles.files
@@ -93,13 +97,10 @@ def collect_runfiles_info(ctx):
     symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
     emptyfiles_list = depset(transitive = [_default_emptyfiles(ctx.attr.binary)] + [_default_emptyfiles(d) for d in ctx.attr.data]).to_list()
 
-    file_map = {_final_file_path(ctx, f): f for f in runfiles_list}
+    file_map = {f.path: _final_file_path(ctx, f) for f in runfiles_list}
     empty_files = [_final_emptyfile_path(ctx, f) for f in emptyfiles_list]
 
-    symlinks = {
-        (_reference_dir(ctx) + "/" + sl.path): _final_file_path(ctx, sl.target_file)
-        for sl in symlinks_list
-    }
+    symlinks = {_final_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in symlinks_list}
     entrypoint = _binary_name(ctx)
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.
@@ -109,8 +110,8 @@ def collect_runfiles_info(ctx):
     })
 
     manifest = struct(
-        files = [struct(src = f.path, dst = path) for (path, f) in file_map.items()],
-        symlinks = [struct(linkname = k, target = symlinks[k]) for k in symlinks],
+        files = [struct(src = src, dst = dst) for src, dst in file_map.items()],
+        symlinks = [struct(linkname = linkname, target = target) for linkname, target in symlinks.items()],
         empty_files = empty_files,
     )
     workdir = "/".join([_runfiles_dir(ctx), ctx.attr.binary.label.workspace_name or ctx.workspace_name])
