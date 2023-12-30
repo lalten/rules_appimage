@@ -75,6 +75,13 @@ def test_symlinks() -> None:
     assert os.readlink(dir_link) == "dir"
     assert dir_link.resolve().is_dir()
 
+    link = next(Path("..").glob("**/bin/python3"))
+    # link will be one of these depending on --enable_bzlmod (and rules_python version)
+    # "rules_appimage_python_x86_64-unknown-linux-gnu/bin/python3"
+    # "rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3"
+    assert link.is_symlink()
+    assert os.readlink(link) == "python3.11"
+
 
 def test_declared_symlinks() -> None:
     """Test that symlinks declared via `ctx.actions.declare_symlink(...)` are handled correctly."""
