@@ -48,6 +48,12 @@ def relative_path(target: Path, origin: Path) -> Path:
         return Path("..").joinpath(relative_path(target, origin.parent))
 
 
+def is_inside_bazel_cache(path: Path) -> bool:
+    """Check whether a path is inside the Bazel cache."""
+    pathstr = os.fspath(path)
+    return "/.cache/bazel/" in pathstr or pathstr.startswith("/tmp/bazel-source-roots/")
+
+
 def _copy_file(src: Path | str, dst: Path | str) -> None:
     """Copy one file from src to dst."""
     # We use copy2 because it preserves metadata like permissions.
@@ -87,6 +93,15 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
             continue
 
         target = src.readlink()
+
+        if target.is_symlink() and is_inside_bazel_cache(target):
+            # This is a symlink residing inside the Bazel cache. Follow one level to find where it actually points.
+            # Example: src "external/rules_appimage_python_x86_64-unknown-linux-gnu/bin/2to3" is a symlink with target
+            # "/home/user/.cache/bazel/_bazel_user/a5a...2f3/execroot/rules_appimage/external/rules_appimage_python_x86_
+            # 64-unknown-linux-gnu/bin/2to3" (in Bazel 6) or "/tmp/bazel-source-roots/2/bin/2to3" (in Bazel 7), which
+            # itself is a symlink pointing at "2to3-3.11".
+            target = target.readlink()
+
         if target.is_absolute():
             # Absolute symlinks are ok to keep in the files section because we are going to resolve them before copying.
             # Commonly this happens with source files that are symlinks from the sandbox to the actual source checkout.
