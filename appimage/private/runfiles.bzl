@@ -34,6 +34,9 @@ def _reference_dir(ctx):
     """The directory relative to which all ".short_path" paths are relative.
 
     For @foo//bar/baz:blah this would translate to /app/bar/baz/blah.runfiles/foo
+
+    If --enable_bzlmod is on, ctx.workspace_name is the fixed string _main.
+    Otherwise, ctx.workspace_name is the workspace name as defined in the WORKSPACE file.
     """
     return "/".join([_runfiles_dir(ctx), ctx.workspace_name])
 

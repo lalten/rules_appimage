@@ -1,5 +1,6 @@
 """Library to prepare and build AppImages."""
 
+import copy
 import json
 import os
 import shutil
@@ -7,9 +8,11 @@ import subprocess
 import tempfile
 import textwrap
 from pathlib import Path
-from typing import Dict, Iterable, List, NamedTuple, Optional, Tuple
+from typing import Iterable, NamedTuple
 
 import runfiles as bazel_runfiles
+
+_ManifestDataT = dict[str, list[str | dict[str, str]]]
 
 
 def _get_path_or_raise(path: str) -> Path:
@@ -45,91 +48,107 @@ def relative_path(target: Path, origin: Path) -> Path:
         return Path("..").joinpath(relative_path(target, origin.parent))
 
 
-def is_inside_bazel_cache(path: Path) -> bool:
-    """Check whether a path is inside the Bazel cache."""
-    return "/.cache/bazel/" in os.fspath(path) and "bazel-out" in path.parts
+def _copy_file(src: Path | str, dst: Path | str) -> None:
+    """Copy one file from src to dst."""
+    # We use copy2 because it preserves metadata like permissions.
+    # We do not want follow_symlinks because we want to keep symlink targets preserved.
+    shutil.copy2(src, dst, follow_symlinks=False)
 
 
-def copy_and_link(src: Path, dst: Path) -> List[Tuple[Path, Path]]:
-    """Copy links and files, and return a list of recreated symlinks."""
+def _copy_file_or_dir(src: Path, dst: Path) -> None:
+    """Copy a file or dir from src to dst."""
     dst.parent.mkdir(parents=True, exist_ok=True)
-
-    # Recreate existing symlinks (Note: symlinks only remain inside /dirs/ that are declared as Bazel dep)
-    if src.is_symlink():
-        link = Path(os.readlink(src))
-        dst.symlink_to(link)
-        return [(src, dst)]
-
-    # Recurse into dirs
     if src.is_dir():
-        dst.mkdir(parents=True, exist_ok=True)  # make dir, even if there are no files in it
-        linkpairs: List[Tuple[Path, Path]] = []
-        for dirsrc in src.glob("*"):
-            dirdst = dst / dirsrc.relative_to(src)
-            linkpairs.extend(copy_and_link(dirsrc, dirdst))
-        return linkpairs
+        shutil.copytree(
+            src,
+            dst,
+            symlinks=True,
+            copy_function=_copy_file,
+            ignore_dangling_symlinks=True,
+            dirs_exist_ok=True,
+        )
+    else:
+        _copy_file(src, dst)
 
-    # Regular file
-    shutil.copy2(src, dst)
-    return []
 
+def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _ManifestDataT) -> _ManifestDataT:
+    """Check if a file is a _relative_ symlink and if so, move it to a new relative_symlinks section."""
+    new_manifest_data = copy.deepcopy(manifest_data)
+    new_manifest_data["files"].clear()
+    new_manifest_data["relative_symlinks"] = []
 
-def fix_linkpair(linkpairs: Iterable[Tuple[Path, Path]]) -> None:
-    """If the link would break, copy over the target as well."""
-    copied_src_targets: Dict[Path, Optional[Path]] = {}
-    for src, dst in linkpairs:
-        link = Path(os.readlink(src))
-        target = (dst.parent / link).resolve()
-        target_in_bazel_cache = is_inside_bazel_cache(target)
-        if dst.exists() and not target_in_bazel_cache:
+    for entry in manifest_data["files"]:
+        assert isinstance(entry, dict)
+        src = Path(entry["src"])
+
+        if not src.is_symlink():
+            # This is not a symlink. We want to copy that regular file (or dir!) as-is.
+            new_manifest_data["files"].append(entry)
             continue
-        if existing_copy := copied_src_targets.get(src.resolve(), None):
-            dst.unlink()
-            dst.symlink_to(existing_copy)
+
+        target = src.readlink()
+        if target.is_absolute():
+            # Absolute symlinks are ok to keep in the files section because we are going to resolve them before copying.
+            # Commonly this happens with source files that are symlinks from the sandbox to the actual source checkout.
+            new_manifest_data["files"].append(entry)
         else:
-            copy_dst = dst if target_in_bazel_cache else target
-            if copy_dst.exists():
-                copy_dst.unlink()
-            else:
-                copy_dst.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                shutil.copy2(src.resolve(), copy_dst, follow_symlinks=False)
-            except FileNotFoundError:
-                pass  # broken symlinks are allowed
-            else:
-                copied_src_targets[src.resolve()] = copy_dst
+            # This is a relative symlink. Let's move it out of the files section and into the relative_symlinks section.
+            # We do this to maintain the existing symlink structure and to prevent the linked file to be copied twice
+            # (although squashfs would deduplicate it).
+            # Note that the link target may _not_ be reachable if it is not declared as input itself.
+            # Users need to ensure that whatever shall be available at runtime is properly declared as data dependency.
+            new_manifest_data["relative_symlinks"].append(
+                {
+                    "linkname": entry["dst"],
+                    "target": os.fspath(target),
+                },
+            )
+
+    return new_manifest_data
 
 
 def populate_appdir(appdir: Path, params: AppDirParams) -> None:
     """Make the AppDir that will be squashfs'd into the AppImage."""
     appdir.mkdir(parents=True, exist_ok=True)
     manifest_data = json.loads(params.manifest.read_text())
+    manifest_data = _move_relative_symlinks_in_files_to_their_own_section(manifest_data)
 
     for empty_file in manifest_data["empty_files"]:
+        # example entry: "tests/test_py.runfiles/__init__.py"
         (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
         (appdir / empty_file).touch()
 
-    linkpairs: List[Tuple[Path, Path]] = []
     for file in manifest_data["files"]:
-        src = Path(file["src"])
-        src_actual = src.resolve()
-        if not src_actual.exists():
-            # src is declared as an input, but is a dangling symlink. Let's keep it as is.
-            pass
-        else:
-            # It's ok to resolve the file here as it's supposed to be an actual input file.
-            # Runfile symlinks are handled below.
-            src = src_actual
+        # example entry: {"dst": "tests/test_py.runfiles/_main/tests/data.txt", "src": "tests/data.txt"}
+        src = Path(file["src"]).resolve()
         dst = Path(appdir / file["dst"]).resolve()
-        linkpairs.extend(copy_and_link(src, dst))
-    fix_linkpair(linkpairs)
+        assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
+        _copy_file_or_dir(src, dst)
 
     for link in manifest_data["symlinks"]:
-        linkfile = (appdir / Path(link["linkname"])).resolve()
+        # example entry: {"linkname": "tests/test_py", "target": "tests/test_py.runfiles/_main/tests/test_py"}
+        linkname = Path(link["linkname"])
+        linkfile = (appdir / linkname).resolve()
         linkfile.parent.mkdir(parents=True, exist_ok=True)
-        abs_link_target = (appdir / Path(link["target"])).resolve()
-        rel_link_target = os.path.relpath(abs_link_target, linkfile.parent)
-        linkfile.symlink_to(rel_link_target)
+        target = Path(link["target"])
+        if target.is_absolute():
+            # We keep absolute symlinks as is, but make no effort to copy the target into the runfiles as well.
+            # Note that not all Bazel remote cache implementations allow absolute symlinks!
+            pass
+        else:
+            # Adapt relative symlinks to point relative to the new linkfile location
+            target = relative_path(appdir / target, linkfile.parent)
+        linkfile.symlink_to(target)
+
+    for link in manifest_data["relative_symlinks"]:
+        # example entry: {"linkname":
+        # "tests/test_py.runfiles/_main/../rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3",
+        # "target": "python3.11"}
+        linkfile = (appdir / link["linkname"]).resolve()
+        linkfile.parent.mkdir(parents=True, exist_ok=True)
+        target = Path(link["target"])
+        assert not target.is_absolute(), f"symlink {linkfile} must be relative, but points at {target}"
+        linkfile.symlink_to(target)
 
     apprun_path = appdir / "AppRun"
     apprun_path.write_text(

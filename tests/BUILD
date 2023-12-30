@@ -62,6 +62,8 @@ py_binary(
         "data.txt",
         "dir",  # this is a relative directory, not a target label
         ":dangling_symlink",
+        ":dot_symlink",
+        ":dotdot_symlink",
         ":external_bin.appimage",
         ":path/to/the/runfiles_symlink",
     ],
@@ -138,6 +140,16 @@ appimage_test(
 declared_symlink(
     name = "dangling_symlink",
     target = "././.././idonotexist",
+)
+
+declared_symlink(
+    name = "dot_symlink",
+    target = ".",
+)
+
+declared_symlink(
+    name = "dotdot_symlink",
+    target = "..",
 )
 
 runfiles_symlink(

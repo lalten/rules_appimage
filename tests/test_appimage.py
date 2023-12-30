@@ -45,9 +45,10 @@ def test_symlinks() -> None:
     subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, cwd=_TMPDIR, env=_ENV)
     extracted_path = Path(_TMPDIR) / "squashfs-root"
     symlinks_present = False
+    expected_dangling = {"dangling_symlink", "link_to_file_in_dir2", "link_to_link_to_file_in_dir2"}
     for file in extracted_path.glob("**/*"):
         if file.is_symlink():
-            if file.name == "dangling_symlink":
+            if file.name in expected_dangling:
                 assert not file.resolve().exists(), f"{file} resolves to {file.resolve()}, which should not exist!"
             else:
                 assert file.resolve().exists(), f"{file} resolves to {file.resolve()}, which does not exist!"
