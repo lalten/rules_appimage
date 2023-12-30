@@ -51,11 +51,14 @@ def test_symlinks() -> None:
     """Test that symlinks are handled correctly."""
     link_to_undeclared_dep = Path("tests/dir/link_to_file_in_dir2")
     assert link_to_undeclared_dep.is_symlink()
-    assert link_to_undeclared_dep.read_text(encoding="utf-8").strip() == "content of file_in_dir2"
+    assert not link_to_undeclared_dep.resolve().exists()
 
     link_to_link_to_undeclared_dep = Path("tests/dir/link_to_link_to_file_in_dir2")
-    assert link_to_link_to_undeclared_dep.read_text(encoding="utf-8").strip() == "content of file_in_dir2"
     assert link_to_link_to_undeclared_dep.is_symlink()
+    target = link_to_link_to_undeclared_dep.readlink()
+    linkdir = link_to_link_to_undeclared_dep.parent
+    assert (linkdir / target).is_symlink(), f"{linkdir} / {target} is not a link as expected"
+    assert not (linkdir / target).resolve().is_file()
 
     link_to_declared_dep = Path("tests/dir/subdir/symlink_to_local_file")
     assert link_to_declared_dep.is_file()
@@ -75,11 +78,23 @@ def test_symlinks() -> None:
 
 def test_declared_symlinks() -> None:
     """Test that symlinks declared via `ctx.actions.declare_symlink(...)` are handled correctly."""
-    invalid_link = Path("tests/dangling_symlink")
-    assert invalid_link.is_symlink()
-    target = os.readlink(invalid_link)
+    link = Path("tests/dangling_symlink")
+    assert link.is_symlink()
+    target = os.readlink(link)
     assert target == "../idonotexist", target
-    assert not invalid_link.is_file()
+    assert not link.is_file()
+
+    link = Path("tests/dot_symlink")
+    assert link.is_symlink()
+    target = os.readlink(link)
+    assert target == ".", target
+    assert link.is_dir()
+
+    link = Path("tests/dotdot_symlink")
+    assert link.is_symlink()
+    target = os.readlink(link)
+    assert target == "..", target
+    assert link.is_dir()
 
 
 def test_runfiles_symlinks() -> None:
