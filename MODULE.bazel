@@ -1,9 +1,6 @@
 """AppImage rules for Bazel."""
 
-module(
-    name = "rules_appimage",
-    version = "1.6.0",
-)
+module(name = "rules_appimage")
 
 bazel_dep(name = "bazel_skylib", version = "1.5.0", dev_dependency = True)
 bazel_dep(name = "platforms", version = "0.0.8")
