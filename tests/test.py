@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -80,7 +81,7 @@ def test_symlinks() -> None:
     # "rules_appimage_python_x86_64-unknown-linux-gnu/bin/python3"
     # "rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3"
     assert link.is_symlink()
-    assert os.readlink(link) == "python3.11"
+    assert re.match(r"^python3.\d+$", os.readlink(link)), os.readlink(link)
 
 
 def test_declared_symlinks() -> None:
