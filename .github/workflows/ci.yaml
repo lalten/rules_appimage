@@ -36,7 +36,10 @@ jobs:
           key: bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.bzlmod }}-cache-${{ github.run_id }}
           restore-keys: bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.bzlmod }}-cache-
 
-      - run: bazel test ${{ matrix.bzlmod}} -- //...
+      - run: echo "common ${{ matrix.bzlmod}}" >> .bazelrc
+        if: ${{ matrix.bazel-version != '5.x' }}
+
+      - run: bazel test //...
 
   lint:
     runs-on: ubuntu-latest
