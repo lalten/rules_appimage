@@ -1,11 +1,11 @@
 """Example workspace using rules_appimage."""
 
-module(name = "rules_appimage_example", version = "0.0.0")
+module(name = "rules_appimage_example")
 
 # Real repos should do:
 #     bazel_dep(name = "rules_appimage", version = "1.6.0")
 # But instead we're using this:
-bazel_dep(name = "rules_appimage", version = "")
+bazel_dep(name = "rules_appimage")
 local_path_override(
     module_name = "rules_appimage",
     path = "../",
