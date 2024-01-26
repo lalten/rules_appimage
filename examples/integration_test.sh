@@ -10,7 +10,8 @@ trap "rm -f hello.appimage" EXIT
 cp -f bazel-bin/hello.appimage .
 
 ls -lah hello.appimage
-file hello.appimage
+
+[[ "$(file hello.appimage)" == "hello.appimage: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped" ]] || exit 1
 
 if ! output="$(./hello.appimage 2>&1)"; then
     echo "Unexpected failure: $output"
