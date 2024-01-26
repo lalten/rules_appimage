@@ -57,8 +57,7 @@ jobs:
           key: examples-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
           restore-keys: examples-${{ matrix.bazel-version }}-cache-
 
-      - run: ./integration_test.sh
-        working-directory: examples
+      - run: examples/integration_test.sh
 
   lint:
     runs-on: ubuntu-latest

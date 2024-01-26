@@ -2,6 +2,8 @@
 
 set -euxo pipefail
 
+cd "$(dirname "$0")"
+
 bazel build //:hello.appimage
 
 trap "rm -f hello.appimage" EXIT
