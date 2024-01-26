@@ -1,6 +1,11 @@
 {
   "homepage": "https://github.com/lalten/rules_appimage",
-  "maintainers": [],
+  "maintainers": [
+    {
+      "email": "bcr@laure.nz",
+      "name": "lalten"
+    }
+  ],
   "repository": ["github:lalten/rules_appimage"],
   "versions": [],
   "yanked_versions": {}
