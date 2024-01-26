@@ -17,22 +17,26 @@ jobs:
       matrix:
         bazel-version: ["5.x", "6.x", "7.x"]
         os: ["ubuntu-latest", "macos-latest"]
+        bzlmod: ["--enable_bzlmod", "--noenable_bzlmod"]
+        exclude:
+          # Don't expect Bazel compatibility issues depending on OS, so speed this up
+          - bazel-version: "5.x"
+            os: "macos-latest"
+          - bazel-version: "6.x"
+            os: "macos-latest"
+          # No Bzlmod with Bazel 5
+          - bazel-version: "5.x"
+            bzlmod: "--enable_bzlmod"
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v3
         with:
           path: "~/.cache/bazelisk\n~/.cache/bazel\n"
-          key: bazel-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
-          restore-keys: bazel-${{ matrix.bazel-version }}-cache-
+          key: bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.bzlmod }}-cache-${{ github.run_id }}
+          restore-keys: bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.bzlmod }}-cache-
 
-      - run: sed -i.bak '/enable_bzlmod/d' .bazelrc && rm .bazelrc.bak
-        if: ${{ matrix.bazel-version == '5.x' }}
-
-      - run: bazel test //...
-
-      - run: bazel test --enable_bzlmod //...
-        if: ${{ matrix.bazel-version != '5.x' }}
+      - run: bazel test ${{ matrix.bzlmod}} -- //...
 
   lint:
     runs-on: ubuntu-latest
