@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: "~/.cache/bazelisk\n~/.cache/bazel\n"
           key: bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.bzlmod }}-cache-${{ github.run_id }}
