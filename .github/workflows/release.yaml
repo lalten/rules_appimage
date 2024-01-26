@@ -1,0 +1,22 @@
+name: Release
+
+"on":
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  attach-release-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - run: >
+          wget "https://github.com/$GITHUB_REPOSITORY/archive/refs/tags/${{ github.ref_name }}.tar.gz"
+          -O "rules_appimage-${{ github.ref_name }}.tar.gz"
+      - uses: svenstaro/upload-release-action@2.7.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "rules_appimage-${{ github.ref_name }}.tar.gz"
+          tag: "${{ github.ref_name }}"
+          overwrite: true
