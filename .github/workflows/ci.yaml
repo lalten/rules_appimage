@@ -18,6 +18,7 @@ jobs:
         bazel-version: ["5.x", "6.x", "7.x"]
         os: ["ubuntu-latest", "macos-latest"]
         bzlmod: ["--enable_bzlmod", "--noenable_bzlmod"]
+        examples: [true, false]
         exclude:
           # Don't expect Bazel compatibility issues depending on OS, so speed this up
           - bazel-version: "5.x"
@@ -26,8 +27,13 @@ jobs:
             os: "macos-latest"
           # No Bzlmod with Bazel 5
           - bazel-version: "5.x"
-            bzlmod: "--enable_bzlmod"ble_bzlmod"
-            examples: True
+            bzlmod: "--enable_bzlmod"
+          # Can't run integration tests on macOS
+          - os: "macos-latest"
+            examples: true
+          # Examples are bzlmod only at this point
+          - bzlmod: "--noenable_bzlmod"
+            examples: true
 
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +50,7 @@ jobs:
 
       - run: ./integration_test.sh
         working-directory: examples
+        if: ${{ matrix.examples }}
 
   lint:
     runs-on: ubuntu-latest
