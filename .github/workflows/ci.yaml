@@ -29,7 +29,7 @@ jobs:
             external_dependency_system: bzlmod
         include:
           - external_dependency_system: bzlmod
-            flags: --enable_bzlmod --lockfile_mode=off
+            flags: --enable_bzlmod
           - external_dependency_system: workspace
             flags: --noenable_bzlmod
 
@@ -47,6 +47,8 @@ jobs:
 
       - run: echo "common ${{ matrix.flags }}" >> .bazelrc
         if: ${{ matrix.bazel-version != '5.x' }}
+      - run: sed -i.bak '/lockfile_mode/d' .bazelrc
+        if: ${{ matrix.bazel-version == '5.x' }}
 
       - run: bazel test //...
 
