@@ -9,24 +9,29 @@ permissions: read-all
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: ["5.x", "6.x", "7.x"]
-        os: ["ubuntu-latest", "macos-latest"]
-        bzlmod: ["--enable_bzlmod", "--noenable_bzlmod"]
+        bazel-version: [5.x, 6.x, 7.x]
+        os: [ubuntu, macos]
+        external_dependency_system: [bzlmod, workspace]
         exclude:
           # Don't expect Bazel compatibility issues depending on OS, so speed this up
-          - bazel-version: "5.x"
-            os: "macos-latest"
-          - bazel-version: "6.x"
-            os: "macos-latest"
+          - bazel-version: 5.x
+            os: macos
+          - bazel-version: 6.x
+            os: macos
           # No Bzlmod with Bazel 5
-          - bazel-version: "5.x"
-            bzlmod: "--enable_bzlmod"
+          - bazel-version: 5.x
+            external_dependency_system: bzlmod
+        include:
+          - external_dependency_system: bzlmod
+            flags: --enable_bzlmod --lockfile_mode=off
+          - external_dependency_system: workspace
+            flags: --noenable_bzlmod
 
     steps:
       - uses: actions/checkout@v4
@@ -37,10 +42,10 @@ jobs:
             ~/Library/Caches/bazelisk
             ~/.cache/bazel
             /private/var/tmp/_bazel_runner
-          key: bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.bzlmod }}-cache-${{ github.run_id }}
-          restore-keys: bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.bzlmod }}-cache-
+          key: "bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.flags }}-cache-${{ github.run_id }}"
+          restore-keys: "bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.flags }}-cache-"
 
-      - run: echo "common ${{ matrix.bzlmod}}" >> .bazelrc
+      - run: echo "common ${{ matrix.flags }}" >> .bazelrc
         if: ${{ matrix.bazel-version != '5.x' }}
 
       - run: bazel test //...
@@ -52,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: ["6.x", "7.x"]
+        bazel-version: [6.x, 7.x]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
