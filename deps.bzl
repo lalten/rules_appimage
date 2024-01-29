@@ -13,17 +13,12 @@ RUNTIME_SHAS = {
 }
 
 def rules_appimage_deps():
-    """Download dependencies and set up rules_appimage."""
-    maybe(
-        http_archive,
-        name = "bazel_skylib",
-        sha256 = "cd55a062e763b9349921f0f5db8c3933288dc8ba4f76dd9416aac68acee3cb94",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
-        ],
-    )
+    """Declare http_archive deps needed for in the WORKSPACE version of rules_appimage."""
+    rules_appimage_common_deps()
+    _rules_appimage_workspace_deps()
 
+def rules_appimage_common_deps():
+    """Declare http_archive deps needed for both the WORKSPACE and Bzlmod version of rules_appimage."""
     maybe(
         http_archive,
         name = "squashfs-tools",
@@ -47,6 +42,18 @@ def rules_appimage_deps():
         name = "appimagetool.png",
         sha256 = "0c23daaf7665216a8e8f9754c904ec18b2dfa376af2479601a571e504239fae6",
         urls = ["https://raw.githubusercontent.com/AppImage/AppImageKit/b51f685/resources/appimagetool.png"],
+    )
+
+def _rules_appimage_workspace_deps():
+    """Declare http_archive deps only needed in the WORKSPACE version of rules_appimage."""
+    maybe(
+        http_archive,
+        name = "bazel_skylib",
+        sha256 = "cd55a062e763b9349921f0f5db8c3933288dc8ba4f76dd9416aac68acee3cb94",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
+        ],
     )
 
     # zstd is a dep of squashfs-tools
