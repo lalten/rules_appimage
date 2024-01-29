@@ -2,12 +2,13 @@ build --color=yes
 build --cxxopt=-std=c++20
 build --incompatible_strict_action_env
 build --keep_going
-common --experimental_allow_unresolved_symlinks  # Only required for Bazel 5
+common --experimental_allow_unresolved_symlinks # Only required for Bazel 5
+common --lockfile_mode=off
 test --announce_rc
 test --keep_going
 test --spawn_strategy=sandboxed
 test --test_env=NO_CLEANUP=1
 test --test_env=PYTEST_ADDOPTS="--color=yes --capture=tee-sys --tb=short --showlocals -ra --verbose --verbose"
-test --test_env=USE_BAZEL_VERSION  # Pass this on to tests to enable adapting to bazel-version specific behavior
+test --test_env=USE_BAZEL_VERSION # Pass this on to tests to enable adapting to bazel-version specific behavior
 test --test_output=errors
 test --test_verbose_timeout_warnings
