@@ -45,6 +45,8 @@ jobs:
           key: "bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.flags }}-cache-${{ github.run_id }}"
           restore-keys: "bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.flags }}-cache-"
 
+      - run: echo "build --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> .bazelrc
+
       - run: echo "common ${{ matrix.flags }}" >> .bazelrc
         if: ${{ matrix.bazel-version != '5.x' }}
       - run: sed -i.bak '/lockfile_mode/d' .bazelrc
