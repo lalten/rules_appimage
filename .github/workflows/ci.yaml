@@ -12,6 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+      BUILDBUDDY_RW_API_KEY: ${{ secrets.BUILDBUDDY_RW_API_KEY }}
     strategy:
       fail-fast: false
       matrix:
@@ -36,7 +37,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: echo "build --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> .bazelrc
+      - name: Use BuildBuddy RW API key instead of public readonly key
+        run: sed -i.bak 's#x-buildbuddy-api-key=.*#x-buildbuddy-api-key=${{ env.BUILDBUDDY_RW_API_KEY }}#' .bazelrc
+        if: ${{ env.BUILDBUDDY_RW_API_KEY }}
 
       - run: echo "common ${{ matrix.flags }}" >> .bazelrc
         if: ${{ matrix.bazel-version != '5.x' }}
