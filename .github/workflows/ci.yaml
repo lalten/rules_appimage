@@ -40,7 +40,11 @@ jobs:
 
       - run: echo "common ${{ matrix.flags }}" >> .bazelrc
         if: ${{ matrix.bazel-version != '5.x' }}
-      - run: sed -i.bak '/lockfile_mode/d' .bazelrc
+      - run: |
+          # No Bzlmod on Bazel 5
+          sed -i.bak '/lockfile_mode/d' .bazelrc
+          # java.lang.IllegalStateException: "all symlinks should have been resolved by SkyFrame. This is a bug."
+          sed -i.bak '/--remote_/d' .bazelrc
         if: ${{ matrix.bazel-version == '5.x' }}
 
       - run: bazel test //...
