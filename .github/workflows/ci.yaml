@@ -35,15 +35,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: |-
-            ~/.cache/bazelisk
-            ~/Library/Caches/bazelisk
-            ~/.cache/bazel
-            /private/var/tmp/_bazel_runner
-          key: "bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.flags }}-cache-${{ github.run_id }}"
-          restore-keys: "bazel-${{ matrix.bazel-version }}-${{ matrix.os }}-${{ matrix.flags }}-cache-"
 
       - run: echo "build --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> .bazelrc
 
@@ -64,14 +55,6 @@ jobs:
         bazel-version: [6.x, 7.x]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: |-
-            ~/.cache/bazelisk
-            ~/.cache/bazel
-          key: examples-${{ matrix.bazel-version }}-cache-${{ github.run_id }}
-          restore-keys: examples-${{ matrix.bazel-version }}-cache-
-
       - run: examples/integration_test.sh
 
   lint:
