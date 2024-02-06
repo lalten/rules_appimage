@@ -13,21 +13,12 @@ RUNTIME_SHAS = {
 }
 
 def rules_appimage_deps():
-    """Declare http_archive deps needed for in the WORKSPACE version of rules_appimage."""
+    """Declare http_archive deps needed in the WORKSPACE version of rules_appimage."""
     rules_appimage_common_deps()
     _rules_appimage_workspace_deps()
 
 def rules_appimage_common_deps():
     """Declare http_archive deps needed for both the WORKSPACE and Bzlmod version of rules_appimage."""
-    maybe(
-        http_archive,
-        name = "squashfs-tools",
-        build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
-        sha256 = "94201754b36121a9f022a190c75f718441df15402df32c2b520ca331a107511c",
-        strip_prefix = "squashfs-tools-4.6.1/squashfs-tools",
-        url = "https://github.com/plougher/squashfs-tools/archive/refs/tags/4.6.1.tar.gz",
-    )
-
     for arch, runtime_arch in ARCHS.items():
         maybe(
             http_file,
@@ -54,6 +45,15 @@ def _rules_appimage_workspace_deps():
             "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
             "https://github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
         ],
+    )
+
+    maybe(
+        http_archive,
+        name = "squashfs-tools",
+        build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
+        sha256 = "94201754b36121a9f022a190c75f718441df15402df32c2b520ca331a107511c",
+        strip_prefix = "squashfs-tools-4.6.1/squashfs-tools",
+        url = "https://github.com/plougher/squashfs-tools/archive/refs/tags/4.6.1.tar.gz",
     )
 
     # zstd is a dep of squashfs-tools
