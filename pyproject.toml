@@ -16,6 +16,9 @@ mypy_path = ["bazel-rules_appimage/external"]
 namespace_packages = true
 strict = true
 
+[tool.pyright]
+exclude = ["bazel-*", "examples/bazel-*"]
+
 [tool.ruff]
 select = [
   "B",
