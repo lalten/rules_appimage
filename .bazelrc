@@ -6,7 +6,6 @@ build --keep_going
 build --remote_cache=grpcs://remote.buildbuddy.io
 build --remote_header=x-buildbuddy-api-key=0LJeHmVUer32UyTzco3I # Public readonly key # pragma: allowlist secret
 build --remote_timeout=3600
-common --experimental_allow_unresolved_symlinks # Only required for Bazel 5
 common --lockfile_mode=off
 test --announce_rc
 test --keep_going

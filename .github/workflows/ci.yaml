@@ -16,18 +16,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [5.x, 6.x, 7.x]
+        bazel-version: [6.x, 7.x]
         os: [ubuntu, macos]
         external_dependency_system: [bzlmod, workspace]
         exclude:
           # Don't expect Bazel compatibility issues depending on OS, so speed this up
-          - bazel-version: 5.x
-            os: macos
           - bazel-version: 6.x
             os: macos
-          # No Bzlmod with Bazel 5
-          - bazel-version: 5.x
-            external_dependency_system: bzlmod
         include:
           - external_dependency_system: bzlmod
             flags: --enable_bzlmod
@@ -42,13 +37,6 @@ jobs:
         if: ${{ env.BUILDBUDDY_RW_API_KEY }}
 
       - run: echo "common ${{ matrix.flags }}" >> .bazelrc
-        if: ${{ matrix.bazel-version != '5.x' }}
-      - run: |
-          # No Bzlmod on Bazel 5
-          sed -i.bak '/lockfile_mode/d' .bazelrc
-          # java.lang.IllegalStateException: "all symlinks should have been resolved by SkyFrame. This is a bug."
-          sed -i.bak '/--remote_/d' .bazelrc
-        if: ${{ matrix.bazel-version == '5.x' }}
 
       - run: bazel test //...
 
