@@ -1,2 +1,2 @@
-bazel-runfiles==0.29.0
-pytest==7.4.4
+bazel-runfiles==0.31.0
+pytest==8.1.1
