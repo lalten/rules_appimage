@@ -33,6 +33,7 @@ appimage_test(
 cc_binary(
     name = "test_cc",
     srcs = ["test.cc"],
+    copts = ["-std=c++20"],
     env = {
         "MY_APPIMAGE_ENV": "original",
         "MY_BINARY_ENV": "not lost",
