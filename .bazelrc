@@ -1,7 +1,6 @@
 build --bes_backend=grpcs://remote.buildbuddy.io
 build --bes_results_url=https://app.buildbuddy.io/invocation/
 build --color=yes
-build --cxxopt=-std=c++20
 build --incompatible_strict_action_env
 build --keep_going
 build --remote_cache=grpcs://remote.buildbuddy.io
