@@ -4,8 +4,8 @@
 #
 #    bazel run //:requirements.update
 #
-bazel-runfiles==0.29.0 \
-    --hash=sha256:e042cdf16ffc69959fb002173f23b53251a4031a621886ba87d5bab3a5ea116e
+bazel-runfiles==0.31.0 \
+    --hash=sha256:8f460c52879ebd9b6dbc8fea89637b90d271746eabf4f8382334879d80366663
     # via -r requirements.in
 iniconfig==2.0.0 \
     --hash=sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3 \
