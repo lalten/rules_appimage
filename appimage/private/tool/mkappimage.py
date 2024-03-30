@@ -1,6 +1,7 @@
 """Library to prepare and build AppImages."""
 
 import copy
+import functools
 import json
 import os
 import shutil
@@ -23,6 +24,8 @@ def _get_path_or_raise(path: str) -> Path:
     runfile = runfiles.Rlocation(path)
     if not runfile:
         raise FileNotFoundError(f"Could not find {path} in runfiles")
+    if not Path(runfile).exists():
+        raise FileNotFoundError(f"{runfile} does not exist")
     return Path(runfile)
 
 
@@ -48,10 +51,49 @@ def relative_path(target: Path, origin: Path) -> Path:
         return Path("..").joinpath(relative_path(target, origin.parent))
 
 
+@functools.lru_cache
+def get_output_base() -> str:
+    """Return the location of this Bazel invocation's output_base.
+
+    The "version file" is always generated (via the workspace_status command). A symlink to it exists at a well-known
+    path relative to the runfiles dir ("bazel-out/stable-status.txt"). It's actual location is a well-known path inside
+    the Bazel output base. We resolve it to learn the absolute location of the output base on this machine.
+
+    The path structure depends on:
+      * Custom output_base (https://bazel.build/docs/user-manual#output-base)
+      * Execution strategy (https://bazel.build/docs/user-manual#execution-strategy)
+      * External dependency management system (WORKSPACE/Bzlmod)
+      * Value of --incompatible_sandbox_hermetic_tmp (https://bazel.build/reference/command-line-reference#flag--incompatible_sandbox_hermetic_tmp)
+
+    For example it may resolve to
+      * /mnt/data/sandbox/linux-sandbox/82/execroot/_main/bazel-out/stable-status.txt
+        with --output_base=/mnt/data
+      * /home/laurenz/.cache/bazel/execroot/rules_appimage/bazel-out/stable-status.txt
+        with --spawn_strategy=local (i.e. no sandboxing)
+      * /home/laurenz/.cache/bazel/sandbox/linux-sandbox/35/execroot/rules_appimage/bazel-out/stable-status.txt
+        /home/laurenz/.cache/bazel/sandbox/processwrapper-sandbox/60/execroot/rules_appimage/bazel-out/stable-status.txt
+        with --noincompatible_sandbox_hermetic_tmp
+      * /tmp/bazel-working-directory/_main/bazel-out/stable-status.txt
+        with --incompatible_sandbox_hermetic_tmp
+
+    We do some best-effort heuristic here to figure out the output base location.
+    """
+    version_file = Path("bazel-out/stable-status.txt")
+    abs_version_file = version_file.absolute().resolve()
+    execroot = abs_version_file.parent.parent.parent
+    if execroot == Path("/tmp/bazel-working-directory"):
+        # See https://github.com/bazelbuild/bazel/blob/7.1.1/src/main/java/com/google/devtools/build/lib/sandbox/LinuxSandboxedSpawnRunner.java#L76
+        output_base = Path("/tmp/bazel-source-roots/")
+    elif len(execroot.parts) >= 4 and execroot.parts[-4] == "sandbox":
+        output_base = Path(*execroot.parts[:-4])
+    else:
+        output_base = execroot.parent
+    return os.fspath(output_base)
+
+
 def is_inside_bazel_cache(path: Path) -> bool:
     """Check whether a path is inside the Bazel cache."""
-    pathstr = os.fspath(path)
-    return "/.cache/bazel/" in pathstr or pathstr.startswith("/tmp/bazel-source-roots/")
+    return os.fspath(path).startswith(get_output_base())
 
 
 def _copy_file(src: Path | str, dst: Path | str) -> None:
