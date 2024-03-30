@@ -80,7 +80,7 @@ def test_symlinks() -> None:
     # link will be one of these depending on --enable_bzlmod (and rules_python version)
     # "rules_appimage_python_x86_64-unknown-linux-gnu/bin/python3"
     # "rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3"
-    assert link.is_symlink()
+    assert link.is_symlink(), f"{link} is not a symlink. {link.is_file()=}"
     assert re.match(r"^python3.\d+$", os.readlink(link)), os.readlink(link)
 
 
