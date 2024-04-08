@@ -61,9 +61,9 @@ def _rules_appimage_workspace_deps():
         http_archive,
         name = "zstd",
         build_file = "@rules_appimage//third_party:zstd.BUILD",
-        sha256 = "9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4",
-        strip_prefix = "zstd-1.5.5",
-        url = "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz",
+        sha256 = "8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1",
+        strip_prefix = "zstd-1.5.6",
+        url = "https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz",
     )
 
     # rules python is needed to provide the bzlmod/workspace-agnostic bazel-runfiles pip requirement for mkappimage.
