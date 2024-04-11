@@ -35,16 +35,22 @@ def _appimage_impl(ctx):
     env.update(ctx.attr.env)
 
     # Export the current environment to a file so that it can be re-sourced in AppRun
+    cmd = " | ".join([
+        # Export the current environment, which is a combination of the build env and the user-provided env
+        "export -p",
+        # Some shells like to use `declare -x` instead of `export`. The build time shell isn't necessarily the same as
+        # the runtime shell, so there is no guarantee that `declare` is available at runtime. Let's use `export` instead.
+        "sed 's/^declare -x/export/'",
+        # Some build-time values are not interesting or even incorrect at AppRun runtime
+        "grep -v '^export OLDPWD$$'",
+        "grep -v '^export PWD='",
+        "grep -v '^export SHLVL='",
+        "grep -v '^export TMPDIR='",
+    ]) + " > " + env_file.path
     ctx.actions.run_shell(
         outputs = [env_file],
         env = env,
-        command = "".join([
-            "export -p",
-            # Some shells like to use `declare -x` instead of `export`. However there is no guarantee that `declare` is
-            # available at runtime. So let's use `export` instead.
-            " | sed 's/^declare -x/export/'",
-            " > " + env_file.path,
-        ]),
+        command = cmd,
     )
 
     # Run our tool to create the AppImage
