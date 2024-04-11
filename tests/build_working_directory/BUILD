@@ -16,4 +16,5 @@ sh_test(
     srcs = ["test.sh"],
     data = [":test.appimage"],
     tags = ["requires-fakeroot"],
+    target_compatible_with = ["@platforms//os:linux"],
 )
