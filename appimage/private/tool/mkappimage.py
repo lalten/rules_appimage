@@ -125,10 +125,20 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
     new_manifest_data["files"].clear()
     new_manifest_data["relative_symlinks"] = []
 
+    expanded_files = []
     for entry in manifest_data["files"]:
         assert isinstance(entry, dict)
         src = Path(entry["src"])
-
+        dst = Path(entry["dst"])
+        if not src.is_dir():
+            expanded_files.append(entry)
+            continue
+        for expanded_src in src.rglob("*"):
+            if expanded_src.is_dir():
+                continue
+            expanded_files.append({"src": expanded_src, "dst": dst / expanded_src.relative_to(src)})
+    
+    for entry in expanded_files:
         if not src.is_symlink():
             # This is not a symlink. We want to copy that regular file (or dir!) as-is.
             new_manifest_data["files"].append(entry)
