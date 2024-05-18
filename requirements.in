@@ -1,2 +1,1 @@
-bazel-runfiles==0.31.0
 pytest==8.1.1
