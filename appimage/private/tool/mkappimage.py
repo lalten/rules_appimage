@@ -11,7 +11,7 @@ import textwrap
 from pathlib import Path
 from typing import Iterable, NamedTuple
 
-import runfiles as bazel_runfiles
+from python import runfiles as bazel_runfiles
 
 _ManifestDataT = dict[str, list[str | dict[str, str]]]
 

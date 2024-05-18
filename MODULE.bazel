@@ -21,33 +21,16 @@ use_repo(
 
 register_toolchains("//appimage:all")
 
-PYTHON_VERSIONS = [
-    "3.8",
-    "3.9",
-    "3.10",
-    "3.11",
-    "3.12",
-]
-
+_DEFAULT_PYTHON = "3.12"
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(is_default = True, python_version = _DEFAULT_PYTHON)
+use_repo(python, "python_" + _DEFAULT_PYTHON.replace(".", "_"), "python_versions", "pythons_hub")
+register_toolchains("@pythons_hub//:all")
 
-[
-    python.toolchain(
-        is_default = python_version == PYTHON_VERSIONS[-1],
-        python_version = python_version,
-    )
-    for python_version in PYTHON_VERSIONS
-]
-
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
-
-[
-    pip.parse(
-        hub_name = "rules_appimage_py_deps",
-        python_version = python_version,
-        requirements_lock = "//:requirements.txt",
-    )
-    for python_version in PYTHON_VERSIONS
-]
-
-use_repo(pip, "rules_appimage_py_deps")
+dev_pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
+dev_pip.parse(
+    hub_name = "rules_appimage_py_deps",
+    python_version = _DEFAULT_PYTHON,
+    requirements_lock = "//:requirements.txt",
+)
+use_repo(dev_pip, "rules_appimage_py_deps")
