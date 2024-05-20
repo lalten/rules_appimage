@@ -84,6 +84,12 @@ def _default_symlinks(dep):
 def _default_root_symlinks(dep):
     return dep[DefaultInfo].default_runfiles.root_symlinks
 
+def get_workdir(ctx):
+    return "/".join([_runfiles_dir(ctx), ctx.attr.binary.label.workspace_name or ctx.workspace_name])
+
+def get_entrypoint(ctx):
+    return _binary_name(ctx)
+
 def collect_runfiles_info(ctx):
     """Collect application files and runfiles.
 
@@ -111,10 +117,9 @@ def collect_runfiles_info(ctx):
     symlinks = {_final_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in symlinks_list}
     root_symlinks_list = depset(transitive = [_default_root_symlinks(ctx.attr.binary)] + [_default_root_symlinks(d) for d in ctx.attr.data]).to_list()
     symlinks.update({sl.path: sl.target for sl in root_symlinks_list})
-    entrypoint = _binary_name(ctx)
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.
-        entrypoint: _final_file_path(ctx, ctx.executable.binary),
+        get_entrypoint(ctx): _final_file_path(ctx, ctx.executable.binary),
         # Create a directory symlink from <workspace>/external to the runfiles root, since they may be accessed via either path.
         _external_dir(ctx): _runfiles_dir(ctx),
     })
@@ -124,10 +129,7 @@ def collect_runfiles_info(ctx):
         symlinks = [struct(linkname = linkname, target = target) for linkname, target in symlinks.items()],
         empty_files = empty_files,
     )
-    workdir = "/".join([_runfiles_dir(ctx), ctx.attr.binary.label.workspace_name or ctx.workspace_name])
     return struct(
         files = runfiles_list,
         manifest = manifest,
-        workdir = workdir,
-        entrypoint = entrypoint,
     )

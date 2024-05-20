@@ -18,22 +18,10 @@ def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="Path to manifest json with file and link definitions, e.g. 'bazel-bin/tests/appimage_py-manifest.json'",
     )
     parser.add_argument(
-        "--envfile",
+        "--apprun",
         required=True,
         type=Path,
-        help="Path to sourcable envfile with runtime environment definition, e.g. 'bazel-bin/tests/appimage_py-env.sh'",
-    )
-    parser.add_argument(
-        "--workdir",
-        required=True,
-        type=Path,
-        help="Path to working dir, e.g. 'AppDir/tests/test_py.runfiles/rules_appimage'",
-    )
-    parser.add_argument(
-        "--entrypoint",
-        required=True,
-        type=Path,
-        help="Path to entrypoint, e.g. 'AppDir/tests/test_py'",
+        help="Path to AppRun script",
     )
     parser.add_argument(
         "--icon",
@@ -62,9 +50,7 @@ def cli(args: Optional[Sequence[str]] = None) -> None:
     parsed_args = parse_args(args)
     appdir_params = AppDirParams(
         parsed_args.manifest,
-        parsed_args.envfile,
-        parsed_args.workdir,
-        parsed_args.entrypoint,
+        parsed_args.apprun,
         parsed_args.icon,
         parsed_args.runtime,
     )

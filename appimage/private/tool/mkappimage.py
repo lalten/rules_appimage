@@ -36,9 +36,7 @@ class AppDirParams(NamedTuple):
     """Parameters for the AppDir."""
 
     manifest: Path
-    envfile: Path
-    workdir: Path
-    entrypoint: Path
+    apprun: Path
     icon: Path
     runtime: Path
 
@@ -164,53 +162,6 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
     return new_manifest_data
 
 
-def _make_apprun_content(params: AppDirParams) -> str:
-    """Generate the AppRun, which is the AppImage's entrypoint."""
-    # A shebang with `/bin/sh` does not mean a specific shell but any POSIX standard compliant shell.
-    apprun_lines = ["#!/bin/sh"]
-
-    # Set up the previously `export -p`ed environment.
-    # This sets up any environment variables coming from the `env` attribute on the appimage target.
-    apprun_lines.extend(params.envfile.read_text().splitlines())
-
-    # The generated AppImage must be able to run outside of Bazel. We conveniently set BUILD_WORKING_DIRECTORY in the
-    # to the same value that it would have if the code would be run under `bazel run`. This is important for calculating
-    # the actual location of relative paths passed in as user input on command line arguments.
-    # We set BUILD_WORKING_DIRECTORY to the first set and not empty value of [BUILD_WORKING_DIRECTORY, OWD, PWD].
-    # * $BUILD_WORKING_DIRECTORY (see https://bazel.build/docs/user-manual#running-executables) is set by Bazel in
-    #   https://github.com/bazelbuild/bazel/blob/7.1.1/src/main/java/com/google/devtools/build/lib/runtime/commands/RunCommand.java#L548
-    #   and is only available when Bazel executes the AppImage for us during bazel run (but not test/coverage).
-    # * $OWD ("Original Working Directory") is set by the AppImage runtime in
-    #   https://github.com/lalten/type2-runtime/blob/84f7a00/src/runtime/runtime.c#L1757.
-    #   When the AppImage is mounted with libfuse its working directory is inside the mount point, which is not the
-    #   original working directory of the user. Presumably this is why the AppImage runtime sets OWD only when mounted
-    #   with libfuse but *not* when running with APPIMAGE_EXTRACT_AND_RUN=1 or --appimage-extract-and-run. See
-    #   https://github.com/AppImage/type2-runtime/issues/23).
-    # * $PWD is set by the shell to the current working directory. This is correct if and only if we are not running
-    #   under Bazel and not mounted with libfuse, so it is a good value to use as a fallback. It's important to store
-    #   $PWD to $BUILD_WORKING_DIRECTORY because we change the working directory to the $RUNFILES_DIR below. This means
-    #   that at runtime, $PWD is different to the directory that the user ran the appimage from.
-    # This is done with POSIX shell command language ${parameter:-word} "Use Default Values" parameter expansion, see
-    # https://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_06_02
-    # Note that BUILD_WORKING_DIRECTORY's sibling BUILD_WORKSPACE_DIRECTORY is not of much use here as even if we knew
-    # it at build time, it's not guaranteed to be correct or available at runtime.
-    apprun_lines.append('OWD="${OWD=$PWD}"')  # remove when https://github.com/AppImage/type2-runtime/issues/23 is fixed
-    apprun_lines.append('BUILD_WORKING_DIRECTORY="${BUILD_WORKING_DIRECTORY=$OWD}"')
-    apprun_lines.append("export BUILD_WORKING_DIRECTORY")
-
-    # Explicitly set RUNFILES_DIR to the runfiles dir of the binary instead of the appimage rule itself
-    apprun_lines.append(f'workdir="$(dirname "$0")/{params.workdir}"')
-    apprun_lines.append('RUNFILES_DIR="$(dirname "$workdir")"')
-    apprun_lines.append("export RUNFILES_DIR")
-    # Run under runfiles
-    apprun_lines.append('cd "$workdir"')
-
-    # Launch the actual binary
-    apprun_lines.append(f'exec "./{params.entrypoint}" "$@"')
-
-    return "\n".join(apprun_lines) + "\n"
-
-
 def populate_appdir(appdir: Path, params: AppDirParams) -> None:
     """Make the AppDir that will be squashfs'd into the AppImage."""
     appdir.mkdir(parents=True, exist_ok=True)
@@ -255,7 +206,7 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
         linkfile.symlink_to(target)
 
     apprun_path = appdir / "AppRun"
-    apprun_path.write_text(_make_apprun_content(params))
+    shutil.copy2(params.apprun, apprun_path)
     apprun_path.chmod(0o751)
 
     apprun_path.with_suffix(".desktop").write_text(

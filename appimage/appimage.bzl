@@ -1,5 +1,6 @@
 """Rule for creating AppImages."""
 
+load("@rules_appimage//appimage/private:mkapprun.bzl", "make_apprun")
 load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info")
 
 def _appimage_impl(ctx):
@@ -13,15 +14,13 @@ def _appimage_impl(ctx):
     runfile_info = collect_runfiles_info(ctx)
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-manifest.json")
     ctx.actions.write(manifest_file, json.encode_indent(runfile_info.manifest))
-    env_file = ctx.actions.declare_file(ctx.attr.name + "-env.sh")
-    inputs = depset(direct = [ctx.file.icon, manifest_file, env_file, toolchain.appimage_runtime] + runfile_info.files)
+    apprun = make_apprun(ctx)
+    inputs = depset(direct = [ctx.file.icon, manifest_file, apprun, toolchain.appimage_runtime] + runfile_info.files)
 
     # TODO: Use Skylib's shell.quote?
     args = [
         "--manifest={}".format(manifest_file.path),
-        "--envfile={}".format(env_file.path),
-        "--workdir={}".format(runfile_info.workdir),
-        "--entrypoint={}".format(runfile_info.entrypoint),
+        "--apprun={}".format(apprun.path),
         "--icon={}".format(ctx.file.icon.path),
         "--runtime={}".format(toolchain.appimage_runtime.path),
     ]
@@ -33,25 +32,6 @@ def _appimage_impl(ctx):
     if RunEnvironmentInfo in ctx.attr.binary:
         env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
     env.update(ctx.attr.env)
-
-    # Export the current environment to a file so that it can be re-sourced in AppRun
-    cmd = " | ".join([
-        # Export the current environment, which is a combination of the build env and the user-provided env
-        "export -p",
-        # Some shells like to use `declare -x` instead of `export`. The build time shell isn't necessarily the same as
-        # the runtime shell, so there is no guarantee that `declare` is available at runtime. Let's use `export` instead.
-        "sed 's/^declare -x/export/'",
-        # Some build-time values are not interesting or even incorrect at AppRun runtime
-        "grep -v '^export OLDPWD$$'",
-        "grep -v '^export PWD='",
-        "grep -v '^export SHLVL='",
-        "grep -v '^export TMPDIR='",
-    ]) + " > " + env_file.path
-    ctx.actions.run_shell(
-        outputs = [env_file],
-        env = env,
-        command = cmd,
-    )
 
     # Run our tool to create the AppImage
     ctx.actions.run(
