@@ -15,12 +15,8 @@ def test_cli() -> None:
         [
             "--manifest",
             "manifest.json",
-            "--envfile",
-            "envfile.sh",
-            "--workdir",
-            "workdir",
-            "--entrypoint",
-            "entrypoint",
+            "--apprun",
+            "AppRun.sh",
             "--runtime",
             "runtime",
             "--icon",
@@ -32,9 +28,7 @@ def test_cli() -> None:
     )
     assert args == argparse.Namespace(
         manifest=Path("manifest.json"),
-        envfile=Path("envfile.sh"),
-        workdir=Path("workdir"),
-        entrypoint=Path("entrypoint"),
+        apprun=Path("AppRun.sh"),
         runtime=Path("runtime"),
         icon=Path("icon"),
         mksquashfs_arg=["-mem", "500M"],
