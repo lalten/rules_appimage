@@ -1,4 +1,5 @@
 """Library to prepare and build AppImages."""
+
 from __future__ import annotations
 
 import copy
