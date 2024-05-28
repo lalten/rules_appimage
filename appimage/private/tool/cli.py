@@ -1,13 +1,15 @@
 """CLI to prepare and build AppImages."""
 
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Sequence
 
 from appimage.private.tool.mkappimage import AppDirParams, make_appimage
 
 
-def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
+def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Prepare and build AppImages.")
     parser.add_argument(
@@ -44,7 +46,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return parser.parse_args(args)
 
 
-def cli(args: Optional[Sequence[str]] = None) -> None:
+def cli(args: Sequence[str] | None = None) -> None:
     """CLI entrypoint for mkappimage."""
     parsed_args = parse_args(args)
     appdir_params = AppDirParams(
