@@ -33,3 +33,24 @@ dev_pip.parse(
     requirements_lock = "//:requirements.txt",
 )
 use_repo(dev_pip, "rules_appimage_py_deps")
+
+bazel_dep(name = "container_structure_test", version = "1.16.0", dev_dependency = True)
+bazel_dep(name = "rules_oci", version = "1.7.6", dev_dependency = True)
+bazel_dep(name = "rules_pycross", version = "0.5.4", dev_dependency = True)
+bazel_dep(name = "rules_pkg", version = "0.10.1", dev_dependency = True)
+lock_import = use_extension("@rules_pycross//pycross/extensions:lock_import.bzl", "lock_import", dev_dependency = True)
+lock_import.import_pdm(
+    lock_file = "//tests/rules_pycross:pdm.lock",
+    project_file = "//tests/rules_pycross:pyproject.toml",
+    repo = "pdm_deps",
+)
+lock_repos = use_extension("@rules_pycross//pycross/extensions:lock_repos.bzl", "lock_repos", dev_dependency = True)
+use_repo(lock_repos, "pdm_deps")
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
+oci.pull(
+    name = "python3-slim",
+    digest = "sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63",  # "3-slim" as of 2023-06-01
+    image = "docker.io/library/python",
+    platforms = ["linux/amd64"],
+)
+use_repo(oci, "python3-slim")

@@ -94,27 +94,28 @@ def is_inside_bazel_cache(path: Path) -> bool:
     return os.fspath(path).startswith(get_output_base())
 
 
-def _copy_file(src: Path | str, dst: Path | str) -> None:
+def _copy_file(src: Path | str, dst: Path | str, keep_symlinks: bool) -> None:
     """Copy one file from src to dst."""
     # We use copy2 because it preserves metadata like permissions.
-    # We do not want follow_symlinks because we want to keep symlink targets preserved.
-    shutil.copy2(src, dst, follow_symlinks=False)
+    # If keep_symlinks is True, we do not want follow_symlinks because we want to keep symlink targets preserved.
+    shutil.copy2(src, dst, follow_symlinks=not keep_symlinks)
 
 
-def _copy_file_or_dir(src: Path, dst: Path) -> None:
+def _copy_file_or_dir(src: Path, dst: Path, keep_symlinks: bool) -> None:
     """Copy a file or dir from src to dst."""
     dst.parent.mkdir(parents=True, exist_ok=True)
+    copy_function = functools.partial(_copy_file, keep_symlinks=keep_symlinks)
     if src.is_dir():
         shutil.copytree(
             src,
             dst,
-            symlinks=True,
-            copy_function=_copy_file,
+            symlinks=keep_symlinks,
+            copy_function=copy_function,
             ignore_dangling_symlinks=True,
             dirs_exist_ok=True,
         )
     else:
-        _copy_file(src, dst)
+        copy_function(src, dst)
 
 
 def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _ManifestDataT) -> _ManifestDataT:
@@ -187,7 +188,7 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
         src = Path(file["src"]).resolve()
         dst = Path(appdir / file["dst"]).resolve()
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
-        _copy_file_or_dir(src, dst)
+        _copy_file_or_dir(src, dst, keep_symlinks=True)
 
     for link in manifest_data["symlinks"]:
         # example entry: {"linkname": "tests/test_py", "target": "tests/test_py.runfiles/_main/tests/test_py"}
@@ -213,6 +214,15 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
         target = Path(link["target"])
         assert not target.is_absolute(), f"symlink {linkfile} must be relative, but points at {target}"
         linkfile.symlink_to(target)
+
+    for tree_artifact in manifest_data["tree_artifacts"]:
+        # example entry:
+        # {'dst': 'test.runfiles/_main/../rules_pycross~~lock_repos~pdm_deps/_lock/humanize@4.9.0',
+        # 'src': 'bazel-out/k8-fastbuild/bin/external/rules_pycross~~lock_repos~pdm_deps/_lock/humanize@4.9.0'}
+        src = Path(tree_artifact["src"]).resolve()
+        dst = Path(appdir / tree_artifact["dst"]).resolve()
+        assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
+        _copy_file_or_dir(src, dst, keep_symlinks=False)
 
     apprun_path = appdir / "AppRun"
     shutil.copy2(params.apprun, apprun_path)
