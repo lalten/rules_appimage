@@ -106,7 +106,8 @@ def collect_runfiles_info(ctx):
 
     # Collect everything that needs to be in the appimage and deduplicate using depset.
     runfiles_list = depset(ctx.files.data, transitive = [_default_runfiles(ctx.attr.binary)] + [_default_runfiles(d) for d in ctx.attr.data]).to_list()
-    file_map = {f.path: _final_file_path(ctx, f) for f in runfiles_list}
+    file_map = {f.path: _final_file_path(ctx, f) for f in runfiles_list if not f.is_directory}
+    tree_artifacts_map = {f.path: _final_file_path(ctx, f) for f in runfiles_list if f.is_directory}
 
     # Handle empty_filenames. This is used for some __init__.py files.
     emptyfiles_list = depset(transitive = [_default_emptyfiles(ctx.attr.binary)] + [_default_emptyfiles(d) for d in ctx.attr.data]).to_list()
@@ -125,9 +126,10 @@ def collect_runfiles_info(ctx):
     })
 
     manifest = struct(
+        empty_files = empty_files,
         files = [struct(src = src, dst = dst) for src, dst in file_map.items()],
         symlinks = [struct(linkname = linkname, target = target) for linkname, target in symlinks.items()],
-        empty_files = empty_files,
+        tree_artifacts = [struct(src = src, dst = dst) for src, dst in tree_artifacts_map.items()],
     )
     return struct(
         files = runfiles_list,
