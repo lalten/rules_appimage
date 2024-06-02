@@ -16,13 +16,7 @@ bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 bazel_dep(name = "with_cfg.bzl", version = "0.2.4", dev_dependency = True)
 
 rules_appimage = use_extension("//:extensions.bzl", "appimage_ext_dependencies")
-use_repo(
-    rules_appimage,
-    "appimage_runtime_aarch64",
-    "appimage_runtime_armv7e-m",
-    "appimage_runtime_i386",
-    "appimage_runtime_x86_64",
-)
+use_repo(rules_appimage, "appimage-type2-runtime", "libfuse", "squashfuse")
 
 register_toolchains("//appimage:all")
 

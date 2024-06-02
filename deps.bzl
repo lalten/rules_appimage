@@ -1,6 +1,7 @@
 """Dependencies of rules_appimage."""
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 ARCHS = {"aarch64": "aarch64", "armv7e-m": "armhf", "i386": "i686", "x86_64": "x86_64"}
@@ -19,14 +20,30 @@ def rules_appimage_deps():
 
 def rules_appimage_common_deps():
     """Declare http_archive deps needed for both the WORKSPACE and Bzlmod version of rules_appimage."""
-    for arch, runtime_arch in ARCHS.items():
-        maybe(
-            http_file,
-            name = "appimage_runtime_" + arch,
-            executable = True,
-            sha256 = RUNTIME_SHAS[runtime_arch],
-            urls = ["https://github.com/lalten/type2-runtime/releases/download/build-2022-10-03-c5c7b07/runtime-{}".format(runtime_arch)],
-        )
+    maybe(
+        http_archive,
+        name = "libfuse",
+        strip_prefix = "fuse-3.16.2",
+        sha256 = "f797055d9296b275e981f5f62d4e32e089614fc253d1ef2985851025b8a0ce87",
+        url = "https://github.com/libfuse/libfuse/releases/download/fuse-3.16.2/fuse-3.16.2.tar.gz",
+        build_file = "@rules_appimage//third_party:libfuse.BUILD",
+    )
+    maybe(
+        http_archive,
+        name = "squashfuse",
+        strip_prefix = "squashfuse-0.5.2",
+        sha256 = "54e4baaa20796e86a214a1f62bab07c7c361fb7a598375576d585712691178f5",
+        url = "https://github.com/vasi/squashfuse/releases/download/0.5.2/squashfuse-0.5.2.tar.gz",
+        build_file = "@rules_appimage//third_party:squashfuse.BUILD",
+    )
+    maybe(
+        git_repository,
+        name = "appimage-type2-runtime",
+        remote = "https://github.com/AppImage/type2-runtime",
+        commit = "47b665594856b4e8928f8932adcf6d13061d8c30",
+        build_file = "@rules_appimage//third_party:runtime.BUILD",
+        patches = ["@rules_appimage//third_party:runtime-sqfs_usage.patch"],
+    )
 
 def _rules_appimage_workspace_deps():
     """Declare http_archive deps only needed in the WORKSPACE version of rules_appimage."""
