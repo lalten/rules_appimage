@@ -19,8 +19,6 @@ def test_cli() -> None:
             "AppRun.sh",
             "--runtime",
             "runtime",
-            "--icon",
-            "icon",
             "--mksquashfs_arg=-mem",
             "--mksquashfs_arg=500M",
             "output",
@@ -30,7 +28,6 @@ def test_cli() -> None:
         manifest=Path("manifest.json"),
         apprun=Path("AppRun.sh"),
         runtime=Path("runtime"),
-        icon=Path("icon"),
         mksquashfs_arg=["-mem", "500M"],
         output=Path("output"),
     )
