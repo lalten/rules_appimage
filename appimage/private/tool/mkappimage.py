@@ -9,7 +9,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-import textwrap
 from pathlib import Path
 from typing import Iterable, NamedTuple
 
@@ -39,7 +38,6 @@ class AppDirParams(NamedTuple):
 
     manifest: Path
     apprun: Path
-    icon: Path
     runtime: Path
 
 
@@ -165,7 +163,16 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
 
 
 def populate_appdir(appdir: Path, params: AppDirParams) -> None:
-    """Make the AppDir that will be squashfs'd into the AppImage."""
+    """Make the AppDir that will be squashfs'd into the AppImage.
+
+    Note that the [AppImage Type2 Spec][appimage-spec] specifies that the contained [AppDir][appdir-spec] may contain a
+    [.desktop file][desktop-spec]. To my knowledge this is only used with [appimaged][appimaged] and entirely optional.
+
+    [appdir-spec]: https://rox.sourceforge.net/desktop/AppDirs.html
+    [appimage-spec]: https://github.com/AppImage/AppImageSpec/blob/master/draft.md
+    [desktop-spec]: https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
+    [appimaged]: https://docs.appimage.org/user-guide/run-appimages.html#integrating-appimages-into-the-desktop
+    """
     appdir.mkdir(parents=True, exist_ok=True)
     manifest_data = json.loads(params.manifest.read_text())
     manifest_data = _move_relative_symlinks_in_files_to_their_own_section(manifest_data)
@@ -210,22 +217,6 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
     apprun_path = appdir / "AppRun"
     shutil.copy2(params.apprun, apprun_path)
     apprun_path.chmod(0o751)
-
-    apprun_path.with_suffix(".desktop").write_text(
-        textwrap.dedent(
-            """\
-            [Desktop Entry]
-            Type=Application
-            Name=AppRun
-            Exec=AppRun
-            Icon=AppRun
-            Categories=Development;
-            Terminal=true
-            """,
-        ),
-    )
-
-    shutil.copy(src=params.icon, dst=appdir / f"AppRun{params.icon.suffix or '.png'}", follow_symlinks=True)
 
 
 def make_squashfs(params: AppDirParams, mksquashfs_params: Iterable[str], output_path: str) -> None:

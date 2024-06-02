@@ -25,12 +25,6 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         help="Path to AppRun script",
     )
     parser.add_argument(
-        "--icon",
-        required=True,
-        type=Path,
-        help="Icon to use in the AppImage, e.g. 'external/AppImageKit/resources/appimagetool.png'",
-    )
-    parser.add_argument(
         "--mksquashfs_arg",
         required=False,
         action="append",
@@ -52,7 +46,6 @@ def cli(args: Sequence[str] | None = None) -> None:
     appdir_params = AppDirParams(
         parsed_args.manifest,
         parsed_args.apprun,
-        parsed_args.icon,
         parsed_args.runtime,
     )
     make_appimage(appdir_params, parsed_args.mksquashfs_arg or [], parsed_args.output)

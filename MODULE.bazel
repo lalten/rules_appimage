@@ -16,7 +16,6 @@ use_repo(
     "appimage_runtime_i386",
     "appimage_runtime_armv7e-m",
     "appimage_runtime_x86_64",
-    "appimagetool.png",
 )
 
 register_toolchains("//appimage:all")

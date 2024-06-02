@@ -28,13 +28,6 @@ def rules_appimage_common_deps():
             urls = ["https://github.com/lalten/type2-runtime/releases/download/build-2022-10-03-c5c7b07/runtime-{}".format(runtime_arch)],
         )
 
-    maybe(
-        http_file,
-        name = "appimagetool.png",
-        sha256 = "0c23daaf7665216a8e8f9754c904ec18b2dfa376af2479601a571e504239fae6",
-        urls = ["https://raw.githubusercontent.com/AppImage/AppImageKit/b51f685/resources/appimagetool.png"],
-    )
-
 def _rules_appimage_workspace_deps():
     """Declare http_archive deps only needed in the WORKSPACE version of rules_appimage."""
     maybe(
