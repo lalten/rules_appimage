@@ -17,14 +17,12 @@ def _appimage_impl(ctx):
     apprun = make_apprun(ctx)
     inputs = depset(direct = [manifest_file, apprun, toolchain.appimage_runtime] + runfile_info.files)
 
-    # TODO: Use Skylib's shell.quote?
-    args = [
-        "--manifest={}".format(manifest_file.path),
-        "--apprun={}".format(apprun.path),
-        "--runtime={}".format(toolchain.appimage_runtime.path),
-    ]
-    args.extend(["--mksquashfs_arg=" + arg for arg in ctx.attr.build_args])
-    args.append(ctx.outputs.executable.path)
+    args = ctx.actions.args()
+    args.add_all(["--manifest", manifest_file.path])
+    args.add_all(["--apprun", apprun.path])
+    args.add_all(["--runtime", toolchain.appimage_runtime.path])
+    args.add_all(ctx.attr.build_args, format_each = "--mksquashfs_arg=%s")
+    args.add(ctx.outputs.executable.path)
 
     # Take the `binary` env and add the appimage target's env on top of it
     env = {}
@@ -38,7 +36,7 @@ def _appimage_impl(ctx):
         inputs = inputs,
         env = ctx.attr.build_env,
         executable = ctx.executable._tool,
-        arguments = args,
+        arguments = [args],
         outputs = [ctx.outputs.executable],
         tools = tools,
     )
