@@ -1,6 +1,6 @@
 version: 0.1
 cli:
-  version: 1.14.2
+  version: 1.22.1
 plugins:
   sources:
     - id: trunk
@@ -13,24 +13,26 @@ runtimes:
     - python@3.10.8
 lint:
   enabled:
-    - actionlint@1.6.25
-    - black@23.7.0
-    - buildifier@6.3.3
-    - checkov@2.4.9
+    - bandit@1.7.8
+    - pyright@1.1.365
+    - actionlint@1.7.1
+    - black@24.4.2
+    - buildifier@7.1.2
+    - checkov@3.2.120
     - git-diff-check
-    - isort@5.12.0
-    - markdownlint@0.35.0
-    - mypy@1.5.1
-    - osv-scanner@1.3.6
-    - prettier@3.0.3
-    - renovate@36.78.7
-    - ruff@0.0.287
-    - shellcheck@0.9.0
+    - isort@5.13.2
+    - markdownlint@0.41.0
+    - mypy@1.10.0
+    - osv-scanner@1.7.4
+    - prettier@3.2.5
+    - renovate@37.382.4
+    - ruff@0.4.6
+    - shellcheck@0.10.0
     - shfmt@3.6.0
     - taplo@0.8.1
-    - trivy@0.44.1
-    - trufflehog@3.54.3
-    - yamllint@1.32.0
+    - trivy@0.51.4
+    - trufflehog@3.77.0
+    - yamllint@1.35.1
 actions:
   enabled:
     - trunk-announce
