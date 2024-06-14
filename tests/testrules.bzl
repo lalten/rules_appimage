@@ -1,5 +1,8 @@
 """Bazel rules that creates specific versions of symlinks."""
 
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@with_cfg.bzl", "with_cfg")
+
 def _runfiles_symlink_impl(ctx):
     symlinks_dict = {ctx.attr.name: ctx.file.target}
     runfiles = ctx.runfiles(symlinks = symlinks_dict)
@@ -31,3 +34,8 @@ declared_symlink = rule(
         "target": attr.string(mandatory = True),
     },
 )
+
+_transition_builder = with_cfg(cc_binary)
+_transition_builder.extend("copt", ["-O1"])
+
+transitioned_cc_binary, _transitioned_cc_binary_reset = _transition_builder.build()
