@@ -190,7 +190,10 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
         if dst.exists():
             # this is likely a runfile of a transitioned binary that's also present in untransitioned form.
             # We shouldn't try to overwrite it because generated files are read-only.
-            continue
+            if src.read_bytes() == dst.read_bytes():
+                continue
+            else:
+                raise NotImplementedError(f"Got more than one {dst=} with different contents")
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
         _copy_file_or_dir(src, dst, keep_symlinks=True)
 
