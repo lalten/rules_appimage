@@ -68,3 +68,14 @@ def _rules_appimage_workspace_deps():
         strip_prefix = "rules_python-0.33.1",
         url = "https://github.com/bazelbuild/rules_python/releases/download/0.33.1/rules_python-0.33.1.tar.gz",
     )
+
+def rules_appimage_development_deps():
+    """Declare http_archive deps needed to run tests of rules_appimage."""
+
+    maybe(
+        http_archive,
+        name = "with_cfg.bzl",
+        sha256 = "2361266489cf028061b8a1495d1b1e1a4786b8ea0006cf2a7359837c93fabc7a",
+        strip_prefix = "with_cfg.bzl-0.2.3",
+        url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.2.3/with_cfg.bzl-v0.2.3.tar.gz",
+    )

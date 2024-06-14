@@ -1,8 +1,10 @@
 workspace(name = "rules_appimage")
 
-load("//:deps.bzl", "rules_appimage_deps")
+load("//:deps.bzl", "rules_appimage_deps", "rules_appimage_development_deps")
 
 rules_appimage_deps()
+
+rules_appimage_development_deps()
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 
