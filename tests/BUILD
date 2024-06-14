@@ -2,7 +2,7 @@ load("@rules_appimage_py_deps//:requirements.bzl", "requirement")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("//appimage:appimage.bzl", "appimage", "appimage_test")
-load(":testrules.bzl", "declared_symlink", "runfiles_symlink")
+load(":testrules.bzl", "declared_symlink", "runfiles_symlink", "transitioned_cc_binary")
 
 sh_binary(
     name = "test_sh",
@@ -75,6 +75,29 @@ py_binary(
 filegroup(
     name = "appimage_data_filegroup",
     srcs = ["appimage_data_filegroup.txt"],
+)
+
+genrule(
+    name = "generated_data",
+    outs = ["generated_data.txt"],
+    cmd = "echo 'Generated data' > $@",
+)
+
+transitioned_cc_binary(
+    name = "transitioned_binary",
+    srcs = ["transitioned_binary_test.cc"],
+    copts = ["-std=c++20"],
+    data = [":generated_data"],
+)
+
+appimage(
+    name = "appimage_test_with_transitioned_binary",
+    binary = ":transitioned_binary",
+    data = [
+        ":generated_data",
+    ],
+    env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
+    target_compatible_with = ["@platforms//os:linux"],
 )
 
 appimage_test(

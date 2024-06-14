@@ -1,0 +1,1 @@
+exec tests/transitioned_binary
