@@ -31,12 +31,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.8.5
+        with:
+          bazelisk-cache: true
+          bazelrc: "common ${{ matrix.flags }}"
+          disk-cache: true
+          external-cache: true
+          repository-cache: true
 
       - name: Use BuildBuddy RW API key instead of public readonly key
         run: sed -i.bak 's#x-buildbuddy-api-key=.*#x-buildbuddy-api-key=${{ env.BUILDBUDDY_RW_API_KEY }}#' .bazelrc
         if: ${{ env.BUILDBUDDY_RW_API_KEY }}
-
-      - run: echo "common ${{ matrix.flags }}" >> .bazelrc
 
       # Don't want to bother with hundreds of lines of Workspace setup for the rules_pycross compat test
       - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos'
@@ -54,6 +59,12 @@ jobs:
         bazel-version: [6.x, 7.x]
     steps:
       - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.8.5
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          external-cache: true
+          repository-cache: true
       - run: examples/integration_test.sh
 
   lint:
