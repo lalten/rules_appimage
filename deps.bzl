@@ -81,7 +81,7 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "with_cfg.bzl",
-        sha256 = "2361266489cf028061b8a1495d1b1e1a4786b8ea0006cf2a7359837c93fabc7a",
-        strip_prefix = "with_cfg.bzl-0.2.3",
-        url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.2.3/with_cfg.bzl-v0.2.3.tar.gz",
+        sha256 = "11e23da25da49ed2a45e48400fd3629bc855c6607a9d299dbef77c7f31c880f9",
+        strip_prefix = "with_cfg.bzl-0.2.5",
+        url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.2.5/with_cfg.bzl-v0.2.5.tar.gz",
     )
