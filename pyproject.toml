@@ -1,3 +1,7 @@
+[project]
+name = "rules_appimage"
+requires-python = ">=3.9"
+
 [tool.black]
 line-length = 120
 
@@ -19,7 +23,7 @@ strict = true
 [tool.pyright]
 exclude = ["bazel-*", "examples/bazel-*"]
 
-[tool.ruff]
+[tool.ruff.lint]
 select = [
   "B",
   "D",
@@ -46,5 +50,7 @@ select = [
   "PERF",
   "RUF",
 ]
-ignore = ["D203", "D213", "PLR2004", "TRY003"]
+ignore = ["COM812", "D203", "D213", "PLR2004", "TRY003"]
+
+[tool.ruff]
 line-length = 120

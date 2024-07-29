@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from appimage.private.tool.mkappimage import AppDirParams, make_appimage
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
