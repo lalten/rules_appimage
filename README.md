@@ -175,6 +175,5 @@ bazel test //...
 And run the [linters/formatters](.github/workflows/ci.yaml):
 
 ```sh
-trunk check
-trunk fmt
+pre-commit run --all-files
 ```

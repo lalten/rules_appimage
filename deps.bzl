@@ -59,8 +59,7 @@ def _rules_appimage_workspace_deps():
         url = "https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz",
     )
 
-    # rules python is needed to provide the bzlmod/workspace-agnostic bazel-runfiles pip requirement for mkappimage.
-    # Don't forget to add the setup steps to the main WORKSPACE file! You can find them in the release notes as well.
+    # rules_python is needed to load py_binary and py_library rules. rules_appimage does not use pip packages outside of tests
     maybe(
         http_archive,
         name = "rules_python",
