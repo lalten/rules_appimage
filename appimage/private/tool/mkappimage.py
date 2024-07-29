@@ -10,11 +10,14 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Iterable, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 from python import runfiles as bazel_runfiles
 
-_ManifestDataT = dict[str, list[str | dict[str, str]]]
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    _ManifestDataT = dict[str, list[str | dict[str, str]]]
 
 
 def _get_path_or_raise(path: str) -> Path:
