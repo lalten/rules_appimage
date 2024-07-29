@@ -54,3 +54,8 @@ ignore = ["COM812", "D203", "D213", "PLR2004", "TRY003"]
 
 [tool.ruff]
 line-length = 120
+
+[tool.yamlfix]
+line_length = 120
+indent_sequence = 2
+indent_offset = 0

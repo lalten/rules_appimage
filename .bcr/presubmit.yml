@@ -1,5 +1,6 @@
+---
 bcr_test_module:
-  module_path: ""
+  module_path: ''
   matrix:
     bazel: [6.x, 7.x]
   tasks:
@@ -10,6 +11,4 @@ bcr_test_module:
     run_tests_macos:
       platform: macos
       bazel: ${{ bazel }}
-      test_targets:
-        - //...
-        - -//tests/rules_pycross/...
+      test_targets: [//..., -//tests/rules_pycross/...]

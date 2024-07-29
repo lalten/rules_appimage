@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-int main(int argc, char** argv, char** envp) {
+int main(int argc, char **argv, char **envp) {
   (void)argc;
   (void)argv;
   // Go through the environment variables and find the one we set in the BUILD.
@@ -10,7 +10,7 @@ int main(int argc, char** argv, char** envp) {
   bool have_binary_env = false;
   bool have_appimage_env = false;
   std::string bazel_version{"unknown"};
-  for (char** env = envp; *env != 0; env++) {
+  for (char **env = envp; *env != 0; env++) {
     std::string thisEnv{*env};
     std::cout << thisEnv << std::endl;
     if (thisEnv == "MY_BINARY_ENV=not lost") {

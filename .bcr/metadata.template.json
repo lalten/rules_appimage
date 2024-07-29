@@ -7,7 +7,9 @@
       "name": "lalten"
     }
   ],
-  "repository": ["github:lalten/rules_appimage"],
+  "repository": [
+    "github:lalten/rules_appimage"
+  ],
   "versions": [],
   "yanked_versions": {}
 }
