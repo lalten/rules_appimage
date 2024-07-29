@@ -16,18 +16,18 @@ def test_datadep() -> None:
     """Test that the data dependency of the binary is bundled."""
     data_dep = Path("tests/data.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
-    assert (size := data_dep.stat().st_size) == 591, f"{data_dep} has wrong size {size}"
+    assert data_dep.stat().st_size == 591, f"{data_dep} has wrong size {data_dep.stat().st_size}"
 
 
 def test_appimage_datadep() -> None:
     """Test that data deps to the appimage itself are bundled."""
     data_dep = Path("tests/appimage_data_file.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
-    assert (size := data_dep.stat().st_size) == 13, f"{data_dep} has wrong size {size}"
+    assert data_dep.stat().st_size == 13, f"{data_dep} has wrong size {data_dep.stat().st_size}"
 
     data_dep = Path("tests/appimage_data_filegroup.txt")
     assert data_dep.is_file(), f"{data_dep} does not exist"
-    assert (size := data_dep.stat().st_size) == 22, f"{data_dep} has wrong size {size}"
+    assert data_dep.stat().st_size == 22, f"{data_dep} has wrong size {data_dep.stat().st_size}"
 
 
 def test_external_bin() -> None:
@@ -64,16 +64,16 @@ def test_symlinks() -> None:
     link_to_declared_dep = Path("tests/dir/subdir/symlink_to_local_file")
     assert link_to_declared_dep.is_file()
     assert link_to_declared_dep.is_symlink()
-    assert os.readlink(link_to_declared_dep) == "../local_file"
+    assert link_to_declared_dep.readlink().as_posix() == "../local_file"
 
     abs_link = Path("tests/dir/link_to_bin_sh")
     assert abs_link.is_file()
     assert abs_link.is_symlink()
-    assert os.readlink(abs_link) == "/bin/sh"
+    assert abs_link.readlink().as_posix() == "/bin/sh"
 
     dir_link = Path("tests/dir/subdir/dir_link")
     assert dir_link.is_symlink()
-    assert os.readlink(dir_link) == "dir"
+    assert dir_link.readlink().as_posix() == "dir"
     assert dir_link.resolve().is_dir()
 
     link = next(Path("..").glob("**/bin/python3"))
@@ -81,27 +81,27 @@ def test_symlinks() -> None:
     # "rules_appimage_python_x86_64-unknown-linux-gnu/bin/python3"
     # "rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3"
     assert link.is_symlink(), f"{link} is not a symlink. {link.is_file()=}"
-    assert re.match(r"^python3.\d+$", os.readlink(link)), os.readlink(link)
+    assert re.match(r"^python3.\d+$", link.readlink().as_posix()), link.readlink()
 
 
 def test_declared_symlinks() -> None:
     """Test that symlinks declared via `ctx.actions.declare_symlink(...)` are handled correctly."""
     link = Path("tests/dangling_symlink")
     assert link.is_symlink()
-    target = os.readlink(link)
-    assert target == "../idonotexist", target
+    target = link.readlink()
+    assert target.as_posix() == "../idonotexist", target
     assert not link.is_file()
 
     link = Path("tests/dot_symlink")
     assert link.is_symlink()
-    target = os.readlink(link)
-    assert target == ".", target
+    target = link.readlink()
+    assert target.as_posix() == ".", target
     assert link.is_dir()
 
     link = Path("tests/dotdot_symlink")
     assert link.is_symlink()
-    target = os.readlink(link)
-    assert target == "..", target
+    target = link.readlink()
+    assert target.as_posix() == "..", target
     assert link.is_dir()
 
 
@@ -109,7 +109,7 @@ def test_runfiles_symlinks() -> None:
     """Test that symlinks coming from `ctx.runfiles(symlinks = {...})` are handled correctly."""
     runfiles_symlink = Path("path/to/the/runfiles_symlink")
     assert runfiles_symlink.is_symlink()
-    assert os.readlink(runfiles_symlink) == "../../../tests/data.txt"
+    assert runfiles_symlink.readlink().as_posix() == "../../../tests/data.txt"
     assert runfiles_symlink.resolve().is_file()
 
 

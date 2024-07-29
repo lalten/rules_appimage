@@ -1,12 +1,10 @@
+---
 name: CI
-
-"on":
+on:
   push:
     branches: [main]
   pull_request:
-
 permissions: read-all
-
 jobs:
   test:
     runs-on: ${{ matrix.os }}-latest
@@ -20,30 +18,25 @@ jobs:
         os: [ubuntu, macos]
         external_dependency_system: [bzlmod, workspace]
         exclude:
-          # Don't expect Bazel compatibility issues depending on OS, so speed this up
-          - bazel-version: 6.x
-            os: macos
+        # Don't expect Bazel compatibility issues depending on OS, so speed this up
+        - bazel-version: 6.x
+          os: macos
         include:
-          - external_dependency_system: bzlmod
-            flags: --enable_bzlmod
-          - external_dependency_system: workspace
-            flags: --noenable_bzlmod
-
+        - external_dependency_system: bzlmod
+          flags: --enable_bzlmod
+        - external_dependency_system: workspace
+          flags: --noenable_bzlmod
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    - name: Use BuildBuddy RW API key instead of public readonly key
+      run: sed -i.bak 's#x-buildbuddy-api-key=.*#x-buildbuddy-api-key=${{ env.BUILDBUDDY_RW_API_KEY }}#' .bazelrc
+      if: ${{ env.BUILDBUDDY_RW_API_KEY }}
+    - run: echo "common ${{ matrix.flags }}" >> .bazelrc
 
-      - name: Use BuildBuddy RW API key instead of public readonly key
-        run: sed -i.bak 's#x-buildbuddy-api-key=.*#x-buildbuddy-api-key=${{ env.BUILDBUDDY_RW_API_KEY }}#' .bazelrc
-        if: ${{ env.BUILDBUDDY_RW_API_KEY }}
-
-      - run: echo "common ${{ matrix.flags }}" >> .bazelrc
-
-      # Don't want to bother with hundreds of lines of Workspace setup for the rules_pycross compat test
-      - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos'
-        run: echo "tests/rules_pycross" >> .bazelignore
-
-      - run: bazel test //...
-
+    # Don't want to bother with hundreds of lines of Workspace setup for the rules_pycross compat test
+    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos'
+      run: echo "tests/rules_pycross" >> .bazelignore
+    - run: bazel test //...
   examples:
     runs-on: ubuntu-latest
     env:
@@ -53,14 +46,11 @@ jobs:
       matrix:
         bazel-version: [6.x, 7.x]
     steps:
-      - uses: actions/checkout@v4
-      - run: examples/integration_test.sh
-
+    - uses: actions/checkout@v4
+    - run: examples/integration_test.sh
   lint:
     runs-on: ubuntu-latest
-    permissions:
-      checks: write
-      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: trunk-io/trunk-action@v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+    - uses: pre-commit/action@v3.0.1

@@ -10,7 +10,7 @@ toolchain_type(name = "appimage_toolchain_type")
     appimage_runtime = "@appimage_runtime_" + arch + "//file",
 ) for arch in ARCHS.keys()]
 
-# default toolchain for backwards compatability
+# default toolchain for backwards compatibility
 appimage_toolchain(
     name = "default_appimage",
     appimage_runtime = select({
@@ -31,7 +31,7 @@ appimage_toolchain(
     toolchain_type = ":appimage_toolchain_type",
 ) for arch in ARCHS.keys()]
 
-# Register toolchain for backwards compatability
+# Register toolchain for backwards compatibility
 toolchain(
     name = "default_appimage_toolchain",
     toolchain = ":default_appimage",

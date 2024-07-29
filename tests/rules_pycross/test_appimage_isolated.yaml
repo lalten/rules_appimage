@@ -1,6 +1,6 @@
-schemaVersion: "2.0.0"
-
+---
+schemaVersion: 2.0.0
 commandTests:
-  - name: run test
-    command: "/test.appimage"
-    args: [--appimage-extract-and-run]
+- name: run test
+  command: /test.appimage
+  args: [--appimage-extract-and-run]

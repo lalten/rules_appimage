@@ -3,8 +3,8 @@
 import os
 import subprocess
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 from unittest import mock
 
 import pytest
