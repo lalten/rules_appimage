@@ -43,7 +43,7 @@ repos:
   - id: markdownlint
     args: [--fix]
 - repo: https://github.com/renovatebot/pre-commit-hooks
-  rev: 38.19.2
+  rev: 38.39.6
   hooks:
   - id: renovate-config-validator
 - repo: https://github.com/pre-commit/mirrors-mypy
