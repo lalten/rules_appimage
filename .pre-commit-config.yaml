@@ -20,11 +20,11 @@ repos:
   - id: ruff
     args: [--fix, --unsafe-fixes]
   - id: ruff-format
-- repo: https://github.com/lyz-code/yamlfix
-  rev: 1.16.0
-  hooks:
-  - id: yamlfix
-    additional_dependencies: [maison]
+# TODO: fix "ModuleNotFoundError: No module named 'maison.schema'"
+# - repo: https://github.com/lyz-code/yamlfix
+#   rev: 1.16.0
+#   hooks:
+#   - id: yamlfix
 - repo: https://github.com/koalaman/shellcheck-precommit
   rev: v0.10.0
   hooks:
