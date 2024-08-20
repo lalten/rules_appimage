@@ -176,3 +176,13 @@ runfiles_symlink(
     name = "path/to/the/runfiles_symlink",
     target = ":data.txt",
 )
+
+py_test(
+    name = "mkappdir_test",
+    size = "small",
+    srcs = ["mkappdir_test.py"],
+    deps = [
+        "//appimage/private:mkappdir",
+        requirement("pytest"),
+    ],
+)
