@@ -50,7 +50,7 @@ select = [
   "PERF",
   "RUF",
 ]
-ignore = ["COM812", "D203", "D213", "PLR2004", "TRY003"]
+ignore = ["COM812", "D103", "D203", "D213", "PLR2004", "TRY003"]
 
 [tool.ruff]
 line-length = 120

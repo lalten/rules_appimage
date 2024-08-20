@@ -7,7 +7,7 @@ import click
 DATA_FILE = Path("resources/data.txt")
 
 
-@click.command()  # type: ignore [misc]
+@click.command()
 def main() -> None:
     """Print "Hello, world!" to the console."""
     data = DATA_FILE.read_text().strip()

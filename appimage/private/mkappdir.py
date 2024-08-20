@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import copy
-import errno
 import functools
 import json
 import os
@@ -74,7 +73,7 @@ def is_inside_bazel_cache(path: Path) -> bool:
     return os.fspath(path).startswith(get_output_base())
 
 
-def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> Path:
+def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> None:
     """Copy a file or dir from src to dst.
 
     We use copy2 because it preserves metadata like permissions.
@@ -83,7 +82,8 @@ def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> Path:
     """
     dst.parent.mkdir(parents=True, exist_ok=True)
     if not src.is_dir():
-        return shutil.copy2(src, dst, follow_symlinks=not preserve_symlinks)
+        shutil.copy2(src, dst, follow_symlinks=not preserve_symlinks)
+        return
 
     # Scan and recreate dangling symlinks
     dangling: set[Path] = set()
@@ -96,7 +96,7 @@ def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> Path:
         dangling.add(link)
 
     copy_function = functools.partial(shutil.copy2, follow_symlinks=not preserve_symlinks)
-    return shutil.copytree(
+    shutil.copytree(
         src,
         dst,
         symlinks=preserve_symlinks,
