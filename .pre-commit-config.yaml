@@ -24,6 +24,7 @@ repos:
   rev: 1.16.0
   hooks:
   - id: yamlfix
+    additional_dependencies: [maison]
 - repo: https://github.com/koalaman/shellcheck-precommit
   rev: v0.10.0
   hooks:
