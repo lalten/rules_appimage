@@ -1,47 +1,23 @@
-"""Library to prepare and build AppImages."""
+"""Prepare and build an AppImage AppDir tarball."""
 
 from __future__ import annotations
 
+import argparse
 import copy
 import functools
 import json
 import os
 import shutil
-import subprocess
+import sys
+import tarfile
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
-
-from python import runfiles as bazel_runfiles
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Sequence
 
     _ManifestDataT = dict[str, list[str | dict[str, str]]]
-
-
-def _get_path_or_raise(path: str) -> Path:
-    """Return a Path to a file in the runfiles, or raise FileNotFoundError."""
-    runfiles = bazel_runfiles.Create()
-    if not runfiles:
-        raise FileNotFoundError("Could not find runfiles")
-    runfile = runfiles.Rlocation(path)
-    if not runfile:
-        raise FileNotFoundError(f"Could not find {path} in runfiles")
-    if not Path(runfile).exists():
-        raise FileNotFoundError(f"{runfile} does not exist")
-    return Path(runfile)
-
-
-MKSQUASHFS = _get_path_or_raise("squashfs-tools/mksquashfs")
-
-
-class AppDirParams(NamedTuple):
-    """Parameters for the AppDir."""
-
-    manifest: Path
-    apprun: Path
-    runtime: Path
 
 
 def relative_path(target: Path, origin: Path) -> Path:
@@ -166,7 +142,7 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
     return new_manifest_data
 
 
-def populate_appdir(appdir: Path, params: AppDirParams) -> None:
+def populate_appdir(appdir: Path, manifest: Path) -> None:
     """Make the AppDir that will be squashfs'd into the AppImage.
 
     Note that the [AppImage Type2 Spec][appimage-spec] specifies that the contained [AppDir][appdir-spec] may contain a
@@ -178,7 +154,7 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
     [appimaged]: https://docs.appimage.org/user-guide/run-appimages.html#integrating-appimages-into-the-desktop
     """
     appdir.mkdir(parents=True, exist_ok=True)
-    manifest_data = json.loads(params.manifest.read_text())
+    manifest_data = json.loads(manifest.read_text())
     manifest_data = _move_relative_symlinks_in_files_to_their_own_section(manifest_data)
 
     for empty_file in manifest_data["empty_files"]:
@@ -234,25 +210,42 @@ def populate_appdir(appdir: Path, params: AppDirParams) -> None:
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
         _copy_file_or_dir(src, dst, keep_symlinks=False)
 
-    apprun_path = appdir / "AppRun"
-    shutil.copy2(params.apprun, apprun_path)
-    apprun_path.chmod(0o751)
+
+def _make_executable(ti: tarfile.TarInfo) -> tarfile.TarInfo:
+    ti.mode |= 0o111
+    return ti
 
 
-def make_squashfs(params: AppDirParams, mksquashfs_params: Iterable[str], output_path: str) -> None:
-    """Run mksquashfs to create the squashfs filesystem for the appimage."""
-    with tempfile.TemporaryDirectory(suffix="AppDir") as tmpdir_name:
-        populate_appdir(appdir=Path(tmpdir_name), params=params)
-        cmd = [os.fspath(MKSQUASHFS), tmpdir_name, output_path, "-root-owned", "-noappend", *mksquashfs_params]
-        try:
-            subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            raise RuntimeError(f"Failed to run {' '.join(cmd)!r} (returned {exc.returncode}): {exc.stdout}") from exc
+def make_appdir_tar(manifest: Path, apprun: Path, output: Path) -> None:
+    """Create an AppImage AppDir (uncompressed) tar ready to be sqfstar'ed."""
+    with tarfile.open(output, "w") as tar:
+        tar.add(apprun.resolve(), arcname="AppRun", filter=_make_executable)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            appdir = Path(tmpdir)
+            populate_appdir(appdir, manifest)
+            for top_level in appdir.iterdir():
+                tar.add(top_level, arcname=top_level.name)
 
 
-def make_appimage(params: AppDirParams, mksquashfs_params: Iterable[str], output_path: Path) -> None:
-    """Make the AppImage by concatenating the AppImage runtime and the AppDir squashfs."""
-    shutil.copy2(src=params.runtime, dst=output_path)
-    with output_path.open(mode="ab") as output_file, tempfile.NamedTemporaryFile(mode="w+b") as tmp_squashfs:
-        make_squashfs(params, mksquashfs_params, tmp_squashfs.name)
-        shutil.copyfileobj(tmp_squashfs, output_file)
+def parse_args(args: Sequence[str]) -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description="Prepare and build AppImages.")
+    parser.add_argument(
+        "--manifest",
+        required=True,
+        type=Path,
+        help="Path to manifest json with file and link definitions, e.g. 'bazel-bin/tests/appimage_py-manifest.json'",
+    )
+    parser.add_argument(
+        "--apprun",
+        required=True,
+        type=Path,
+        help="Path to AppRun script",
+    )
+    parser.add_argument("output", type=Path, help="Where to place output AppDir tar")
+    return parser.parse_args(args)
+
+
+if __name__ == "__main__":
+    args = parse_args(sys.argv[1:])
+    make_appdir_tar(args.manifest, args.apprun, args.output)
