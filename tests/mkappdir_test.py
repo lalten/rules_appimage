@@ -1,7 +1,9 @@
 """Unit tests for mkappdir module."""
 
+import json
 import os
 import sys
+import tarfile
 import tempfile
 from pathlib import Path
 
@@ -115,6 +117,62 @@ def test_copy_file_or_dir(symlinks: bool) -> None:
         dangling = dst / "dangling"
         assert dangling.is_symlink()
         assert not dangling.exists()
+
+
+def test_populate_appdir() -> None:
+    with (
+        tempfile.NamedTemporaryFile(suffix=".json") as manifest_file,
+        tempfile.TemporaryDirectory() as tmp_dir,
+    ):
+        manifest = Path(manifest_file.name)
+        manifest.write_text(
+            json.dumps(
+                {
+                    "empty_files": ["empty_file"],
+                    "files": [{"src": __file__, "dst": "dir/b"}],
+                    "symlinks": [{"linkname": "link/symlink", "target": "dir/b"}],
+                    "tree_artifacts": [{"src": Path(__file__).parent.as_posix(), "dst": "tree"}],
+                }
+            )
+        )
+        appdir = Path(tmp_dir)
+        mkappdir.populate_appdir(appdir, manifest)
+
+        assert (appdir / "empty_file").read_text() == ""
+        assert (appdir / "dir/b").read_text() == Path(__file__).read_text()
+        assert (appdir / "link/symlink").is_symlink()
+        assert (appdir / "tree" / Path(__file__).name).read_text() == Path(__file__).read_text()
+
+
+def test_make_appdir_tar() -> None:
+    with (
+        tempfile.NamedTemporaryFile(suffix=".json") as manifest,
+        tempfile.NamedTemporaryFile(suffix=".AppRun") as apprun,
+        tempfile.NamedTemporaryFile(suffix=".tar") as output,
+    ):
+        Path(manifest.name).write_text(
+            json.dumps(
+                {
+                    "empty_files": [],
+                    "files": [],
+                    "symlinks": [{"linkname": "link/symlink", "target": "AppRun"}],
+                    "tree_artifacts": [],
+                }
+            )
+        )
+        Path(apprun.name).write_text("#!/bin/sh\n")
+        mkappdir.make_appdir_tar(
+            Path(manifest.name),
+            Path(apprun.name),
+            Path(output.name),
+        )
+        with tarfile.open(output.name, "r:") as tar:
+            assert set(tar.getnames()) == {"link", "link/symlink", "AppRun"}
+            link = tar.extractfile("link/symlink")
+            assert link
+            assert link.read() == b"#!/bin/sh\n"
+            linkinfo = tar.getmember("link/symlink")
+            assert linkinfo.type == tarfile.SYMTYPE
 
 
 if __name__ == "__main__":
