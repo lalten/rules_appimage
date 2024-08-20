@@ -139,10 +139,6 @@ py_test(
 appimage(
     name = "external_bin.appimage",
     binary = "@rules_python//tools:wheelmaker",
-    build_env = {
-        # Example: Set environment variable for mksquashfs to set all file timestamps to 1970-01-01.
-        "SOURCE_DATE_EPOCH": "0",
-    },
 )
 
 sh_test(
