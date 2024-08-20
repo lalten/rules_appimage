@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import errno
 import functools
 import json
 import os
@@ -73,28 +74,37 @@ def is_inside_bazel_cache(path: Path) -> bool:
     return os.fspath(path).startswith(get_output_base())
 
 
-def _copy_file(src: Path | str, dst: Path | str, keep_symlinks: bool) -> None:
-    """Copy one file from src to dst."""
-    # We use copy2 because it preserves metadata like permissions.
-    # If keep_symlinks is True, we do not want follow_symlinks because we want to keep symlink targets preserved.
-    shutil.copy2(src, dst, follow_symlinks=not keep_symlinks)
+def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> Path:
+    """Copy a file or dir from src to dst.
 
-
-def _copy_file_or_dir(src: Path, dst: Path, keep_symlinks: bool) -> None:
-    """Copy a file or dir from src to dst."""
+    We use copy2 because it preserves metadata like permissions.
+    If preserve_symlinks is True we do not want to set follow_symlinks in order to keep
+    symlink targets preserved.
+    """
     dst.parent.mkdir(parents=True, exist_ok=True)
-    copy_function = functools.partial(_copy_file, keep_symlinks=keep_symlinks)
-    if src.is_dir():
-        shutil.copytree(
-            src,
-            dst,
-            symlinks=keep_symlinks,
-            copy_function=copy_function,
-            ignore_dangling_symlinks=True,
-            dirs_exist_ok=True,
-        )
-    else:
-        copy_function(src, dst)
+    if not src.is_dir():
+        return shutil.copy2(src, dst, follow_symlinks=not preserve_symlinks)
+
+    # Scan and recreate dangling symlinks
+    dangling: set[Path] = set()
+    for link in src.rglob("*"):
+        if not link.is_symlink() or link.exists():
+            continue
+        new_link = dst / link.relative_to(src)
+        new_link.parent.mkdir(parents=True, exist_ok=True)
+        new_link.symlink_to(link.readlink())
+        dangling.add(link)
+
+    copy_function = functools.partial(shutil.copy2, follow_symlinks=not preserve_symlinks)
+    return shutil.copytree(
+        src,
+        dst,
+        symlinks=preserve_symlinks,
+        ignore=lambda dir, names: [f for f in names if Path(dir) / f in dangling],
+        copy_function=copy_function,
+        ignore_dangling_symlinks=False,
+        dirs_exist_ok=True,
+    )
 
 
 def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _ManifestDataT) -> _ManifestDataT:
@@ -174,7 +184,7 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
             else:
                 raise NotImplementedError(f"Got more than one {dst=} with different contents")
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
-        _copy_file_or_dir(src, dst, keep_symlinks=True)
+        copy_file_or_dir(src, dst, preserve_symlinks=True)
 
     for link in manifest_data["symlinks"]:
         # example entry: {"linkname": "tests/test_py", "target": "tests/test_py.runfiles/_main/tests/test_py"}
@@ -208,7 +218,7 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
         src = Path(tree_artifact["src"]).resolve()
         dst = Path(appdir / tree_artifact["dst"]).resolve()
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
-        _copy_file_or_dir(src, dst, keep_symlinks=False)
+        copy_file_or_dir(src, dst, preserve_symlinks=False)
 
 
 def _make_executable(ti: tarfile.TarInfo) -> tarfile.TarInfo:
