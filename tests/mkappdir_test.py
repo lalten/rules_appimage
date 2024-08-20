@@ -33,8 +33,8 @@ def test_get_output_base() -> None:
 @pytest.mark.parametrize(
     ("path", "expected"),
     [
-        (Path("."), False),
-        (Path(".").resolve(), True),
+        (Path(), False),
+        (Path().resolve(), True),
         (Path(__file__), True),
         (Path("/"), False),
         (Path("bazel-out/stable-status.txt"), False),
