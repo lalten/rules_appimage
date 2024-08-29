@@ -14,8 +14,8 @@ MKSQUASHFS_ARGS = [
     "-root-time",
     "0",
 ]
-MKSQUASHFS_NUM_PROCS = 8
-MKSQUASHFS_MEM_MB = 4096
+MKSQUASHFS_NUM_PROCS = 4
+MKSQUASHFS_MEM_MB = 1024
 
 def _resources(*_args, **_kwargs):
     """See https://bazel.build/rules/lib/builtins/actions#run.resource_set."""
