@@ -173,6 +173,25 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
     return new_manifest_data
 
 
+def _prevent_duplicate_dsts_with_diverging_srcs(manifest_data: _ManifestData) -> _ManifestData:
+    """Remove duplicate dsts with in the manifest and fail if the srcs would have diverging contents."""
+    new_manifest_data = copy.deepcopy(manifest_data)
+    new_manifest_data.files.clear()
+    dst_to_src: dict[str, str] = {}
+    for file in manifest_data.files:
+        if file.dst not in dst_to_src:
+            dst_to_src[file.dst] = file.src
+            new_manifest_data.files.append(file)
+        else:
+            this_src = Path(file.src).read_bytes()
+            other_src = Path(dst_to_src[file.dst]).read_bytes()
+            if this_src != other_src:
+                # this is likely a runfile of a transitioned binary that's also present in untransitioned form.
+                # We shouldn't try to overwrite it because generated files are read-only.
+                raise NotImplementedError(f"Got more than one {file.dst=} with different contents")
+    return new_manifest_data
+
+
 def populate_appdir(appdir: Path, manifest: Path) -> None:
     """Make the AppDir that will be squashfs'd into the AppImage.
 
@@ -187,6 +206,7 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
     appdir.mkdir(parents=True, exist_ok=True)
     manifest_data = _ManifestData.from_json(manifest.read_text())
     manifest_data = _move_relative_symlinks_in_files_to_their_own_section(manifest_data)
+    manifest_data = _prevent_duplicate_dsts_with_diverging_srcs(manifest_data)
 
     for empty_file in manifest_data.empty_files:
         # example entry: "tests/test_py.runfiles/__init__.py"
@@ -197,13 +217,6 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
         # example entry: {"dst": "tests/test_py.runfiles/_main/tests/data.txt", "src": "tests/data.txt"}
         src = Path(file.src).resolve()
         dst = Path(appdir / file.dst).resolve()
-        if dst.exists():
-            # this is likely a runfile of a transitioned binary that's also present in untransitioned form.
-            # We shouldn't try to overwrite it because generated files are read-only.
-            if src.read_bytes() == dst.read_bytes():
-                continue
-            else:
-                raise NotImplementedError(f"Got more than one {dst=} with different contents")
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
         copy_file_or_dir(src, dst, preserve_symlinks=True)
 
