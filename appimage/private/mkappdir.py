@@ -12,12 +12,39 @@ import sys
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    _ManifestDataT = dict[str, list[str | dict[str, str]]]
+
+class _ManifestCopy(NamedTuple):
+    dst: str
+    src: str
+
+
+class _ManifestLink(NamedTuple):
+    linkname: str
+    target: str
+
+
+class _ManifestData(NamedTuple):
+    empty_files: list[str]
+    files: list[_ManifestCopy]
+    symlinks: list[_ManifestLink]
+    relative_symlinks: list[_ManifestLink]
+    tree_artifacts: list[_ManifestCopy]
+
+    @classmethod
+    def from_json(cls, data: str) -> _ManifestData:
+        data_dict = json.loads(data)
+        return cls(
+            empty_files=data_dict.get("empty_files", []),
+            files=[_ManifestCopy(**entry) for entry in data_dict.get("files", [])],
+            symlinks=[_ManifestLink(**entry) for entry in data_dict.get("symlinks", [])],
+            relative_symlinks=[_ManifestLink(**entry) for entry in data_dict.get("relative_symlinks", [])],
+            tree_artifacts=[_ManifestCopy(**entry) for entry in data_dict.get("tree_artifacts", [])],
+        )
 
 
 def relative_path(target: Path, origin: Path) -> Path:
@@ -107,19 +134,18 @@ def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> None:
     )
 
 
-def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _ManifestDataT) -> _ManifestDataT:
+def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _ManifestData) -> _ManifestData:
     """Check if a file is a _relative_ symlink and if so, move it to a new relative_symlinks section."""
     new_manifest_data = copy.deepcopy(manifest_data)
-    new_manifest_data["files"].clear()
-    new_manifest_data["relative_symlinks"] = []
+    new_manifest_data.files.clear()
+    new_manifest_data.relative_symlinks.clear()
 
-    for entry in manifest_data["files"]:
-        assert isinstance(entry, dict)
-        src = Path(entry["src"])
+    for entry in manifest_data.files:
+        src = Path(entry.src)
 
         if not src.is_symlink():
             # This is not a symlink. We want to copy that regular file (or dir!) as-is.
-            new_manifest_data["files"].append(entry)
+            new_manifest_data.files.append(entry)
             continue
 
         target = src.readlink()
@@ -135,19 +161,14 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
         if target.is_absolute():
             # Absolute symlinks are ok to keep in the files section because we are going to resolve them before copying.
             # Commonly this happens with source files that are symlinks from the sandbox to the actual source checkout.
-            new_manifest_data["files"].append(entry)
+            new_manifest_data.files.append(entry)
         else:
             # This is a relative symlink. Let's move it out of the files section and into the relative_symlinks section.
             # We do this to maintain the existing symlink structure and to prevent the linked file to be copied twice
             # (although squashfs would deduplicate it).
             # Note that the link target may _not_ be reachable if it is not declared as input itself.
             # Users need to ensure that whatever shall be available at runtime is properly declared as data dependency.
-            new_manifest_data["relative_symlinks"].append(
-                {
-                    "linkname": entry["dst"],
-                    "target": os.fspath(target),
-                },
-            )
+            new_manifest_data.relative_symlinks.append(_ManifestLink(linkname=entry.dst, target=os.fspath(target)))
 
     return new_manifest_data
 
@@ -164,18 +185,18 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
     [appimaged]: https://docs.appimage.org/user-guide/run-appimages.html#integrating-appimages-into-the-desktop
     """
     appdir.mkdir(parents=True, exist_ok=True)
-    manifest_data = json.loads(manifest.read_text())
+    manifest_data = _ManifestData.from_json(manifest.read_text())
     manifest_data = _move_relative_symlinks_in_files_to_their_own_section(manifest_data)
 
-    for empty_file in manifest_data["empty_files"]:
+    for empty_file in manifest_data.empty_files:
         # example entry: "tests/test_py.runfiles/__init__.py"
         (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
         (appdir / empty_file).touch()
 
-    for file in manifest_data["files"]:
+    for file in manifest_data.files:
         # example entry: {"dst": "tests/test_py.runfiles/_main/tests/data.txt", "src": "tests/data.txt"}
-        src = Path(file["src"]).resolve()
-        dst = Path(appdir / file["dst"]).resolve()
+        src = Path(file.src).resolve()
+        dst = Path(appdir / file.dst).resolve()
         if dst.exists():
             # this is likely a runfile of a transitioned binary that's also present in untransitioned form.
             # We shouldn't try to overwrite it because generated files are read-only.
@@ -186,12 +207,12 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
         copy_file_or_dir(src, dst, preserve_symlinks=True)
 
-    for link in manifest_data["symlinks"]:
+    for link in manifest_data.symlinks:
         # example entry: {"linkname": "tests/test_py", "target": "tests/test_py.runfiles/_main/tests/test_py"}
-        linkname = Path(link["linkname"])
+        linkname = Path(link.linkname)
         linkfile = (appdir / linkname).resolve()
         linkfile.parent.mkdir(parents=True, exist_ok=True)
-        target = Path(link["target"])
+        target = Path(link.target)
         if target.is_absolute():
             # We keep absolute symlinks as is, but make no effort to copy the target into the runfiles as well.
             # Note that not all Bazel remote cache implementations allow absolute symlinks!
@@ -201,22 +222,22 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
             target = relative_path(appdir / target, linkfile.parent)
         linkfile.symlink_to(target)
 
-    for link in manifest_data["relative_symlinks"]:
+    for link in manifest_data.relative_symlinks:
         # example entry: {"linkname":
         # "tests/test_py.runfiles/_main/../rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3",
         # "target": "python3.11"}
-        linkfile = (appdir / link["linkname"]).resolve()
+        linkfile = (appdir / link.linkname).resolve()
         linkfile.parent.mkdir(parents=True, exist_ok=True)
-        target = Path(link["target"])
+        target = Path(link.target)
         assert not target.is_absolute(), f"symlink {linkfile} must be relative, but points at {target}"
         linkfile.symlink_to(target)
 
-    for tree_artifact in manifest_data["tree_artifacts"]:
+    for tree_artifact in manifest_data.tree_artifacts:
         # example entry:
         # {'dst': 'test.runfiles/_main/../rules_pycross~~lock_repos~pdm_deps/_lock/humanize@4.9.0',
         # 'src': 'bazel-out/k8-fastbuild/bin/external/rules_pycross~~lock_repos~pdm_deps/_lock/humanize@4.9.0'}
-        src = Path(tree_artifact["src"]).resolve()
-        dst = Path(appdir / tree_artifact["dst"]).resolve()
+        src = Path(tree_artifact.src).resolve()
+        dst = Path(appdir / tree_artifact.dst).resolve()
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
         copy_file_or_dir(src, dst, preserve_symlinks=False)
 
