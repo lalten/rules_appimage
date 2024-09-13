@@ -11,8 +11,9 @@ import shutil
 import sys
 import tarfile
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Callable, NamedTuple
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -134,6 +135,11 @@ def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> None:
     )
 
 
+def _copy_file_or_dir_later(src: Path, dst: Path, preserve_symlinks: bool) -> Callable[[], None]:
+    """Return a function that copies a file or dir from src to dst."""
+    return lambda: copy_file_or_dir(src, dst, preserve_symlinks)
+
+
 def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _ManifestData) -> _ManifestData:
     """Check if a file is a _relative_ symlink and if so, move it to a new relative_symlinks section."""
     new_manifest_data = copy.deepcopy(manifest_data)
@@ -208,6 +214,8 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
     manifest_data = _move_relative_symlinks_in_files_to_their_own_section(manifest_data)
     manifest_data = _prevent_duplicate_dsts_with_diverging_srcs(manifest_data)
 
+    actions: list[Callable[[], None]] = []
+
     for empty_file in manifest_data.empty_files:
         # example entry: "tests/test_py.runfiles/__init__.py"
         (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
@@ -218,7 +226,7 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
         src = Path(file.src).resolve()
         dst = Path(appdir / file.dst).resolve()
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
-        copy_file_or_dir(src, dst, preserve_symlinks=True)
+        actions.append(_copy_file_or_dir_later(src, dst, preserve_symlinks=True))
 
     for link in manifest_data.symlinks:
         # example entry: {"linkname": "tests/test_py", "target": "tests/test_py.runfiles/_main/tests/test_py"}
@@ -252,7 +260,12 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
         src = Path(tree_artifact.src).resolve()
         dst = Path(appdir / tree_artifact.dst).resolve()
         assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
-        copy_file_or_dir(src, dst, preserve_symlinks=False)
+        actions.append(_copy_file_or_dir_later(src, dst, preserve_symlinks=False))
+
+    with ThreadPoolExecutor() as executor:
+        futures = [executor.submit(action) for action in actions]
+    for future in futures:
+        future.result()
 
 
 def _make_executable(ti: tarfile.TarInfo) -> tarfile.TarInfo:
