@@ -43,7 +43,7 @@ def _appimage_impl(ctx):
         executable = ctx.executable._mkappdir,
         arguments = [args],
         outputs = [appdirtar],
-        execution_requirements = {"no-remote": True},
+        execution_requirements = {"no-remote": "1"},
     )
 
     # Create the AppDir squashfs
@@ -65,7 +65,7 @@ def _appimage_impl(ctx):
         tools = [ctx.executable._mksquashfs],
         outputs = [appdirsqfs],
         resource_set = _resources,
-        execution_requirements = {"no-remote-cache": True},
+        execution_requirements = {"no-remote-cache": "1"},
     )
 
     # Create the Appimage
@@ -79,7 +79,7 @@ def _appimage_impl(ctx):
             ctx.outputs.executable.path,
         ],
         outputs = [ctx.outputs.executable],
-        execution_requirements = {"no-remote": True},
+        execution_requirements = {"no-remote": "1"},
     )
 
     # Take the `binary` env and add the appimage target's env on top of it
