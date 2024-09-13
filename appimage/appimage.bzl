@@ -46,11 +46,11 @@ def _appimage_impl(ctx):
     )
 
     # Create the AppDir squashfs
-    args = ctx.actions.args()
-    args.add_all(MKSQUASHFS_ARGS)
-    args.add("-processors").add(MKSQUASHFS_NUM_PROCS)
-    args.add("-mem").add("{}M".format(MKSQUASHFS_MEM_MB))
-    mksquashfs_args = MKSQUASHFS_ARGS + ctx.attr.build_args + ["-tar"]
+    mksquashfs_args = list(MKSQUASHFS_ARGS)
+    mksquashfs_args.extend(["-processors", str(MKSQUASHFS_NUM_PROCS)])
+    mksquashfs_args.extend(["-mem", "{}M".format(MKSQUASHFS_MEM_MB)])
+    mksquashfs_args.extend(ctx.attr.build_args)
+    mksquashfs_args.append("-tar")
     appdirsqfs = ctx.actions.declare_file(ctx.attr.name + ".sqfs")
     ctx.actions.run_shell(
         mnemonic = "Sqfstar",
