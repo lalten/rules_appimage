@@ -31,18 +31,18 @@ def _appimage_impl(ctx):
     apprun = make_apprun(ctx)
     inputs = depset(direct = [manifest_file, apprun] + runfile_info.files)
 
-    # Create the AppDir tar
-    appdirtar = ctx.actions.declare_file(ctx.attr.name + ".tar")
+    # Create the AppDir TreeArtifact
+    appdir = ctx.actions.declare_directory(ctx.attr.name + ".AppDir")
     args = ctx.actions.args()
     args.add("--manifest").add(manifest_file.path)
     args.add("--apprun").add(apprun.path)
-    args.add(appdirtar.path)
+    args.add(appdir.path)
     ctx.actions.run(
-        mnemonic = "MkAppDir",
+        mnemonic = "CpAppDir",
         inputs = inputs,
         executable = ctx.executable._mkappdir,
         arguments = [args],
-        outputs = [appdirtar],
+        outputs = [appdir],
         execution_requirements = {"no-remote": "1"},
     )
 
@@ -51,16 +51,15 @@ def _appimage_impl(ctx):
     mksquashfs_args.extend(["-processors", str(MKSQUASHFS_NUM_PROCS)])
     mksquashfs_args.extend(["-mem", "{}M".format(MKSQUASHFS_MEM_MB)])
     mksquashfs_args.extend(ctx.attr.build_args)
-    mksquashfs_args.append("-tar")
     appdirsqfs = ctx.actions.declare_file(ctx.attr.name + ".sqfs")
     ctx.actions.run_shell(
-        mnemonic = "Sqfstar",
-        inputs = [appdirtar],
-        command = "{exe} - {dst} {args} <{src}".format(
+        mnemonic = "MkSquashfs",
+        inputs = [appdir],
+        command = "{exe} {src} {dst} {args}".format(
             exe = ctx.executable._mksquashfs.path,
             dst = appdirsqfs.path,
             args = " ".join(mksquashfs_args),
-            src = appdirtar.path,
+            src = appdir.path,
         ),
         tools = [ctx.executable._mksquashfs],
         outputs = [appdirsqfs],
@@ -95,7 +94,7 @@ def _appimage_impl(ctx):
             runfiles = ctx.runfiles(files = [ctx.outputs.executable]),
         ),
         RunEnvironmentInfo(env),
-        OutputGroupInfo(appimage_debug = depset([manifest_file, appdirtar, appdirsqfs])),
+        OutputGroupInfo(appimage_debug = depset([manifest_file, appdir, appdirsqfs])),
     ]
 
 _ATTRS = {

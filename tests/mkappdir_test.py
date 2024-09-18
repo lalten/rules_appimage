@@ -144,11 +144,11 @@ def test_populate_appdir() -> None:
         assert (appdir / "tree" / Path(__file__).name).read_text() == Path(__file__).read_text()
 
 
-def test_make_appdir_tar() -> None:
+def test_make_appdir() -> None:
     with (
         tempfile.NamedTemporaryFile(suffix=".json") as manifest,
         tempfile.NamedTemporaryFile(suffix=".AppRun") as apprun,
-        tempfile.NamedTemporaryFile(suffix=".tar") as output,
+        tempfile.TemporaryDirectory() as tmpdir,
     ):
         Path(manifest.name).write_text(
             json.dumps(
@@ -161,18 +161,15 @@ def test_make_appdir_tar() -> None:
             )
         )
         Path(apprun.name).write_text("#!/bin/sh\n")
-        mkappdir.make_appdir_tar(
-            Path(manifest.name),
-            Path(apprun.name),
-            Path(output.name),
-        )
-        with tarfile.open(output.name, "r:") as tar:
-            assert set(tar.getnames()) == {"link", "link/symlink", "AppRun"}
-            link = tar.extractfile("link/symlink")
-            assert link
-            assert link.read() == b"#!/bin/sh\n"
-            linkinfo = tar.getmember("link/symlink")
-            assert linkinfo.type == tarfile.SYMTYPE
+        output = Path(tmpdir) / "AppDir"
+        assert not output.exists()
+
+        mkappdir.make_appdir(Path(manifest.name), Path(apprun.name), output)
+
+        assert set(output.rglob("*")) == {output / "link", output / "link/symlink", output / "AppRun"}
+        assert not (output / "AppRun").is_symlink()
+        assert (output / "link/symlink").readlink() == Path("../AppRun")
+        assert (output / "link/symlink").read_text() == "#!/bin/sh\n"
 
 
 if __name__ == "__main__":

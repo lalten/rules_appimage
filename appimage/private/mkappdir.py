@@ -268,20 +268,11 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
         future.result()
 
 
-def _make_executable(ti: tarfile.TarInfo) -> tarfile.TarInfo:
-    ti.mode |= 0o111
-    return ti
-
-
-def make_appdir_tar(manifest: Path, apprun: Path, output: Path) -> None:
-    """Create an AppImage AppDir (uncompressed) tar ready to be sqfstar'ed."""
-    with tarfile.open(output, "w") as tar:
-        tar.add(apprun.resolve(), arcname="AppRun", filter=_make_executable)
-        with tempfile.TemporaryDirectory() as tmpdir:
-            appdir = Path(tmpdir)
-            populate_appdir(appdir, manifest)
-            for top_level in appdir.iterdir():
-                tar.add(top_level, arcname=top_level.name)
+def make_appdir(manifest: Path, apprun: Path, output: Path) -> None:
+    """Create an AppImage AppDir ready to be mksquashfs'ed."""
+    populate_appdir(output, manifest)
+    (output / "AppRun").write_text(apprun.read_text())
+    (output / "AppRun").chmod(0o755)
 
 
 def parse_args(args: Sequence[str]) -> argparse.Namespace:
@@ -299,10 +290,10 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         type=Path,
         help="Path to AppRun script",
     )
-    parser.add_argument("output", type=Path, help="Where to place output AppDir tar")
+    parser.add_argument("output", type=Path, help="Where to place output AppDir")
     return parser.parse_args(args)
 
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
-    make_appdir_tar(args.manifest, args.apprun, args.output)
+    make_appdir(args.manifest, args.apprun, args.output)
