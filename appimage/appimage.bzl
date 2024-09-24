@@ -31,37 +31,44 @@ def _appimage_impl(ctx):
     apprun = make_apprun(ctx)
     inputs = depset(direct = [manifest_file, apprun] + runfile_info.files)
 
-    # Create the AppDir tar
-    appdirtar = ctx.actions.declare_file(ctx.attr.name + ".tar")
+    # Create the AppDir mksquashfs pseudofile definitions
+    pseudofile_defs = ctx.actions.declare_file(ctx.attr.name + ".pseudofile_defs.txt")
     args = ctx.actions.args()
     args.add("--manifest").add(manifest_file.path)
     args.add("--apprun").add(apprun.path)
-    args.add(appdirtar.path)
+    args.add(pseudofile_defs.path)
     ctx.actions.run(
         mnemonic = "MkAppDir",
         inputs = inputs,
         executable = ctx.executable._mkappdir,
         arguments = [args],
-        outputs = [appdirtar],
-        execution_requirements = {"no-remote": "1"},
+        outputs = [pseudofile_defs],
+        execution_requirements = {"no-remote-exec": "1"},
+    )
+
+    # Create an empty directory that we can point mksquashfs at so all the added files come from the pseudofile defs
+    emptydir = ctx.actions.declare_directory(ctx.attr.name + ".emptydir")
+    ctx.actions.run_shell(
+        mnemonic = "MkEmptyDir",
+        outputs = [emptydir],
+        command = "mkdir -p %s" % emptydir.path,
     )
 
     # Create the AppDir squashfs
-    mksquashfs_args = list(MKSQUASHFS_ARGS)
-    mksquashfs_args.extend(["-processors", str(MKSQUASHFS_NUM_PROCS)])
-    mksquashfs_args.extend(["-mem", "{}M".format(MKSQUASHFS_MEM_MB)])
-    mksquashfs_args.extend(ctx.attr.build_args)
-    mksquashfs_args.append("-tar")
     appdirsqfs = ctx.actions.declare_file(ctx.attr.name + ".sqfs")
-    ctx.actions.run_shell(
-        mnemonic = "Sqfstar",
-        inputs = [appdirtar],
-        command = "{exe} - {dst} {args} <{src}".format(
-            exe = ctx.executable._mksquashfs.path,
-            dst = appdirsqfs.path,
-            args = " ".join(mksquashfs_args),
-            src = appdirtar.path,
-        ),
+    mksquashfs_args = ctx.actions.args()
+    mksquashfs_args.add(emptydir.path + "/")
+    mksquashfs_args.add(appdirsqfs.path)
+    mksquashfs_args.add_all(MKSQUASHFS_ARGS)
+    mksquashfs_args.add("-processors").add(MKSQUASHFS_NUM_PROCS)
+    mksquashfs_args.add("-mem").add("%sM" % MKSQUASHFS_MEM_MB)
+    mksquashfs_args.add_all(ctx.attr.build_args)
+    mksquashfs_args.add("-pf").add(pseudofile_defs.path)
+    ctx.actions.run(
+        mnemonic = "MkSquashfs",
+        inputs = depset(direct = [pseudofile_defs, apprun, emptydir] + runfile_info.files),
+        executable = ctx.executable._mksquashfs,
+        arguments = [mksquashfs_args],
         tools = [ctx.executable._mksquashfs],
         outputs = [appdirsqfs],
         resource_set = _resources,
@@ -79,7 +86,7 @@ def _appimage_impl(ctx):
             ctx.outputs.executable.path,
         ],
         outputs = [ctx.outputs.executable],
-        execution_requirements = {"no-remote": "1"},
+        execution_requirements = {"no-remote-exec": "1"},
     )
 
     # Take the `binary` env and add the appimage target's env on top of it
@@ -95,7 +102,7 @@ def _appimage_impl(ctx):
             runfiles = ctx.runfiles(files = [ctx.outputs.executable]),
         ),
         RunEnvironmentInfo(env),
-        OutputGroupInfo(appimage_debug = depset([manifest_file, appdirtar, appdirsqfs])),
+        OutputGroupInfo(appimage_debug = depset([manifest_file, pseudofile_defs, appdirsqfs])),
     ]
 
 _ATTRS = {
