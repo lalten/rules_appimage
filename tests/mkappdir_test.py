@@ -98,7 +98,7 @@ def test_to_pseudofile_def_lines() -> None:
         perms = f"{dangling.lstat().st_mode & 0o777:o}"  # this differs on Linux and macOS
         assert mkdef(dangling, Path("dst"), True) == {"dst": f"s {perms} 0 0 ../invalid"}
         assert mkdef(dangling, Path("dst"), False) == {"dst": f"s {perms} 0 0 ../invalid"}
-        assert mkdef(link, Path("dst"), True) == {"dst": "s 777 0 0 dir/file"}
+        assert mkdef(link, Path("dst"), True) == {"dst": f"s {perms} 0 0 dir/file"}
         assert mkdef(link, Path("dst"), False) == {"dst": "f 777 0 0 cat link"}
 
 
