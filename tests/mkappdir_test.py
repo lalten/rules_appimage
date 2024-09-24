@@ -1,13 +1,11 @@
 """Unit tests for mkappdir module."""
 
 import contextlib
-import json
 import os
 import sys
-import tarfile
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterable, Iterator
 
 import pytest
 
