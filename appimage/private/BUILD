@@ -5,3 +5,14 @@ py_binary(
     srcs = ["mkappdir.py"],
     visibility = ["//visibility:public"],
 )
+
+sh_binary(
+    name = "mkappimage",
+    srcs = ["mkappimage.sh"],
+    data = [
+        ":mkappdir",
+        "@squashfs-tools//:mksquashfs",
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)

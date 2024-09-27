@@ -29,64 +29,31 @@ def _appimage_impl(ctx):
     manifest_file = ctx.actions.declare_file(ctx.attr.name + ".manifest.json")
     ctx.actions.write(manifest_file, json.encode_indent(runfile_info.manifest))
     apprun = make_apprun(ctx)
-    inputs = depset(direct = [manifest_file, apprun] + runfile_info.files)
 
-    # Create the AppDir mksquashfs pseudofile definitions
     pseudofile_defs = ctx.actions.declare_file(ctx.attr.name + ".pseudofile_defs.txt")
-    args = ctx.actions.args()
-    args.add("--manifest").add(manifest_file.path)
-    args.add("--apprun").add(apprun.path)
-    args.add(pseudofile_defs.path)
-    ctx.actions.run(
-        mnemonic = "MkAppDir",
-        inputs = inputs,
-        executable = ctx.executable._mkappdir,
-        arguments = [args],
-        outputs = [pseudofile_defs],
-        execution_requirements = {"no-remote-exec": "1"},
-    )
-
-    # Create an empty directory that we can point mksquashfs at so all the added files come from the pseudofile defs
-    emptydir = ctx.actions.declare_directory(ctx.attr.name + ".emptydir")
-    ctx.actions.run_shell(
-        mnemonic = "MkEmptyDir",
-        outputs = [emptydir],
-        command = "mkdir -p %s" % emptydir.path,
-    )
-
-    # Create the AppDir squashfs
     appdirsqfs = ctx.actions.declare_file(ctx.attr.name + ".sqfs")
+
     mksquashfs_args = ctx.actions.args()
-    mksquashfs_args.add(emptydir.path + "/")
-    mksquashfs_args.add(appdirsqfs.path)
     mksquashfs_args.add_all(MKSQUASHFS_ARGS)
     mksquashfs_args.add("-processors").add(MKSQUASHFS_NUM_PROCS)
     mksquashfs_args.add("-mem").add("%sM" % MKSQUASHFS_MEM_MB)
     mksquashfs_args.add_all(ctx.attr.build_args)
-    mksquashfs_args.add("-pf").add(pseudofile_defs.path)
-    ctx.actions.run(
-        mnemonic = "MkSquashfs",
-        inputs = depset(direct = [pseudofile_defs, apprun, emptydir] + runfile_info.files),
-        executable = ctx.executable._mksquashfs,
-        arguments = [mksquashfs_args],
-        tools = [ctx.executable._mksquashfs],
-        outputs = [appdirsqfs],
-        resource_set = _resources,
-        execution_requirements = {"no-remote-cache": "1"},
-    )
 
-    # Create the Appimage
-    ctx.actions.run_shell(
+    ctx.actions.run(
         mnemonic = "AppImage",
-        inputs = [toolchain.appimage_runtime, appdirsqfs],
-        command = "cat $1 $2 >$3",
+        inputs = depset(direct = [manifest_file, apprun, toolchain.appimage_runtime] + runfile_info.files),
+        executable = ctx.executable._mkappimage,
         arguments = [
-            toolchain.appimage_runtime.path,
+            manifest_file.path,
+            apprun.path,
+            pseudofile_defs.path,
             appdirsqfs.path,
+            toolchain.appimage_runtime.path,
             ctx.outputs.executable.path,
+            mksquashfs_args,
         ],
-        outputs = [ctx.outputs.executable],
-        execution_requirements = {"no-remote-exec": "1"},
+        outputs = [ctx.outputs.executable, pseudofile_defs, appdirsqfs],
+        resource_set = _resources,
     )
 
     # Take the `binary` env and add the appimage target's env on top of it
@@ -110,8 +77,7 @@ _ATTRS = {
     "build_args": attr.string_list(),
     "data": attr.label_list(allow_files = True, doc = "Any additional data that will be made available inside the appimage"),
     "env": attr.string_dict(doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests"),
-    "_mkappdir": attr.label(default = "//appimage/private:mkappdir", executable = True, cfg = "exec"),
-    "_mksquashfs": attr.label(default = "@squashfs-tools//:mksquashfs", executable = True, cfg = "exec"),
+    "_mkappimage": attr.label(default = "//appimage/private:mkappimage", executable = True, cfg = "exec"),
 }
 
 appimage = rule(
