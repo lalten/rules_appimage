@@ -1,10 +1,10 @@
 """Unit tests for mkappdir module."""
 
-import json
+import contextlib
 import os
 import sys
-import tarfile
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -48,131 +48,58 @@ def test_is_inside_bazel_cache(path: Path, expected: bool) -> None:
     assert inside == expected
 
 
-@pytest.mark.parametrize("symlinks", [True, False])
-def test_copy_file_or_dir(symlinks: bool) -> None:
-    with tempfile.TemporaryDirectory(suffix=".src") as tmp_dir:
-        src = Path(tmp_dir) / "src"
-        src.mkdir()
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("/", ["/"]),
+        (".", []),
+        ("/a", ["/"]),
+        ("./a", []),
+        ("/dev/null", ["/", "/dev"]),
+        ("/dev", ["/", "/dev"]),
+        ("a", []),
+        ("a/b", ["a"]),
+        ("a/b/c", ["a", "a/b"]),
+        ("a/b/c/d", ["a", "a/b", "a/b/c"]),
+    ],
+)
+def test_get_all_parent_dirs(path: str, expected: list[str]) -> None:
+    assert mkappdir.get_all_parent_dirs(Path(path)) == list(map(Path, expected))
 
-        foo = src / "foo"
-        foo.mkdir(mode=0o701)
 
-        bar = foo / "bar"
-        bar.write_text("bar")
-        bar.chmod(0o456)
-        os.utime(bar, (0, 200))
-        os.utime(foo, (0, 100))
+@contextlib.contextmanager
+def cd(path: Path | str) -> Iterator[None]:
+    old = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(old)
 
-        dir = src / "dir"
-        dir.mkdir()
 
-        link = src / "baz/link"
-        link.parent.mkdir()
-        link.symlink_to("../foo/bar")
+def test_to_pseudofile_def_lines() -> None:
+    mkdef = mkappdir.to_pseudofile_def_lines
+    with tempfile.TemporaryDirectory() as tmp_dir, cd(tmp_dir):
+        src = Path("dir/file")
+        src.parent.mkdir(parents=True, exist_ok=True)
+        src.touch(0o601)
+        dangling = Path("dangling")
+        dangling.symlink_to("../invalid")
+        link = Path("link")
+        link.symlink_to(src)
 
-        dangling = src / "dangling"
-        dangling.symlink_to("invalid")
-
-        dst_link = Path(tmp_dir) / "dstfile/baz/link"
-        dst_bar = Path(tmp_dir) / "dstfile/foo/bar"
-        mkappdir.copy_file_or_dir(link, dst_link, preserve_symlinks=symlinks)
-        mkappdir.copy_file_or_dir(bar, dst_bar, preserve_symlinks=symlinks)
-
-        assert dst_link.exists()
-        assert dst_link.is_symlink() is symlinks
-        assert dst_link.read_text() == "bar"
-
-        dst = Path(tmp_dir) / "dst_dir"
-        mkappdir.copy_file_or_dir(src, dst, preserve_symlinks=symlinks)
-
-        assert set(dst.rglob("*")) == {
-            dst / "foo",
-            dst / "foo/bar",
-            dst / "dir",
-            dst / "baz",
-            dst / "baz/link",
-            dst / "dangling",
+        assert mkdef(src, Path("a/b/c/d"), True) == {
+            "a": "d 755 0 0",
+            "a/b": "d 755 0 0",
+            "a/b/c": "d 755 0 0",
+            "a/b/c/d": "f 601 0 0 cat dir/file",
         }
-
-        foo = dst / "foo"
-        assert foo.exists()
-        assert foo.is_dir()
-        assert oct(foo.stat().st_mode) == "0o40701"
-        assert foo.stat().st_mtime == 100
-
-        file = dst / "foo/bar"
-        assert file.read_text() == "bar"
-        assert oct(file.stat().st_mode) == "0o100456"
-        assert file.stat().st_mtime == 200
-
-        link = dst / "baz/link"
-        assert link.exists()
-        assert link.is_file()
-        if symlinks:
-            assert link.readlink() == Path("../foo/bar")
-        else:
-            assert not link.is_symlink()
-        assert link.read_text() == "bar"
-
-        dangling = dst / "dangling"
-        assert dangling.is_symlink()
-        assert not dangling.exists()
-
-
-def test_populate_appdir() -> None:
-    with (
-        tempfile.NamedTemporaryFile(suffix=".json") as manifest_file,
-        tempfile.TemporaryDirectory() as tmp_dir,
-    ):
-        manifest = Path(manifest_file.name)
-        manifest.write_text(
-            json.dumps(
-                {
-                    "empty_files": ["empty_file"],
-                    "files": [{"src": __file__, "dst": "dir/b"}],
-                    "symlinks": [{"linkname": "link/symlink", "target": "dir/b"}],
-                    "tree_artifacts": [{"src": Path(__file__).parent.as_posix(), "dst": "tree"}],
-                }
-            )
-        )
-        appdir = Path(tmp_dir)
-        mkappdir.populate_appdir(appdir, manifest)
-
-        assert (appdir / "empty_file").read_text() == ""
-        assert (appdir / "dir/b").read_text() == Path(__file__).read_text()
-        assert (appdir / "link/symlink").is_symlink()
-        assert (appdir / "tree" / Path(__file__).name).read_text() == Path(__file__).read_text()
-
-
-def test_make_appdir_tar() -> None:
-    with (
-        tempfile.NamedTemporaryFile(suffix=".json") as manifest,
-        tempfile.NamedTemporaryFile(suffix=".AppRun") as apprun,
-        tempfile.NamedTemporaryFile(suffix=".tar") as output,
-    ):
-        Path(manifest.name).write_text(
-            json.dumps(
-                {
-                    "empty_files": [],
-                    "files": [],
-                    "symlinks": [{"linkname": "link/symlink", "target": "AppRun"}],
-                    "tree_artifacts": [],
-                }
-            )
-        )
-        Path(apprun.name).write_text("#!/bin/sh\n")
-        mkappdir.make_appdir_tar(
-            Path(manifest.name),
-            Path(apprun.name),
-            Path(output.name),
-        )
-        with tarfile.open(output.name, "r:") as tar:
-            assert set(tar.getnames()) == {"link", "link/symlink", "AppRun"}
-            link = tar.extractfile("link/symlink")
-            assert link
-            assert link.read() == b"#!/bin/sh\n"
-            linkinfo = tar.getmember("link/symlink")
-            assert linkinfo.type == tarfile.SYMTYPE
+        assert mkdef(src, Path("dst"), True) == {"dst": "f 601 0 0 cat dir/file"}
+        perms = f"{dangling.lstat().st_mode & 0o777:o}"  # default differs on Linux and macOS
+        assert mkdef(dangling, Path("dst"), True) == {"dst": f"s {perms} 0 0 ../invalid"}
+        assert mkdef(dangling, Path("dst"), False) == {"dst": f"s {perms} 0 0 ../invalid"}
+        assert mkdef(link, Path("dst"), True) == {"dst": f"s {perms} 0 0 dir/file"}
+        assert mkdef(link, Path("dst"), False) == {"dst": f"f {perms} 0 0 cat link"}
 
 
 if __name__ == "__main__":

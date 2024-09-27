@@ -1,4 +1,4 @@
-"""Prepare and build an AppImage AppDir tarball."""
+"""Prepare and build an AppImage AppDir Mksquashfs pseudo-file definitions file."""
 
 from __future__ import annotations
 
@@ -9,11 +9,8 @@ import json
 import os
 import shutil
 import sys
-import tarfile
-import tempfile
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -101,43 +98,68 @@ def is_inside_bazel_cache(path: Path) -> bool:
     return os.fspath(path).startswith(get_output_base())
 
 
-def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> None:
-    """Copy a file or dir from src to dst.
+def get_all_parent_dirs(path: Path | str) -> list[Path]:
+    path = Path(path)
+    parts = path.parts if path.is_dir() else path.parts[:-1]
+    return [Path(*parts[: i + 1]) for i in range(len(parts))]
 
-    We use copy2 because it preserves metadata like permissions.
-    If preserve_symlinks is True we do not want to set follow_symlinks in order to keep
-    symlink targets preserved.
+
+def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> dict[str, str]:
+    """Return a pseudo-file definition line for a file or directory.
+
+    See https://github.com/plougher/squashfs-tools/blob/e7b6490/examples/pseudo-file.example
+    Pseudo file definition format:
+    "filename d mode uid gid"               create a directory
+    "filename m mode uid gid"               modify filename
+    "filename f mode uid gid command"       create file from stdout of command
+    "filename s mode uid gid symlink"       create a symbolic link
+    (...)
     """
-    dst.parent.mkdir(parents=True, exist_ok=True)
+    operations = {dir.as_posix(): "d 755 0 0" for dir in get_all_parent_dirs(dst)}
+    if (
+        src.is_symlink()
+        and (preserve_symlinks or not src.readlink().exists())
+        and not is_inside_bazel_cache(src.readlink())
+    ):
+        operations[dst.as_posix()] = f"s {src.lstat().st_mode & 0o777:o} 0 0 {src.readlink()}"
+    elif src.is_file():
+        operations[dst.as_posix()] = f"f {src.lstat().st_mode & 0o777:o} 0 0 cat {src}"
+    elif src.is_dir():
+        operations[dst.as_posix()] = f"d {src.lstat().st_mode & 0o777:o} 0 0"
+    elif not src.exists():
+        raise FileNotFoundError(f"{src=} does not exist")
+    else:
+        raise NotImplementedError(f"Cannot handle {src}")
+
+    return operations
+
+
+def copy_file_or_dir(src: Path, dst: Path, preserve_symlinks: bool) -> dict[str, str]:
+    """Copy a file or dir from src to dst."""
     if not src.is_dir():
-        shutil.copy2(src, dst, follow_symlinks=not preserve_symlinks)
-        return
+        return to_pseudofile_def_lines(src, dst, preserve_symlinks)
 
-    # Scan and recreate dangling symlinks
-    dangling: set[Path] = set()
-    for link in src.rglob("*"):
-        if not link.is_symlink() or link.exists():
-            continue
-        new_link = dst / link.relative_to(src)
-        new_link.parent.mkdir(parents=True, exist_ok=True)
-        new_link.symlink_to(link.readlink())
-        dangling.add(link)
+    operations: dict[str, str] = {}
 
-    copy_function = functools.partial(shutil.copy2, follow_symlinks=not preserve_symlinks)
+    # Scan and recreate symlinks manually
+    links = {link for link in src.rglob("*") if link.is_symlink()}
+    for link in links:
+        operations.update(to_pseudofile_def_lines(link, dst / link.relative_to(src), preserve_symlinks))
+
+    copies: dict[str, str] = {}
     shutil.copytree(
         src,
         dst,
         symlinks=preserve_symlinks,
-        ignore=lambda dir, names: [f for f in names if Path(dir) / f in dangling],
-        copy_function=copy_function,
+        ignore=lambda dir, names: [f for f in names if Path(dir) / f in links],
+        copy_function=lambda src, dst: copies.setdefault(dst, src),
         ignore_dangling_symlinks=False,
         dirs_exist_ok=True,
     )
+    for dst_, src_ in copies.items():
+        operations.update(to_pseudofile_def_lines(Path(src_), Path(dst_), preserve_symlinks))
 
-
-def _copy_file_or_dir_later(src: Path, dst: Path, preserve_symlinks: bool) -> Callable[[], None]:
-    """Return a function that copies a file or dir from src to dst."""
-    return lambda: copy_file_or_dir(src, dst, preserve_symlinks)
+    return operations
 
 
 def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _ManifestData) -> _ManifestData:
@@ -198,7 +220,7 @@ def _prevent_duplicate_dsts_with_diverging_srcs(manifest_data: _ManifestData) ->
     return new_manifest_data
 
 
-def populate_appdir(appdir: Path, manifest: Path) -> None:
+def make_appdir_pseudofile_defs(manifest: Path) -> dict[str, str]:
     """Make the AppDir that will be squashfs'd into the AppImage.
 
     Note that the [AppImage Type2 Spec][appimage-spec] specifies that the contained [AppDir][appdir-spec] may contain a
@@ -209,30 +231,30 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
     [desktop-spec]: https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
     [appimaged]: https://docs.appimage.org/user-guide/run-appimages.html#integrating-appimages-into-the-desktop
     """
-    appdir.mkdir(parents=True, exist_ok=True)
     manifest_data = _ManifestData.from_json(manifest.read_text())
     manifest_data = _move_relative_symlinks_in_files_to_their_own_section(manifest_data)
     manifest_data = _prevent_duplicate_dsts_with_diverging_srcs(manifest_data)
 
-    actions: list[Callable[[], None]] = []
+    operations: dict[str, str] = {}
 
     for empty_file in manifest_data.empty_files:
         # example entry: "tests/test_py.runfiles/__init__.py"
-        (appdir / empty_file).parent.mkdir(parents=True, exist_ok=True)
-        (appdir / empty_file).touch()
+        for dir in get_all_parent_dirs(empty_file):
+            operations[dir.as_posix()] = "d 755 0 0"
+        operations[empty_file] = "f 755 0 0 true"
 
     for file in manifest_data.files:
         # example entry: {"dst": "tests/test_py.runfiles/_main/tests/data.txt", "src": "tests/data.txt"}
-        src = Path(file.src).resolve()
-        dst = Path(appdir / file.dst).resolve()
-        assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
-        actions.append(_copy_file_or_dir_later(src, dst, preserve_symlinks=True))
+        operations.update(copy_file_or_dir(Path(file.src), Path(file.dst), preserve_symlinks=True))
 
     for link in manifest_data.symlinks:
         # example entry: {"linkname": "tests/test_py", "target": "tests/test_py.runfiles/_main/tests/test_py"}
-        linkname = Path(link.linkname)
-        linkfile = (appdir / linkname).resolve()
-        linkfile.parent.mkdir(parents=True, exist_ok=True)
+        # example entry: {"linkname":
+        # "tests/test_py.runfiles/_main/../rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3",
+        # "target": "python3.11"}
+        linkfile = Path(link.linkname)
+        for dir in get_all_parent_dirs(linkfile):
+            operations[dir.as_posix()] = "d 755 0 0"
         target = Path(link.target)
         if target.is_absolute():
             # We keep absolute symlinks as is, but make no effort to copy the target into the runfiles as well.
@@ -240,48 +262,37 @@ def populate_appdir(appdir: Path, manifest: Path) -> None:
             pass
         else:
             # Adapt relative symlinks to point relative to the new linkfile location
-            target = relative_path(appdir / target, linkfile.parent)
-        linkfile.symlink_to(target)
+            target = relative_path(target, linkfile.parent)
+        operations[linkfile.as_posix()] = f"s 755 0 0 {target}"
 
     for link in manifest_data.relative_symlinks:
         # example entry: {"linkname":
         # "tests/test_py.runfiles/_main/../rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3",
         # "target": "python3.11"}
-        linkfile = (appdir / link.linkname).resolve()
-        linkfile.parent.mkdir(parents=True, exist_ok=True)
-        target = Path(link.target)
-        assert not target.is_absolute(), f"symlink {linkfile} must be relative, but points at {target}"
-        linkfile.symlink_to(target)
+        for dir in get_all_parent_dirs(link.linkname):
+            operations[dir.as_posix()] = "d 755 0 0"
+        operations[link.linkname] = f"s 755 0 0 {link.target}"
 
     for tree_artifact in manifest_data.tree_artifacts:
         # example entry:
         # {'dst': 'test.runfiles/_main/../rules_pycross~~lock_repos~pdm_deps/_lock/humanize@4.9.0',
         # 'src': 'bazel-out/k8-fastbuild/bin/external/rules_pycross~~lock_repos~pdm_deps/_lock/humanize@4.9.0'}
-        src = Path(tree_artifact.src).resolve()
-        dst = Path(appdir / tree_artifact.dst).resolve()
-        assert src.exists(), f"want to copy {src} to {dst}, but it does not exist"
-        actions.append(_copy_file_or_dir_later(src, dst, preserve_symlinks=False))
+        operations.update(copy_file_or_dir(Path(tree_artifact.src), Path(tree_artifact.dst), preserve_symlinks=False))
 
-    with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(action) for action in actions]
-    for future in futures:
-        future.result()
+    # Must not have `..` in file names: https://github.com/plougher/squashfs-tools/blob/4.6.1/squashfs-tools/unsquash-1.c#L377
+    operations = {os.path.normpath(f): v for f, v in operations.items()}
+
+    return operations
 
 
-def _make_executable(ti: tarfile.TarInfo) -> tarfile.TarInfo:
-    ti.mode |= 0o111
-    return ti
-
-
-def make_appdir_tar(manifest: Path, apprun: Path, output: Path) -> None:
-    """Create an AppImage AppDir (uncompressed) tar ready to be sqfstar'ed."""
-    with tarfile.open(output, "w") as tar:
-        tar.add(apprun.resolve(), arcname="AppRun", filter=_make_executable)
-        with tempfile.TemporaryDirectory() as tmpdir:
-            appdir = Path(tmpdir)
-            populate_appdir(appdir, manifest)
-            for top_level in appdir.iterdir():
-                tar.add(top_level, arcname=top_level.name)
+def write_appdir_pseudofile_defs(manifest: Path, apprun: Path, output: Path) -> None:
+    """Write a mksquashfs pf file representing the AppDir."""
+    lines = [
+        f"AppRun f 777 0 0 cat {apprun}",
+        *sorted(f"{k} {v}" for k, v in make_appdir_pseudofile_defs(manifest).items()),
+        "",
+    ]
+    output.write_text("\n".join(lines))
 
 
 def parse_args(args: Sequence[str]) -> argparse.Namespace:
@@ -299,10 +310,10 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         type=Path,
         help="Path to AppRun script",
     )
-    parser.add_argument("output", type=Path, help="Where to place output AppDir tar")
+    parser.add_argument("output", type=Path, help="Where to place output AppDir pseudo-file definition file")
     return parser.parse_args(args)
 
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
-    make_appdir_tar(args.manifest, args.apprun, args.output)
+    write_appdir_pseudofile_defs(args.manifest, args.apprun, args.output)
