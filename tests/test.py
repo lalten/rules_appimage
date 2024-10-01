@@ -21,7 +21,7 @@ def test_datadep() -> None:
 
 def test_appimage_datadep() -> None:
     """Test that data deps to the appimage itself are bundled."""
-    data_dep = Path("tests/appimage_data_file.txt")
+    data_dep = Path("tests/appimage data file.txt")  # note the spaces in the filename
     assert data_dep.is_file(), f"{data_dep} does not exist"
     assert data_dep.stat().st_size == 13, f"{data_dep} has wrong size {data_dep.stat().st_size}"
 
@@ -52,6 +52,7 @@ def test_symlinks() -> None:
     """Test that symlinks are handled correctly."""
     link_to_undeclared_dep = Path("tests/dir/link_to_file_in_dir2")
     assert link_to_undeclared_dep.is_symlink()
+    assert link_to_undeclared_dep.readlink().as_posix() == "../dir2/file in dir.txt"
     assert not link_to_undeclared_dep.resolve().exists()
 
     link_to_link_to_undeclared_dep = Path("tests/dir/link_to_link_to_file_in_dir2")

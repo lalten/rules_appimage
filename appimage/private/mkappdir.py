@@ -123,7 +123,7 @@ def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> di
     ):
         operations[dst.as_posix()] = f"s {src.lstat().st_mode & 0o777:o} 0 0 {src.readlink()}"
     elif src.is_file():
-        operations[dst.as_posix()] = f"f {src.lstat().st_mode & 0o777:o} 0 0 cat {src}"
+        operations[dst.as_posix()] = f'f {src.lstat().st_mode & 0o777:o} 0 0 cat "{src}"'
     elif src.is_dir():
         operations[dst.as_posix()] = f"d {src.lstat().st_mode & 0o777:o} 0 0"
     elif not src.exists():
@@ -289,7 +289,7 @@ def write_appdir_pseudofile_defs(manifest: Path, apprun: Path, output: Path) -> 
     """Write a mksquashfs pf file representing the AppDir."""
     lines = [
         f"AppRun f 777 0 0 cat {apprun}",
-        *sorted(f"{k} {v}" for k, v in make_appdir_pseudofile_defs(manifest).items()),
+        *sorted(f'"{k}" {v}' for k, v in make_appdir_pseudofile_defs(manifest).items()),
         "",
     ]
     output.write_text("\n".join(lines))
