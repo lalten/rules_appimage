@@ -80,26 +80,26 @@ def cd(path: Path | str) -> Iterator[None]:
 def test_to_pseudofile_def_lines() -> None:
     mkdef = mkappdir.to_pseudofile_def_lines
     with tempfile.TemporaryDirectory() as tmp_dir, cd(tmp_dir):
-        src = Path("dir/file")
+        src = Path("dir/space file")
         src.parent.mkdir(parents=True, exist_ok=True)
         src.touch(0o601)
         dangling = Path("dangling")
         dangling.symlink_to("../invalid")
-        link = Path("link")
+        link = Path("space link")
         link.symlink_to(src)
 
         assert mkdef(src, Path("a/b/c/d"), True) == {
             "a": "d 755 0 0",
             "a/b": "d 755 0 0",
             "a/b/c": "d 755 0 0",
-            "a/b/c/d": "f 601 0 0 cat dir/file",
+            "a/b/c/d": 'f 601 0 0 cat "dir/space file"',
         }
-        assert mkdef(src, Path("dst"), True) == {"dst": "f 601 0 0 cat dir/file"}
+        assert mkdef(src, Path("dst"), True) == {"dst": 'f 601 0 0 cat "dir/space file"'}
         perms = f"{dangling.lstat().st_mode & 0o777:o}"  # default differs on Linux and macOS
         assert mkdef(dangling, Path("dst"), True) == {"dst": f"s {perms} 0 0 ../invalid"}
         assert mkdef(dangling, Path("dst"), False) == {"dst": f"s {perms} 0 0 ../invalid"}
-        assert mkdef(link, Path("dst"), True) == {"dst": f"s {perms} 0 0 dir/file"}
-        assert mkdef(link, Path("dst"), False) == {"dst": f"f {perms} 0 0 cat link"}
+        assert mkdef(link, Path("dst"), True) == {"dst": f"s {perms} 0 0 dir/space file"}
+        assert mkdef(link, Path("dst"), False) == {"dst": f'f {perms} 0 0 cat "space link"'}
 
 
 if __name__ == "__main__":

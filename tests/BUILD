@@ -105,7 +105,7 @@ appimage_test(
     size = "small",
     binary = ":test_py",
     data = [
-        "appimage_data_file.txt",
+        "appimage data file.txt",
         ":appimage_data_filegroup",
     ],
     env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
@@ -122,7 +122,7 @@ appimage(
         "zstd",
     ],
     data = [
-        "appimage_data_file.txt",
+        "appimage data file.txt",
         ":appimage_data_filegroup",
     ],
 )
