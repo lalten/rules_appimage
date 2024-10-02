@@ -13,6 +13,8 @@ MKSQUASHFS_ARGS = [
     "0",
     "-root-time",
     "0",
+    "-all-time",
+    "0",
 ]
 MKSQUASHFS_NUM_PROCS = 4
 MKSQUASHFS_MEM_MB = 1024

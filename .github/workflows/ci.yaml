@@ -48,6 +48,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: examples/integration_test.sh
+  determinism:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: tests/determinism/reproducible_shas.sh
   lint:
     runs-on: ubuntu-latest
     steps:
