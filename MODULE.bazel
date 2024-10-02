@@ -67,4 +67,4 @@ oci.pull(
     image = "docker.io/library/python",
     platforms = ["linux/amd64"],
 )
-use_repo(oci, "python3-slim")
+use_repo(oci, "python3-slim", "python3-slim_linux_amd64")
