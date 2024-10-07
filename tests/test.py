@@ -81,6 +81,11 @@ def test_symlinks() -> None:
     # link will be one of these depending on --enable_bzlmod (and rules_python version)
     # "rules_appimage_python_x86_64-unknown-linux-gnu/bin/python3"
     # "rules_python~0.27.1~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3"
+    # For regular bazel test execution this would point at something like
+    # "/home/user/.cache/bazel/_bazel_user/012345689abcdef/external/
+    #   rules_python~~python~python_3_11_x86_64-unknown-linux-gnu/bin/python3"
+    # which in turn should link "python3 -> python3.12".
+    # But in appimage runfiles, we want the first level of the link to be relative already.
     assert link.is_symlink(), f"{link} is not a symlink. {link.is_file()=}"
     assert re.match(r"^python3.\d+$", link.readlink().as_posix()), link.readlink()
 
