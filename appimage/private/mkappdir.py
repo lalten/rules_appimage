@@ -178,12 +178,15 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
 
         target = src.readlink()
 
-        if target.is_symlink() and is_inside_bazel_cache(target):
-            # This is a symlink residing inside the Bazel cache. Follow one level to find where it actually points.
+        while target.is_symlink() and is_inside_bazel_cache(target):
+            # This is a symlink residing inside the Bazel cache. Follow it to find where it actually points.
             # Example: src "external/rules_appimage_python_x86_64-unknown-linux-gnu/bin/2to3" is a symlink with target
             # "/home/user/.cache/bazel/_bazel_user/a5a...2f3/execroot/rules_appimage/external/rules_appimage_python_x86_
             # 64-unknown-linux-gnu/bin/2to3" (in Bazel 6) or "/tmp/bazel-source-roots/2/bin/2to3" (in Bazel 7), which
             # itself is a symlink pointing at "2to3-3.11".
+            # Loop until we find a symlink chain end or a file that is not inside the Bazel cache.
+            # Repository rules may have generated a symlink chain that should be be preserved.
+            # Example: libfoo.so -> libfoo.so.1 -> libfoo.so.1.0.
             target = target.readlink()
 
         if target.is_symlink():
