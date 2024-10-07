@@ -186,7 +186,17 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
             # itself is a symlink pointing at "2to3-3.11".
             target = target.readlink()
 
-        if target.is_absolute():
+        if target.is_symlink():
+            linkdst = target.readlink()
+        elif not target.is_absolute():
+            # This was a relative symlink that we resolved in the last step already.
+            linkdst = target
+        else:
+            # The src is a symlink pointing to the a regular file in the Bazel cache.
+            new_manifest_data.files.append(entry)
+            continue
+
+        if linkdst.is_absolute():
             # Absolute symlinks are ok to keep in the files section because we are going to resolve them before copying.
             # Commonly this happens with source files that are symlinks from the sandbox to the actual source checkout.
             new_manifest_data.files.append(entry)
@@ -196,7 +206,7 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
             # (although squashfs would deduplicate it).
             # Note that the link target may _not_ be reachable if it is not declared as input itself.
             # Users need to ensure that whatever shall be available at runtime is properly declared as data dependency.
-            new_manifest_data.relative_symlinks.append(_ManifestLink(linkname=entry.dst, target=os.fspath(target)))
+            new_manifest_data.relative_symlinks.append(_ManifestLink(linkname=entry.dst, target=os.fspath(linkdst)))
 
     return new_manifest_data
 
