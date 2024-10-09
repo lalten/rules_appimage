@@ -88,18 +88,19 @@ def test_to_pseudofile_def_lines() -> None:
         link = Path("space link")
         link.symlink_to(src)
 
+        base = Path(tmp_dir).resolve()  # this is needed for macOS, which prefixes /private
+
         assert mkdef(src, Path("a/b/c/d"), True) == {
             "a": "d 755 0 0",
             "a/b": "d 755 0 0",
             "a/b/c": "d 755 0 0",
-            "a/b/c/d": 'f 601 0 0 cat "dir/space file"',
+            "a/b/c/d": f'l "{base}/dir/space file"',
         }
-        assert mkdef(src, Path("dst"), True) == {"dst": 'f 601 0 0 cat "dir/space file"'}
-        perms = f"{dangling.lstat().st_mode & 0o777:o}"  # default differs on Linux and macOS
-        assert mkdef(dangling, Path("dst"), True) == {"dst": f"s {perms} 0 0 ../invalid"}
-        assert mkdef(dangling, Path("dst"), False) == {"dst": f"s {perms} 0 0 ../invalid"}
-        assert mkdef(link, Path("dst"), True) == {"dst": f"s {perms} 0 0 dir/space file"}
-        assert mkdef(link, Path("dst"), False) == {"dst": f'f {perms} 0 0 cat "space link"'}
+        assert mkdef(src, Path("dst"), True) == {"dst": f'l "{base}/dir/space file"'}
+        assert mkdef(dangling, Path("dst"), True) == {"dst": "s 0 0 0 ../invalid"}
+        assert mkdef(dangling, Path("dst"), False) == {"dst": "s 0 0 0 ../invalid"}
+        assert mkdef(link, Path("dst"), True) == {"dst": "s 0 0 0 dir/space file"}
+        assert mkdef(link, Path("dst"), False) == {"dst": f'l "{base}/dir/space file"'}
 
 
 if __name__ == "__main__":

@@ -107,13 +107,14 @@ def get_all_parent_dirs(path: Path | str) -> list[Path]:
 def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> dict[str, str]:
     """Return a pseudo-file definition line for a file or directory.
 
-    See https://github.com/plougher/squashfs-tools/blob/e7b6490/examples/pseudo-file.example
-    Pseudo file definition format:
+    See https://github.com/plougher/squashfs-tools/blob/d8cb82d/USAGE#L753
+    and https://github.com/plougher/squashfs-tools/blob/d8cb82d/examples/pseudo-file.example
+
+    Pseudo file definition formats used here:
     "filename d mode uid gid"               create a directory
-    "filename m mode uid gid"               modify filename
     "filename f mode uid gid command"       create file from stdout of command
-    "filename s mode uid gid symlink"       create a symbolic link
-    (...)
+    "filename l filename"                   create file from copy (hard-link) of filename
+    "filename s mode uid gid symlink"       create a symbolic link (mode is ignored)
     """
     operations = {dir.as_posix(): "d 755 0 0" for dir in get_all_parent_dirs(dst)}
     if (
@@ -121,9 +122,9 @@ def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> di
         and (preserve_symlinks or not src.readlink().exists())
         and not is_inside_bazel_cache(src.readlink())
     ):
-        operations[dst.as_posix()] = f"s {src.lstat().st_mode & 0o777:o} 0 0 {src.readlink()}"
+        operations[dst.as_posix()] = f"s 0 0 0 {src.readlink()}"
     elif src.is_file():
-        operations[dst.as_posix()] = f'f {src.lstat().st_mode & 0o777:o} 0 0 cat "{src}"'
+        operations[dst.as_posix()] = f'l "{src.resolve()}"'
     elif src.is_dir():
         operations[dst.as_posix()] = f"d {src.lstat().st_mode & 0o777:o} 0 0"
     elif not src.exists():
@@ -276,7 +277,7 @@ def make_appdir_pseudofile_defs(manifest: Path) -> dict[str, str]:
         else:
             # Adapt relative symlinks to point relative to the new linkfile location
             target = relative_path(target, linkfile.parent)
-        operations[linkfile.as_posix()] = f"s 755 0 0 {target}"
+        operations[linkfile.as_posix()] = f"s 0 0 0 {target}"
 
     for link in manifest_data.relative_symlinks:
         # example entry: {"linkname":
@@ -284,7 +285,7 @@ def make_appdir_pseudofile_defs(manifest: Path) -> dict[str, str]:
         # "target": "python3.11"}
         for dir in get_all_parent_dirs(link.linkname):
             operations[dir.as_posix()] = "d 755 0 0"
-        operations[link.linkname] = f"s 755 0 0 {link.target}"
+        operations[link.linkname] = f"s 0 0 0 {link.target}"
 
     for tree_artifact in manifest_data.tree_artifacts:
         # example entry:
@@ -301,7 +302,7 @@ def make_appdir_pseudofile_defs(manifest: Path) -> dict[str, str]:
 def write_appdir_pseudofile_defs(manifest: Path, apprun: Path, output: Path) -> None:
     """Write a mksquashfs pf file representing the AppDir."""
     lines = [
-        f"AppRun f 777 0 0 cat {apprun}",
+        f"AppRun l {apprun.resolve()}",
         *sorted(f'"{k}" {v}' for k, v in make_appdir_pseudofile_defs(manifest).items()),
         "",
     ]
