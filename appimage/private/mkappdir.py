@@ -7,6 +7,7 @@ import copy
 import functools
 import json
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -66,6 +67,7 @@ def get_output_base() -> str:
       * Execution strategy (https://bazel.build/docs/user-manual#execution-strategy)
       * External dependency management system (WORKSPACE/Bzlmod)
       * Value of --incompatible_sandbox_hermetic_tmp (https://bazel.build/reference/command-line-reference#flag--incompatible_sandbox_hermetic_tmp)
+      * Value of --sandbox_base (https://bazel.build/reference/command-line-reference#flag--sandbox_base)
 
     For example it may resolve to
       * /mnt/data/sandbox/linux-sandbox/82/execroot/_main/bazel-out/stable-status.txt
@@ -77,6 +79,11 @@ def get_output_base() -> str:
         with --noincompatible_sandbox_hermetic_tmp
       * /tmp/bazel-working-directory/_main/bazel-out/stable-status.txt
         with --incompatible_sandbox_hermetic_tmp
+      * /dev/shm/bazel-sandbox.277e512ed83200b5843e391c89fecc1ab63ff26e90f824a17a37de8c321621eb/linux-sandbox/334/
+        execroot/_main/bazel-out/stable-status.txt
+        with --sandbox_base=/dev/shm
+
+    The "linux-sandbox/N/execroot" part comes from https://github.com/bazelbuild/bazel/blob/7.3.2/src/main/java/com/google/devtools/build/lib/sandbox/LinuxSandboxedSpawnRunner.java#L250
 
     We do some best-effort heuristic here to figure out the output base location.
     """
@@ -84,11 +91,33 @@ def get_output_base() -> str:
     abs_version_file = version_file.absolute().resolve()
     execroot = abs_version_file.parent.parent.parent
     if execroot == Path("/tmp/bazel-working-directory"):
+        # --incompatible_sandbox_hermetic_tmp
         # See https://github.com/bazelbuild/bazel/blob/7.1.1/src/main/java/com/google/devtools/build/lib/sandbox/LinuxSandboxedSpawnRunner.java#L76
         output_base = Path("/tmp/bazel-source-roots/")
     elif len(execroot.parts) >= 4 and execroot.parts[-4] == "sandbox":
-        output_base = Path(*execroot.parts[:-4])
+        # --noincompatible_sandbox_hermetic_tmp, --sandbox_base empty
+        # "sandbox" comes from https://github.com/bazelbuild/bazel/blob/7.3.2/src/main/java/com/google/devtools/build/lib/sandbox/SandboxModule.java#L123
+        # strip off the "sandbox/linux-sandbox/123/execroot" part
+        output_base = execroot.parents[3]
+    elif len(execroot.parts) >= 4 and re.match("bazel-sandbox.[0-9a-f]{64}", execroot.parts[-4]):
+        # --sandbox_base=/dev/shm
+        # The "bazel-sandbox.27[...]eb" part comes from https://github.com/bazelbuild/bazel/blob/7.3.2/src/main/java/com/google/devtools/build/lib/sandbox/SandboxModule.java#L125-L130
+        # We can't derive the output base from stable-status.txt in this case as it's a generated file.
+        # We'll use this source file itself as we know the path relative to the output base.
+        # __file__ is something like
+        #   /dev/shm/bazel-sandbox.27[...]eb/linux-sandbox/474/execroot/_main/bazel-out/k8-opt-exec-ST-d57f47055a04/bin/
+        # appimage/private/mkappimage.runfiles/_main/appimage/private/mkappdir.py
+        # and is a symlink that points at
+        #   /home/laurenz/.cache/bazel/_bazel_laurenz/8a8[....]a3f/execroot/_main/appimage/private/mkappdir.py
+        # We'll strip the last 5 parts to get the output base.
+        assert __file__.endswith("appimage/private/mkappdir.py")
+        file = Path(__file__)
+        assert file.is_symlink()
+        link = file.readlink()
+        assert link.is_absolute()
+        output_base = file.readlink().parents[4]
     else:
+        # --spawn_strategy=local
         output_base = execroot.parent
     return os.fspath(output_base)
 
