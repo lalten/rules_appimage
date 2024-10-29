@@ -38,6 +38,7 @@ cc_binary(
         "MY_APPIMAGE_ENV": "original",
         "MY_BINARY_ENV": "not lost",
     },
+    deps = ["//tests/relative_symlink_so:foo"]
 )
 
 appimage_test(

@@ -2,6 +2,10 @@
 #include <iostream>
 #include <string>
 
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 int main(int argc, char **argv, char **envp) {
   (void)argc;
   (void)argv;
@@ -29,5 +33,29 @@ int main(int argc, char **argv, char **envp) {
     std::cerr << "MY_APPIMAGE_ENV not found or has wrong value" << std::endl;
     return EXIT_FAILURE;
   }
+
+  // Check for broken symlinks
+  std::cout << "\n";
+  bool libfoo_found{false}; // Make sure the test "libfoo.so.1" exists
+  for (const auto &entry :
+       fs::recursive_directory_iterator(fs::current_path())) {
+    if (entry.path().filename() == "libfoo.so.1") {
+      libfoo_found = true;
+    }
+    if (fs::is_symlink(entry.path())) {
+      fs::path symlink_target = fs::read_symlink(entry.path());
+      std::cerr << entry.path() << " -> " << symlink_target;
+      if (!fs::exists(symlink_target)) {
+        std::cerr << "is broken" << std::endl;
+        return EXIT_FAILURE;
+      }
+      std::cerr << std::endl;
+    }
+  }
+  if (!libfoo_found) {
+    std::cerr << "libfoo.so.1 not found" << std::endl;
+    return EXIT_FAILURE;
+  }
+
   return EXIT_SUCCESS;
 }
