@@ -197,6 +197,10 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
     new_manifest_data = copy.deepcopy(manifest_data)
     new_manifest_data.files.clear()
     new_manifest_data.relative_symlinks.clear()
+    files_that_will_exist = {entry.dst for entry in manifest_data.files}
+    dirs_that_will_exist: set[str] = set()
+    for file in files_that_will_exist:
+        dirs_that_will_exist.update(map(str, get_all_parent_dirs(file)))
 
     for entry in manifest_data.files:
         src = Path(entry.src)
@@ -221,13 +225,14 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
 
         if target.is_symlink():
             linkdst = target.readlink()
-        elif not target.is_absolute():
-            # This was a relative symlink that we resolved in the last step already.
-            linkdst = target
         else:
-            # The src is a symlink pointing to the a regular file in the Bazel cache.
-            new_manifest_data.files.append(entry)
-            continue
+            if not target.is_absolute():
+                # This was a relative symlink that we resolved in the last step already.
+                linkdst = target
+            else:
+                # The src is a symlink pointing to the a regular file in the Bazel cache.
+                new_manifest_data.files.append(entry)
+                continue
 
         if linkdst.is_absolute():
             # Absolute symlinks are ok to keep in the files section because we are going to resolve them before copying.
@@ -239,7 +244,25 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
             # (although squashfs would deduplicate it).
             # Note that the link target may _not_ be reachable if it is not declared as input itself.
             # Users need to ensure that whatever shall be available at runtime is properly declared as data dependency.
-            new_manifest_data.relative_symlinks.append(_ManifestLink(linkname=entry.dst, target=os.fspath(linkdst)))
+            full_linkdest = (Path(entry.dst).parent / linkdst).as_posix()
+            if Path(entry.src).is_dir():
+                will_exist = os.path.normpath(full_linkdest) in dirs_that_will_exist
+            else:
+                will_exist = full_linkdest in files_that_will_exist
+            is_supposed_to_be_dangling = not Path(entry.src).exists()
+            if not will_exist and not is_supposed_to_be_dangling:
+                # Would create a symlink that points to a file or dir which will not exist in the AppDir.
+                # This can happen in situations where
+                # .../foo.runfiles/_main/_solib_k8/_U_A_A_Umain~_Urepo_Urules~foo_S_S_Clibfoo.so___Ulib/libfoo.so
+                # is a symlink pointing to "libfoo.so.12" but which will not exist in the same dir but instead lives in
+                # .../foo.runfiles/_main/_solib_k8/_U_A_A_Umain~_Urepo_Urules~foo_S_S_Clibfoo.so.12___Ulib/libfoo.so.12
+                # For now we just don't create a symlink but copy the resolved file instead. mksquashfs will deduplicate
+                # it so no additional storage is needed regardless of file size (unless extracted).
+                # The downside is that the symlink structure will not look the same as in the source.
+                new_manifest_data.files.append(entry)
+            else:
+                # Create the entry as relative symlink
+                new_manifest_data.relative_symlinks.append(_ManifestLink(linkname=entry.dst, target=os.fspath(linkdst)))
 
     return new_manifest_data
 
