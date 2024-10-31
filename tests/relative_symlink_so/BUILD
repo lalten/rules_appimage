@@ -34,5 +34,4 @@ cc_library(
         ":libfoo_so",
         ":libfoo_so_1",
     ],
-    alwayslink = True,
 )
