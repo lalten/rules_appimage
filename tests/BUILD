@@ -30,7 +30,7 @@ appimage_test(
     target_compatible_with = ["@platforms//os:linux"],
 )
 
-cc_binary(
+cc_test(
     name = "test_cc",
     srcs = ["test.cc"],
     copts = ["-std=c++20"],
@@ -38,7 +38,7 @@ cc_binary(
         "MY_APPIMAGE_ENV": "original",
         "MY_BINARY_ENV": "not lost",
     },
-    deps = ["//tests/relative_symlink_so:foo"]
+    deps = ["//tests/relative_symlink_so:libfoo"],
 )
 
 appimage_test(

@@ -1,25 +1,33 @@
 package(default_visibility = ["//tests:__subpackages__"])
 
-cc_import(
-    name = "libfoo10",
-    shared_library = "libfoo.so.1.0",
+genrule(
+    name = "make_libfoo",
+    srcs = ["foo.S"],
+    outs = ["libfoo.so.1", "libfoo.so"],
+    cmd = "\n".join([
+        "$(CC) -nostdlib -fPIC -shared -o $(RULEDIR)/libfoo.so.1 $<",
+        "$(STRIP) --strip-unneeded $(RULEDIR)/libfoo.so.1",
+        "ln -s libfoo.so.1 $(RULEDIR)/libfoo.so",
+    ]),
+    toolchains=["@bazel_tools//tools/cpp:current_cc_toolchain"]
 )
 
 cc_import(
-    name = "libfoo1",
-    shared_library = "libfoo.so.1",
+    name = "libfoo_so",
+    shared_library = ":libfoo.so",
 )
 
 cc_import(
-    name = "libfoo",
-    shared_library = "libfoo.so",
+    name = "libfoo_so_1",
+    shared_library = ":libfoo.so.1",
 )
+
 
 cc_library(
-    name = "foo",
+    name = "libfoo",
     deps = [
-        ":libfoo",
-        ":libfoo1",
-        ":libfoo10",
+        ":libfoo_so_1",
+        ":libfoo_so",
     ],
+    alwayslink = True,
 )
