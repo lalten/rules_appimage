@@ -39,6 +39,7 @@ cc_test(
         "MY_BINARY_ENV": "not lost",
     },
     deps = ["//tests/relative_symlink_so:libfoo"],
+    tags = ["manual"], # This test is not supposed to work outside its appimage
 )
 
 appimage_test(
