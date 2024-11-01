@@ -40,29 +40,36 @@ def _reference_dir(ctx):
     """
     return "/".join([_runfiles_dir(ctx), ctx.workspace_name])
 
-def _external_dir(ctx):
-    """The special "external" directory which is an alternate way of accessing other repositories.
-
-    For @foo//bar/baz:blah this would translate to /app/bar/baz/blah.runfiles/foo/external
-    """
-    return "/".join([_reference_dir(ctx), "external"])
-
 def _final_emptyfile_path(ctx, name):
-    """The final location that this empty file needs to exist at for the foo_binary target to properly execute."""
-    if not name.startswith("external/"):
-        # Names that don't start with external are relative to our own workspace.
+    """The final location that this empty file needs to exist at for the foo_binary target to properly execute.
+
+    Examples:
+    With --legacy_external_runfiles (default in Bazel <8):
+      tests/__init__.py -> tests/test_py.runfiles/_main/tests/__init__.py
+      external/__init__.py -> tests/test_py.runfiles/__init__.py
+      external/rules_python~/__init__.py -> tools/wheelmaker.runfiles/rules_python~/__init__.py
+    With --nolegaxy_external_runfiles (default in Bazel 8+):
+      tests/__init__.py -> tests/test_py.runfiles/_main/tests/__init__.py
+      ../__init__.py -> tests/test_py.runfiles/__init__.py
+      ../rules_python~/__init__.py -> tools/wheelmaker.runfiles/rules_python~/__init__.py
+    """
+    if name.startswith("external/"):
+        relative_name = name[len("external/"):]
+    elif name.startswith("../"):
+        relative_name = name[len("../"):]
+    else:
+        # Names that don't start with external or ../ are relative to our own workspace.
         return _reference_dir(ctx) + "/" + name
 
     # References to workspace-external dependencies, which are identifiable
-    # because their path begins with external/, are inconsistent with the
+    # because their path begins with external/ or ../, are inconsistent with the
     # form of their File counterparts, whose ".short_form" is relative to
     #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
     # whereas we see:
     #    external/foreign-workspace/...
     # so we "fix" the empty files' paths by removing "external/" and basing them
     # directly on the runfiles path.
-
-    return "/".join([_runfiles_dir(ctx), name[len("external/"):]])
+    return _runfiles_dir(ctx) + "/" + relative_name
 
 def _final_file_path(ctx, f):
     """The final location that this file needs to exist at for the foo_binary target to properly execute."""
@@ -121,8 +128,10 @@ def collect_runfiles_info(ctx):
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.
         get_entrypoint(ctx): _final_file_path(ctx, ctx.executable.binary),
-        # Create a directory symlink from <workspace>/external to the runfiles root, since they may be accessed via either path.
-        _external_dir(ctx): _runfiles_dir(ctx),
+        # Create the --legacy_external_runfiles symlink from <workspace>/external to the runfiles root
+        # For @foo//bar/baz:blah this would translate to /app/bar/baz/blah.runfiles/foo/external
+        # This is needed until --nolegacy_external_runfiles is not supported anymore
+        _reference_dir(ctx) + "/external": _runfiles_dir(ctx),
     })
 
     manifest = struct(
