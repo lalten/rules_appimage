@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: '0 12 * * 0' # Sunday noon
 permissions: read-all
 jobs:
   test:
@@ -14,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [6.x, 7.x]
+        bazel-version: [6.x, 7.x, last_green]
         os: [ubuntu, macos]
         external_dependency_system: [bzlmod, workspace]
         exclude:
@@ -44,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [6.x, 7.x]
+        bazel-version: [6.x, 7.x, last_green]
     steps:
     - uses: actions/checkout@v4
     - run: examples/integration_test.sh
