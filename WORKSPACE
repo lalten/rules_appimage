@@ -12,7 +12,7 @@ py_repositories()
 
 python_register_toolchains(
     name = "rules_appimage_python",
-    python_version = "3.12",
+    python_version = "3.13",
 )
 
 load("@rules_appimage_python//:defs.bzl", rules_appimage_py_interpreter = "interpreter")
