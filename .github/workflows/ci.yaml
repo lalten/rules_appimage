@@ -25,9 +25,9 @@ jobs:
           os: macos
         include:
         - external_dependency_system: bzlmod
-          flags: --enable_bzlmod
+          flags: --enable_bzlmod --noenable_workspace
         - external_dependency_system: workspace
-          flags: --noenable_bzlmod
+          flags: --noenable_bzlmod --enable_workspace
     steps:
     - uses: actions/checkout@v4
     - name: Use BuildBuddy RW API key instead of public readonly key
