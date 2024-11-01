@@ -25,7 +25,7 @@ use_repo(
 
 register_toolchains("//appimage:all")
 
-_DEFAULT_PYTHON = "3.12"
+_DEFAULT_PYTHON = "3.13"
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
