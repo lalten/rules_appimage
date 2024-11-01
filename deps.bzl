@@ -32,16 +32,6 @@ def _rules_appimage_workspace_deps():
     """Declare http_archive deps only needed in the WORKSPACE version of rules_appimage."""
     maybe(
         http_archive,
-        name = "bazel_skylib",
-        sha256 = "bc283cdfcd526a52c3201279cda4bc298652efa898b10b4db0837dc51652756f",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.7.1/bazel-skylib-1.7.1.tar.gz",
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.7.1/bazel-skylib-1.7.1.tar.gz",
-        ],
-    )
-
-    maybe(
-        http_archive,
         name = "squashfs-tools",
         build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
         sha256 = "94201754b36121a9f022a190c75f718441df15402df32c2b520ca331a107511c",
