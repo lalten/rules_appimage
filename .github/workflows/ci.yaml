@@ -42,12 +42,11 @@ jobs:
         - bazel-version: 8.0.0rc4
           os: ubuntu
           external_dependency_system: bzlmod
-          flags: --enable_bzlmod
+          flags:
         - bazel-version: 8.0.0rc4
           os: ubuntu
           external_dependency_system: workspace
-          flags:
-
+          flags: --enable_workspace
     steps:
     - uses: actions/checkout@v4
     - name: Use BuildBuddy RW API key instead of public readonly key
