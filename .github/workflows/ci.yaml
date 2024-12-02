@@ -7,6 +7,7 @@ on:
 permissions: read-all
 jobs:
   test:
+    name: test (${{ matrix.bazel-version }}, ${{ matrix.os }}, ${{ matrix.external_dependency_system }})
     runs-on: ${{ matrix.os }}-latest
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
@@ -47,6 +48,10 @@ jobs:
           os: ubuntu
           external_dependency_system: workspace
           flags: --enable_workspace
+        - bazel-version: 8.0.0rc4
+          os: macos
+          external_dependency_system: bzlmod
+          flags:
     steps:
     - uses: actions/checkout@v4
     - name: Use BuildBuddy RW API key instead of public readonly key
