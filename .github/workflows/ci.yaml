@@ -60,7 +60,8 @@ jobs:
     - run: echo "common ${{ matrix.flags }}" >> .bazelrc
 
     # Don't want to bother with hundreds of lines of Workspace setup for the rules_pycross compat test
-    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos'
+    # Also, ignore https://github.com/jvolkman/rules_pycross/issues/128
+    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos' || matrix.bazel-version == '8.0.0rc4'
       run: echo "tests/rules_pycross" >> .bazelignore
     - run: bazel test //...
   examples:
