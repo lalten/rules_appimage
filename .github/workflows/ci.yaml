@@ -7,6 +7,7 @@ on:
 permissions: read-all
 jobs:
   test:
+    name: test (${{ matrix.bazel-version }}, ${{ matrix.os }}, ${{ matrix.external_dependency_system }})
     runs-on: ${{ matrix.os }}-latest
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
@@ -14,18 +15,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [6.x, 7.x]
-        os: [ubuntu, macos]
-        external_dependency_system: [bzlmod, workspace]
-        exclude:
-        # Don't expect Bazel compatibility issues depending on OS, so speed this up
-        - bazel-version: 6.x
-          os: macos
         include:
-        - external_dependency_system: bzlmod
+        - bazel-version: 6.x
+          os: ubuntu
+          external_dependency_system: bzlmod
           flags: --enable_bzlmod
-        - external_dependency_system: workspace
-          flags: --noenable_bzlmod
+        - bazel-version: 6.x
+          os: ubuntu
+          external_dependency_system: workspace
+          flags:
+        - bazel-version: 7.x
+          os: ubuntu
+          external_dependency_system: bzlmod
+          flags: --enable_bzlmod
+        - bazel-version: 7.x
+          os: ubuntu
+          external_dependency_system: workspace
+          flags:
+        - bazel-version: 7.x
+          os: macos
+          external_dependency_system: bzlmod
+          flags: --enable_bzlmod
+        - bazel-version: 7.x
+          os: macos
+          external_dependency_system: workspace
+          flags:
+        - bazel-version: 8.0.0rc4
+          os: ubuntu
+          external_dependency_system: bzlmod
+          flags:
+        - bazel-version: 8.0.0rc4
+          os: ubuntu
+          external_dependency_system: workspace
+          flags: --enable_workspace
+        - bazel-version: 8.0.0rc4
+          os: macos
+          external_dependency_system: bzlmod
+          flags:
     steps:
     - uses: actions/checkout@v4
     - name: Use BuildBuddy RW API key instead of public readonly key
@@ -34,7 +60,8 @@ jobs:
     - run: echo "common ${{ matrix.flags }}" >> .bazelrc
 
     # Don't want to bother with hundreds of lines of Workspace setup for the rules_pycross compat test
-    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos'
+    # Also, ignore https://github.com/jvolkman/rules_pycross/issues/128
+    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos' || matrix.bazel-version == '8.0.0rc4'
       run: echo "tests/rules_pycross" >> .bazelignore
     - run: bazel test //...
   examples:
@@ -44,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [6.x, 7.x]
+        bazel-version: [6.x, 7.x, 8.0.0rc4]
     steps:
     - uses: actions/checkout@v4
     - run: examples/integration_test.sh
