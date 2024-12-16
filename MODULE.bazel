@@ -45,7 +45,7 @@ dev_pip.parse(
 use_repo(dev_pip, "rules_appimage_py_deps")
 
 bazel_dep(name = "container_structure_test", version = "1.19.1", dev_dependency = True)
-bazel_dep(name = "rules_oci", version = "2.0.1", dev_dependency = True)
+bazel_dep(name = "rules_oci", version = "2.2.0", dev_dependency = True)
 bazel_dep(name = "rules_pycross", version = "0.6.1", dev_dependency = True)
 bazel_dep(name = "rules_pkg", version = "1.0.1", dev_dependency = True)
 
