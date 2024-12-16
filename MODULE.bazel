@@ -62,7 +62,7 @@ use_repo(lock_repos, "pdm_deps")
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
 oci.pull(
     name = "python3-slim",
-    digest = "sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63",  # "3-slim" as of 2023-06-01
+    digest = "sha256:9255d1993f6d28b8a1cd611b108adbdfa38cb7ccc46ddde8ea7d734b6c845e32",  # "3-slim" as of 2023-06-01
     image = "docker.io/library/python",
     platforms = ["linux/amd64"],
 )
