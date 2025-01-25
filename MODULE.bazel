@@ -11,7 +11,7 @@ bazel_dep(name = "rules_python", version = "1.1.0")
 bazel_dep(name = "squashfs-tools", version = "4.6.1")
 bazel_dep(name = "zstd", version = "1.5.6")
 
-bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
 bazel_dep(name = "with_cfg.bzl", version = "0.9.0", dev_dependency = True)
 
 rules_appimage = use_extension("//:extensions.bzl", "appimage_ext_dependencies")
