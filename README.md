@@ -26,6 +26,8 @@ See also [Alternatives](#alternatives) below.
 
 See the [latest release notes](https://github.com/lalten/rules_appimage/releases/latest) for a snippet to add to your `MODULE.bazel` or `WORKSPACE`.
 
+rules_appimage aims to be compatible and test with the last two [Bazel LTS releases](https://bazel.build/release) but is likely to work with older versions as well.
+
 ### Usage
 
 There is an example workspace in [`examples/`](https://github.com/lalten/rules_appimage/blob/main/examples/README.md).

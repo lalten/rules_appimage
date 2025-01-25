@@ -13,7 +13,6 @@ test --announce_rc
 test --keep_going
 test --spawn_strategy=sandboxed
 test --test_env=NO_CLEANUP=1
-test --test_env=PYTEST_ADDOPTS="--color=yes --capture=tee-sys --tb=short --showlocals -ra --verbose --verbose"
-test --test_env=USE_BAZEL_VERSION # Pass this on to tests to enable adapting to bazel-version specific behavior
+test --test_env="PYTEST_ADDOPTS=--color=yes --capture=tee-sys --tb=short --showlocals -ra --verbose --verbose"
 test --test_output=errors
 test --test_verbose_timeout_warnings
