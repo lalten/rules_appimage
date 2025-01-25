@@ -53,9 +53,9 @@ def _rules_appimage_workspace_deps():
     maybe(
         http_archive,
         name = "rules_python",
-        sha256 = "c6fb25d0ba0246f6d5bd820dd0b2e66b339ccc510242fd4956b9a639b548d113",
-        strip_prefix = "rules_python-0.37.2",
-        url = "https://github.com/bazelbuild/rules_python/releases/download/0.37.2/rules_python-0.37.2.tar.gz",
+        sha256 = "690e0141724abb568267e003c7b6d9a54925df40c275a870a4d934161dc9dd53",
+        strip_prefix = "rules_python-0.40.0",
+        url = "https://github.com/bazelbuild/rules_python/releases/download/0.40.0/rules_python-0.40.0.tar.gz",
     )
 
 def rules_appimage_development_deps():
