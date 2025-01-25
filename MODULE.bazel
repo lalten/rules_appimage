@@ -25,7 +25,8 @@ use_repo(
 
 register_toolchains("//appimage:all")
 
-_DEFAULT_PYTHON = "3.13"
+# 3.13 is blocked by https://github.com/jvolkman/rules_pycross/issues/128
+_DEFAULT_PYTHON = "3.12"
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
