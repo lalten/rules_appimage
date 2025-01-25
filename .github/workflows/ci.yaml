@@ -40,15 +40,15 @@ jobs:
           os: macos
           external_dependency_system: workspace
           flags:
-        - bazel-version: 8.0.0rc4
+        - bazel-version: 8.x
           os: ubuntu
           external_dependency_system: bzlmod
           flags:
-        - bazel-version: 8.0.0rc4
+        - bazel-version: 8.x
           os: ubuntu
           external_dependency_system: workspace
           flags: --enable_workspace
-        - bazel-version: 8.0.0rc4
+        - bazel-version: 8.x
           os: macos
           external_dependency_system: bzlmod
           flags:
@@ -61,7 +61,7 @@ jobs:
 
     # Don't want to bother with hundreds of lines of Workspace setup for the rules_pycross compat test
     # Also, ignore https://github.com/jvolkman/rules_pycross/issues/128
-    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos' || matrix.bazel-version == '8.0.0rc4'
+    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos' || matrix.bazel-version == '8.x'
       run: echo "tests/rules_pycross" >> .bazelignore
     - run: bazel test //...
   examples:
@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [6.x, 7.x, 8.0.0rc4]
+        bazel-version: [6.x, 7.x, 8.x]
     steps:
     - uses: actions/checkout@v4
     - run: examples/integration_test.sh
