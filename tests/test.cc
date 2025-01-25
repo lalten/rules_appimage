@@ -16,7 +16,6 @@ int main(int argc, char **argv, char **envp) {
   // When running inside the appimage, we want the env to not be lost.
   bool have_binary_env = false;
   bool have_appimage_env = false;
-  std::string bazel_version{"unknown"};
   for (char **env = envp; *env != 0; env++) {
     std::string thisEnv{*env};
     std::cout << thisEnv << std::endl;
@@ -24,8 +23,6 @@ int main(int argc, char **argv, char **envp) {
       have_binary_env = true;
     } else if (thisEnv == "MY_APPIMAGE_ENV=overwritten") {
       have_appimage_env = true;
-    } else if (thisEnv.starts_with("USE_BAZEL_VERSION=")) {
-      bazel_version = thisEnv.substr(18);
     }
   }
   if (!have_binary_env) {
