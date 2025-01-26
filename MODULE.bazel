@@ -50,6 +50,12 @@ bazel_dep(name = "rules_oci", version = "2.2.0", dev_dependency = True)
 bazel_dep(name = "rules_pycross", version = "0.7.1", dev_dependency = True)
 bazel_dep(name = "rules_pkg", version = "1.0.1", dev_dependency = True)
 
+pycross = use_extension("@rules_pycross//pycross/extensions:pycross.bzl", "pycross", dev_dependency = True)
+pycross.configure_environments(
+    platforms = ["x86_64-unknown-linux-gnu"],
+    python_versions = [_DEFAULT_PYTHON],
+)
+
 lock_import = use_extension("@rules_pycross//pycross/extensions:lock_import.bzl", "lock_import", dev_dependency = True)
 lock_import.import_pdm(
     lock_file = "//tests/rules_pycross:pdm.lock",
