@@ -44,9 +44,9 @@ def _rules_appimage_workspace_deps():
         http_archive,
         name = "zstd",
         build_file = "@rules_appimage//third_party:zstd.BUILD",
-        sha256 = "8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1",
-        strip_prefix = "zstd-1.5.6",
-        url = "https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz",
+        sha256 = "eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3",
+        strip_prefix = "zstd-1.5.7",
+        url = "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz",
     )
 
     # rules_python is needed to load py_binary and py_library rules. rules_appimage does not use pip packages outside of tests
