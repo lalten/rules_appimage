@@ -14,4 +14,5 @@ appimage_test(
     timeout = "short",
     binary = ":test",
     tags = ["requires-fakeroot"],
+    target_compatible_with = ["@platforms//os:linux"],
 )
