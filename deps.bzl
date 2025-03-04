@@ -62,6 +62,13 @@ def rules_appimage_development_deps():
     """Declare http_archive deps needed to run tests of rules_appimage."""
     maybe(
         http_archive,
+        name = "rules_cc",
+        sha256 = "712d77868b3152dd618c4d64faaddefcc5965f90f5de6e6dd1d5ddcd0be82d42",
+        strip_prefix = "rules_cc-0.1.1",
+        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.1.1/rules_cc-0.1.1.tar.gz",
+    )
+    maybe(
+        http_archive,
         name = "rules_testing",
         sha256 = "28c2d174471b587bf0df1fd3a10313f22c8906caf4050f8b46ec4648a79f90c3",
         strip_prefix = "rules_testing-0.7.0",
