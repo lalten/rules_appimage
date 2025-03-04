@@ -87,6 +87,7 @@ appimage = rule(
     attrs = _ATTRS,
     executable = True,
     toolchains = ["//appimage:appimage_toolchain_type"],
+    exec_compatible_with = ["@platforms//os:linux"],
 )
 
 appimage_test = rule(
@@ -94,4 +95,5 @@ appimage_test = rule(
     attrs = _ATTRS,
     test = True,
     toolchains = ["//appimage:appimage_toolchain_type"],
+    exec_compatible_with = ["@platforms//os:linux"],
 )
