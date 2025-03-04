@@ -14,6 +14,7 @@ genrule(
         "$(STRIP) --strip-unneeded $(RULEDIR)/libfoo.so.1",
         "ln -s libfoo.so.1 $(RULEDIR)/libfoo.so",
     ]),
+    target_compatible_with = ["@platforms//os:linux"],
     toolchains = ["@bazel_tools//tools/cpp:current_cc_toolchain"],
 )
 
