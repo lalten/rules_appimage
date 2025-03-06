@@ -64,4 +64,5 @@ container_structure_test(
     timeout = "short",
     configs = ["test_appimage_isolated.yaml"],
     image = "container_structure_test_image",
+    target_compatible_with = ["@platforms//os:linux"],
 )
