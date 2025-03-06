@@ -32,10 +32,11 @@ oci_pull(
     image = "docker.io/library/python",
     platforms = ["linux/amd64"],
 )
+
 oci_pull(
-    name = "debian-12",
-    digest = "sha256:35286826a88dc879b4f438b645ba574a55a14187b483d09213a024dc0c0a64ed",  # "12" as of 2025-03-03
-    image = "docker.io/library/debian",
+    name = "alpine-3.21",
+    digest = "sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c",  # "3.21" as of 2025-03-03
+    image = "docker.io/library/alpine",
     platforms = ["linux/amd64"],
 )
 

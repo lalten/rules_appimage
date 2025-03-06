@@ -38,6 +38,7 @@ cc_binary(
         ":file.txt",
         "@appimage_runtime_aarch64//file",
     ],
+    linkopts = ["-static"],
     deps = ["@rules_cc//cc/runfiles"],
 )
 
@@ -55,7 +56,7 @@ pkg_tar(
 
 oci_image(
     name = "container_structure_test_image",
-    base = "@debian-12",
+    base = "@alpine-3.21",
     tars = [":bin.appimage.tar"],
 )
 

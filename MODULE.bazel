@@ -11,7 +11,12 @@ bazel_dep(name = "rules_python", version = "1.1.0")
 bazel_dep(name = "squashfs-tools", version = "4.6.1")
 bazel_dep(name = "zstd", version = "1.5.7")
 
+bazel_dep(name = "container_structure_test", version = "1.19.1", dev_dependency = True)
+bazel_dep(name = "rules_oci", version = "2.2.2", dev_dependency = True)
+bazel_dep(name = "rules_pkg", version = "1.0.1", dev_dependency = True)
+bazel_dep(name = "rules_pycross", version = "0.7.1", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
+bazel_dep(name = "toolchains_musl", version = "0.1.20", dev_dependency = True)
 bazel_dep(name = "with_cfg.bzl", version = "0.9.1", dev_dependency = True)
 
 rules_appimage = use_extension("//:extensions.bzl", "appimage_ext_dependencies")
@@ -45,11 +50,6 @@ dev_pip.parse(
 )
 use_repo(dev_pip, "rules_appimage_py_deps")
 
-bazel_dep(name = "container_structure_test", version = "1.19.1", dev_dependency = True)
-bazel_dep(name = "rules_oci", version = "2.2.2", dev_dependency = True)
-bazel_dep(name = "rules_pycross", version = "0.7.1", dev_dependency = True)
-bazel_dep(name = "rules_pkg", version = "1.0.1", dev_dependency = True)
-
 pycross = use_extension("@rules_pycross//pycross/extensions:pycross.bzl", "pycross", dev_dependency = True)
 pycross.configure_environments(
     platforms = ["x86_64-unknown-linux-gnu"],
@@ -75,9 +75,9 @@ oci.pull(
     platforms = ["linux/amd64"],
 )
 oci.pull(
-    name = "debian-12",
-    digest = "sha256:35286826a88dc879b4f438b645ba574a55a14187b483d09213a024dc0c0a64ed",  # "12" as of 2025-03-03
-    image = "docker.io/library/debian",
+    name = "alpine-3.21",
+    digest = "sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c",  # "3.21" as of 2025-03-03
+    image = "docker.io/library/alpine",
     platforms = ["linux/amd64"],
 )
-use_repo(oci, "debian-12", "debian-12_linux_amd64", "python3-slim", "python3-slim_linux_amd64")
+use_repo(oci, "alpine-3.21", "alpine-3.21_linux_amd64", "python3-slim", "python3-slim_linux_amd64")
