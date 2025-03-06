@@ -16,7 +16,6 @@ bazel_dep(name = "rules_oci", version = "2.2.2", dev_dependency = True)
 bazel_dep(name = "rules_pkg", version = "1.0.1", dev_dependency = True)
 bazel_dep(name = "rules_pycross", version = "0.7.1", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
-bazel_dep(name = "toolchains_musl", version = "0.1.20", dev_dependency = True)
 bazel_dep(name = "with_cfg.bzl", version = "0.9.1", dev_dependency = True)
 
 rules_appimage = use_extension("//:extensions.bzl", "appimage_ext_dependencies")
