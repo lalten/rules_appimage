@@ -13,7 +13,6 @@ rules_shell_dependencies()
 rules_shell_toolchains()
 
 load("@container_structure_test//:repositories.bzl", "container_structure_test_register_toolchain")
-
 load("@rules_oci//oci:dependencies.bzl", "rules_oci_dependencies")
 
 rules_oci_dependencies()
