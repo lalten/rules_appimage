@@ -62,10 +62,31 @@ def rules_appimage_development_deps():
     """Declare http_archive deps needed to run tests of rules_appimage."""
     maybe(
         http_archive,
+        name = "aspect_bazel_lib",
+        sha256 = "40ba9d0f62deac87195723f0f891a9803a7b720d7b89206981ca5570ef9df15b",
+        strip_prefix = "bazel-lib-2.14.0",
+        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.14.0/bazel-lib-v2.14.0.tar.gz",
+    )
+    maybe(
+        http_archive,
         name = "rules_cc",
         sha256 = "712d77868b3152dd618c4d64faaddefcc5965f90f5de6e6dd1d5ddcd0be82d42",
         strip_prefix = "rules_cc-0.1.1",
         url = "https://github.com/bazelbuild/rules_cc/releases/download/0.1.1/rules_cc-0.1.1.tar.gz",
+    )
+    maybe(
+        http_archive,
+        name = "rules_oci",
+        sha256 = "8676144f96dd63294333906b26dea2388f61cadaf1dea59a225e7dbc52cc72fa",
+        strip_prefix = "rules_oci-2.2.2",
+        url = "https://github.com/bazel-contrib/rules_oci/releases/download/v2.2.2/rules_oci-v2.2.2.tar.gz",
+    )
+    maybe(
+        http_archive,
+        name = "rules_shell",
+        sha256 = "3e114424a5c7e4fd43e0133cc6ecdfe54e45ae8affa14fadd839f29901424043",
+        strip_prefix = "rules_shell-0.4.0",
+        url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.4.0/rules_shell-v0.4.0.tar.gz",
     )
     maybe(
         http_archive,
@@ -80,4 +101,11 @@ def rules_appimage_development_deps():
         sha256 = "d1d3049822d594e0057adbf6ad084242340eb37ec7cb8d43779710a9311ecd14",
         strip_prefix = "with_cfg.bzl-0.9.1",
         url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.9.1/with_cfg.bzl-v0.9.1.tar.gz",
+    )
+    maybe(
+        http_archive,
+        name = "container_structure_test",
+        sha256 = "c91a76f7b4949775941f8308ee7676285555ae4756ec1ec990c609c975a55f93",
+        strip_prefix = "container-structure-test-1.19.3",
+        url = "https://github.com/GoogleContainerTools/container-structure-test/archive/refs/tags/v1.19.3.tar.gz",
     )

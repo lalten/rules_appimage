@@ -8,20 +8,29 @@
 using rules_cc::cc::runfiles::Runfiles;
 
 int main(int argc, const char **argv) {
-  assert(argc > 0 && "Failed to get argc");
-  assert(argv[0] != nullptr && "Failed to get argv");
-  std::cout << "argv0: " << argv[0] << std::endl;
+  // Under Bzlmod, this can be "_main" - but not in WORKSPACE
+  const std::string workspace_name{"rules_appimage"};
 
-  const auto runfiles{Runfiles::Create(argv[0])};
+  const auto runfiles{Runfiles::Create("")};
   assert(runfiles != nullptr && "Failed to load runfiles");
 
-  const auto path =
-      runfiles->Rlocation("appimage_runtime_aarch64/file/downloaded");
-  assert(!path.empty() && "Failed to find external binary");
-  std::cout << "path: " << path << std::endl;
+  for (const auto &runfile : {
+           std::string{"appimage_runtime_aarch64/file/downloaded"},
+           workspace_name + "/tests/cc_runfiles/file.txt",
+       }) {
+    const auto path = runfiles->Rlocation(runfile);
 
-  const auto exists = std::filesystem::exists(path);
-  assert(exists && "external path does not exist");
+    if (path.empty()) {
+      std::cerr << "Failed to find runfile " << runfile << std::endl;
+      return 1;
+    }
+    std::cout << "path for " << runfile << " is " << path << std::endl;
 
-  return exists ? 0 : 1;
+    if (!std::filesystem::exists(path)) {
+      std::cerr << "runfile path does not exist: " << path << std::endl;
+      return 1;
+    }
+  }
+
+  return 0;
 }
