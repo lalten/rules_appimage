@@ -2,6 +2,7 @@ load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@rules_appimage//appimage:appimage.bzl", "appimage")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_oci//oci:defs.bzl", "oci_image")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_mklink")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 # Ideally we'd reuse test.appimage but until https://github.com/bazelbuild/bazel/issues/21410 is fixed we need to duplicate the targets in a non-testonly config
@@ -23,6 +24,18 @@ appimage(
     target_compatible_with = ["@platforms//os:linux"],
 )
 
+# distroless "debug" images contain their shell at /busybox/sh, but the AppRun script uses a "/bin/sh" shebang
+pkg_mklink(
+    name = "link_sh",
+    link_name = "/bin/sh",
+    target = "/busybox/sh",
+)
+
+pkg_tar(
+    name = "link_sh.tar",
+    srcs = [":link_sh"],
+)
+
 pkg_tar(
     name = "bin.appimage.tar",
     srcs = [":bin.appimage"],
@@ -30,8 +43,11 @@ pkg_tar(
 
 oci_image(
     name = "container_structure_test_image",
-    base = "@alpine-3.21",
-    tars = [":bin.appimage.tar"],
+    base = "@distroless-cc",
+    tars = [
+        ":link_sh.tar",
+        ":bin.appimage.tar",
+    ],
 )
 
 container_structure_test(
