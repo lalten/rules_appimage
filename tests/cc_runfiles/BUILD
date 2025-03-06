@@ -55,7 +55,7 @@ pkg_tar(
 
 oci_image(
     name = "container_structure_test_image",
-    base = "@python3-slim",
+    base = "@debian-12",
     tars = [":bin.appimage.tar"],
 )
 

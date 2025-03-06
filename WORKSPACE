@@ -32,6 +32,12 @@ oci_pull(
     image = "docker.io/library/python",
     platforms = ["linux/amd64"],
 )
+oci_pull(
+    name = "debian-12",
+    digest = "sha256:35286826a88dc879b4f438b645ba574a55a14187b483d09213a024dc0c0a64ed",  # "12" as of 2025-03-03
+    image = "docker.io/library/debian",
+    platforms = ["linux/amd64"],
+)
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 

@@ -74,4 +74,10 @@ oci.pull(
     image = "docker.io/library/python",
     platforms = ["linux/amd64"],
 )
-use_repo(oci, "python3-slim", "python3-slim_linux_amd64")
+oci.pull(
+    name = "debian-12",
+    digest = "sha256:35286826a88dc879b4f438b645ba574a55a14187b483d09213a024dc0c0a64ed",  # "12" as of 2025-03-03
+    image = "docker.io/library/debian",
+    platforms = ["linux/amd64"],
+)
+use_repo(oci, "debian-12", "debian-12_linux_amd64", "python3-slim", "python3-slim_linux_amd64")
