@@ -26,7 +26,9 @@ mksquashfs="$(rlocation squashfs-tools/mksquashfs)"
 
 manifest="$1"
 shift
-apprun="$1"
+apprun_launch="$1"
+shift
+apprun_script="$1"
 shift
 runfiles_manifest="$1"
 shift
@@ -41,7 +43,8 @@ shift
 
 # Create the mksquashfs pseudo file definitions file.
 # This explains to mksquashfs how to create the AppDir.
-"$mkappdir" --manifest "$manifest" --apprun "$apprun" \
+"$mkappdir" --manifest "$manifest" \
+    --apprun_script "$apprun_script" --apprun_launch "$apprun_launch" \
     --runfiles_manifest "$runfiles_manifest" \
     "$pseudofile_defs"
 

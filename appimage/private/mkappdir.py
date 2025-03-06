@@ -366,11 +366,14 @@ def make_appdir_pseudofile_defs(manifest: Path, runfiles_manifest: Path) -> dict
     return operations
 
 
-def write_appdir_pseudofile_defs(manifest: Path, apprun: Path, runfiles_manifest: Path, output: Path) -> None:
+def write_appdir_pseudofile_defs(
+    manifest: Path, apprun_script: Path, apprun_launch: Path, runfiles_manifest: Path, output: Path
+) -> None:
     """Write a mksquashfs pf file representing the AppDir."""
     pseudofile_defs = make_appdir_pseudofile_defs(manifest, runfiles_manifest)
     lines = [
-        f"AppRun l {apprun.resolve()}",
+        f"AppRun l {apprun_launch.resolve()}",
+        f"AppRun.sh l {apprun_script.resolve()}",
         *sorted(f'"{k}" {v}' for k, v in pseudofile_defs.items()),
         "",
     ]
@@ -387,10 +390,16 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         help="Path to manifest json with file and link definitions, e.g. 'bazel-bin/tests/appimage_py-manifest.json'",
     )
     parser.add_argument(
-        "--apprun",
+        "--apprun_script",
         required=True,
         type=Path,
         help="Path to AppRun script",
+    )
+    parser.add_argument(
+        "--apprun_launch",
+        required=True,
+        type=Path,
+        help="Path to AppRun launcher",
     )
     parser.add_argument(
         "--runfiles_manifest",
@@ -404,4 +413,6 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
-    write_appdir_pseudofile_defs(args.manifest, args.apprun, args.runfiles_manifest, args.output)
+    write_appdir_pseudofile_defs(
+        args.manifest, args.apprun_script, args.apprun_launch, args.runfiles_manifest, args.output
+    )

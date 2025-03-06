@@ -30,7 +30,7 @@ pkg_tar(
 
 oci_image(
     name = "container_structure_test_image",
-    base = "@alpine-3.21",
+    base = "@distroless-cc",
     tars = [":bin.appimage.tar"],
 )
 

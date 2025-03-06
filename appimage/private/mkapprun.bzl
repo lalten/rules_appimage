@@ -74,12 +74,12 @@ def _make_apprun_setup_content(ctx):
     return "\n".join(apprun_lines) + "\n"
 
 def _make_apprun_setup(ctx):
-    apprun_file_trailer = ctx.actions.declare_file(ctx.attr.name + "-apprun-setup.sh")
+    apprun_script_trailer = ctx.actions.declare_file(ctx.attr.name + "-apprun-setup.sh")
     ctx.actions.write(
-        output = apprun_file_trailer,
+        output = apprun_script_trailer,
         content = _make_apprun_setup_content(ctx),
     )
-    return apprun_file_trailer
+    return apprun_script_trailer
 
 def make_apprun(ctx):
     """Generate the AppRun.
@@ -91,12 +91,18 @@ def make_apprun(ctx):
         The generated AppRun file.
     """
     env_file = _make_env_sh(ctx)
-    apprun_file_trailer = _make_apprun_setup(ctx)
-    apprun_file = ctx.actions.declare_file(ctx.attr.name + ".AppRun")
+    apprun_script_trailer = _make_apprun_setup(ctx)
+    apprun_script = ctx.actions.declare_file(ctx.attr.name + ".AppRun.sh")
     ctx.actions.run_shell(
-        inputs = [env_file, apprun_file_trailer],
-        outputs = [apprun_file],
-        arguments = [env_file.path, apprun_file_trailer.path, apprun_file.path],
+        inputs = [env_file, apprun_script_trailer],
+        outputs = [apprun_script],
+        arguments = [env_file.path, apprun_script_trailer.path, apprun_script.path],
         command = 'echo "#!/bin/sh" | cat - "$1" "$2" > "$3"',
     )
-    return apprun_file
+    apprun_file = ctx.actions.declare_file(ctx.attr.name + ".AppRun")
+    ctx.actions.symlink(
+        target_file = ctx.file._launch,
+        output = apprun_file,
+        is_executable = True,
+    )
+    return apprun_file, apprun_script

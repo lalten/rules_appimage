@@ -30,7 +30,7 @@ def _appimage_impl(ctx):
     runfile_info = collect_runfiles_info(ctx)
     manifest_file = ctx.actions.declare_file(ctx.attr.name + ".manifest.json")
     ctx.actions.write(manifest_file, json.encode_indent(runfile_info.manifest))
-    apprun = make_apprun(ctx)
+    apprun_launch, apprun_script = make_apprun(ctx)
 
     runfiles_manifest = ctx.actions.declare_file(ctx.attr.name + ".runfiles_manifest.txt")
     pseudofile_defs = ctx.actions.declare_file(ctx.attr.name + ".pseudofile_defs.txt")
@@ -44,11 +44,12 @@ def _appimage_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "AppImage",
-        inputs = depset(direct = [manifest_file, apprun, toolchain.appimage_runtime] + runfile_info.files),
+        inputs = depset(direct = [manifest_file, apprun_launch, apprun_script, toolchain.appimage_runtime] + runfile_info.files),
         executable = ctx.executable._mkappimage,
         arguments = [
             manifest_file.path,
-            apprun.path,
+            apprun_launch.path,
+            apprun_script.path,
             runfiles_manifest.path,
             pseudofile_defs.path,
             appdirsqfs.path,
@@ -82,6 +83,7 @@ _ATTRS = {
     "data": attr.label_list(allow_files = True, doc = "Any additional data that will be made available inside the appimage"),
     "env": attr.string_dict(doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests"),
     "_mkappimage": attr.label(default = "//appimage/private:mkappimage", executable = True, cfg = "exec"),
+    "_launch": attr.label(default = "//appimage/private:launch", executable = True, cfg = "exec", allow_single_file = True),
 }
 
 appimage = rule(

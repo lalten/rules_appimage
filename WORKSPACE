@@ -34,9 +34,9 @@ oci_pull(
 )
 
 oci_pull(
-    name = "alpine-3.21",
-    digest = "sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c",  # "3.21" as of 2025-03-03
-    image = "docker.io/library/alpine",
+    name = "distroless-cc",
+    digest = "sha256:ab14dfad5239a33d5a413a9c045803d71717e4c44c01c62a8073732e5c9cc1e1",  # "debug-nonroot" as of 2025-03-03
+    image = "gcr.io/distroless/cc-debian12",
     platforms = ["linux/amd64"],
 )
 
