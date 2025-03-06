@@ -113,10 +113,11 @@ def collect_runfiles_info(ctx):
 
     # Collect everything that needs to be in the appimage and deduplicate using depset.
     runfiles_list = depset(ctx.files.data, transitive = [_default_runfiles(ctx.attr.binary)] + [_default_runfiles(d) for d in ctx.attr.data]).to_list()
-    files_to_run = [ctx.attr.binary[DefaultInfo].files_to_run.repo_mapping_manifest, ctx.attr.binary[DefaultInfo].files_to_run.runfiles_manifest]
-
     file_map = {f.path: _final_file_path(ctx, f) for f in runfiles_list if not f.is_directory}
-    file_map.update({file.path: file.short_path for file in files_to_run})
+    repo_mapping = ctx.attr.binary[DefaultInfo].files_to_run.repo_mapping_manifest
+
+    # Add the repo_mapping but not the runfiles_manifest. We generate our own MANIFEST file.
+    file_map.update({repo_mapping.path: repo_mapping.short_path})
 
     tree_artifacts_map = {f.path: _final_file_path(ctx, f) for f in runfiles_list if f.is_directory}
 
@@ -138,13 +139,18 @@ def collect_runfiles_info(ctx):
         _reference_dir(ctx) + "/external": _runfiles_dir(ctx),
     })
 
+    runfiles_manifest = ctx.attr.binary[DefaultInfo].files_to_run.runfiles_manifest
     manifest = struct(
         empty_files = empty_files,
         files = [struct(src = src, dst = dst) for src, dst in file_map.items()],
+        files_to_run = {
+            "repo_mapping_basename": repo_mapping.basename,
+            "runfiles_manifest_short_path": runfiles_manifest.short_path,
+        },
         symlinks = [struct(linkname = linkname, target = target) for linkname, target in symlinks.items()],
         tree_artifacts = [struct(src = src, dst = dst) for src, dst in tree_artifacts_map.items()],
     )
     return struct(
-        files = runfiles_list + files_to_run,
+        files = runfiles_list + [repo_mapping, runfiles_manifest],
         manifest = manifest,
     )

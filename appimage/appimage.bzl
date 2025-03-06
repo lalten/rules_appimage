@@ -32,6 +32,7 @@ def _appimage_impl(ctx):
     ctx.actions.write(manifest_file, json.encode_indent(runfile_info.manifest))
     apprun = make_apprun(ctx)
 
+    runfiles_manifest = ctx.actions.declare_file(ctx.attr.name + ".runfiles_manifest.txt")
     pseudofile_defs = ctx.actions.declare_file(ctx.attr.name + ".pseudofile_defs.txt")
     appdirsqfs = ctx.actions.declare_file(ctx.attr.name + ".sqfs")
 
@@ -48,13 +49,14 @@ def _appimage_impl(ctx):
         arguments = [
             manifest_file.path,
             apprun.path,
+            runfiles_manifest.path,
             pseudofile_defs.path,
             appdirsqfs.path,
             toolchain.appimage_runtime.path,
             ctx.outputs.executable.path,
             mksquashfs_args,
         ],
-        outputs = [ctx.outputs.executable, pseudofile_defs, appdirsqfs],
+        outputs = [ctx.outputs.executable, runfiles_manifest, pseudofile_defs, appdirsqfs],
         resource_set = _resources,
     )
 
@@ -71,7 +73,7 @@ def _appimage_impl(ctx):
             runfiles = ctx.runfiles(files = [ctx.outputs.executable]),
         ),
         RunEnvironmentInfo(env),
-        OutputGroupInfo(appimage_debug = depset([manifest_file, pseudofile_defs, appdirsqfs])),
+        OutputGroupInfo(appimage_debug = depset([manifest_file, runfiles_manifest, pseudofile_defs, appdirsqfs])),
     ]
 
 _ATTRS = {

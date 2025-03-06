@@ -66,6 +66,7 @@ lock_import.import_pdm(
 lock_repos = use_extension("@rules_pycross//pycross/extensions:lock_repos.bzl", "lock_repos", dev_dependency = True)
 use_repo(lock_repos, "pdm_deps")
 
+# Keep in sync with WORKSPACE
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
 oci.pull(
     name = "python3-slim",

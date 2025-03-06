@@ -28,6 +28,8 @@ manifest="$1"
 shift
 apprun="$1"
 shift
+runfiles_manifest="$1"
+shift
 pseudofile_defs="$1"
 shift
 sqfs="$1"
@@ -39,7 +41,9 @@ shift
 
 # Create the mksquashfs pseudo file definitions file.
 # This explains to mksquashfs how to create the AppDir.
-"$mkappdir" --manifest "$manifest" --apprun "$apprun" "$pseudofile_defs"
+"$mkappdir" --manifest "$manifest" --apprun "$apprun" \
+    --runfiles_manifest "$runfiles_manifest" \
+    "$pseudofile_defs"
 
 # Point mksquashfs at an empty dir so it doesn't include any other files
 emptydir="$(mktemp -d)"
