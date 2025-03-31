@@ -77,9 +77,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "rules_oci",
-        sha256 = "8676144f96dd63294333906b26dea2388f61cadaf1dea59a225e7dbc52cc72fa",
-        strip_prefix = "rules_oci-2.2.2",
-        url = "https://github.com/bazel-contrib/rules_oci/releases/download/v2.2.2/rules_oci-v2.2.2.tar.gz",
+        sha256 = "1e7759852e8cad966ca793412d292f1d4af5831940fb2cb573f1890ad1e9641e",
+        strip_prefix = "rules_oci-2.2.3",
+        url = "https://github.com/bazel-contrib/rules_oci/releases/download/v2.2.3/rules_oci-v2.2.3.tar.gz",
     )
     maybe(
         http_archive,
