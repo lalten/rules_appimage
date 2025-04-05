@@ -1,3 +1,4 @@
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_binary", "platform_transition_filegroup")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@rules_appimage//appimage:appimage.bzl", "appimage")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
@@ -9,6 +10,7 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 cc_binary(
     name = "bin",
     srcs = ["//tests/cc_runfiles:test.cpp"],
+    copts = ["-std=c++20"],
     data = [
         "//tests/cc_runfiles:file.txt",
         "@appimage_runtime_aarch64//file",
@@ -36,9 +38,15 @@ pkg_tar(
     srcs = [":link_sh"],
 )
 
+platform_transition_binary(
+    name = "bin.appimage.amd64",
+    binary = ":bin",
+    target_platform = "//:linux_x86_64",
+)
+
 pkg_tar(
     name = "bin.appimage.tar",
-    srcs = [":bin.appimage"],
+    srcs = [":bin.appimage.amd64"],
 )
 
 oci_image(
@@ -50,10 +58,15 @@ oci_image(
     ],
 )
 
+platform_transition_filegroup(
+    name = "container_structure_test_image.amd64",
+    srcs = [":container_structure_test_image"],
+    target_platform = "//:linux_x86_64",
+)
+
 container_structure_test(
     name = "container_structure_test",
     timeout = "short",
     configs = ["test_appimage_isolated.yaml"],
-    image = "container_structure_test_image",
-    target_compatible_with = ["@platforms//os:linux"],
+    image = ":container_structure_test_image.amd64",
 )
