@@ -91,9 +91,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "rules_testing",
-        sha256 = "28c2d174471b587bf0df1fd3a10313f22c8906caf4050f8b46ec4648a79f90c3",
-        strip_prefix = "rules_testing-0.7.0",
-        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.7.0/rules_testing-v0.7.0.tar.gz",
+        sha256 = "89feaf18d6e2fc07ed7e34510058fc8d48e45e6d2ff8a817a718e8c8e4bcda0e",
+        strip_prefix = "rules_testing-0.8.0",
+        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.8.0/rules_testing-v0.8.0.tar.gz",
     )
     maybe(
         http_archive,
