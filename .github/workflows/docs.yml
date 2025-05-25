@@ -1,0 +1,57 @@
+name: Docs CI
+
+on:
+  push:
+    branches:
+      - main  # Or your default branch
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bazelisk
+        uses: bazelbuild/setup-bazel@v4 # Using setup-bazel action which includes Bazelisk
+
+      - name: Mount Bazel cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bazel
+            ~/.cache/bazel-repo
+          key: bazel-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            bazel-cache-${{ runner.os }}-
+
+      - name: Bazel Mod Tidy
+        run: bazelisk mod tidy
+
+      - name: Build Documentation
+        run: bazelisk build //docs:generated_docs
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: bazel-bin/docs/generated_docs.tar # Stardoc/filegroup might output a tar or individual files.
+                                                 # This path might need adjustment based on actual output.
+                                                 # If it's individual files, need to handle that (e.g. create a tar or list them).
+                                                 # For now, assuming a tar might be easiest if filegroup produces one.
+                                                 # If not, path should be bazel-bin/docs and then list files.
+
+  deploy-docs:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
