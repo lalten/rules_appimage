@@ -60,6 +60,8 @@ def _rules_appimage_workspace_deps():
 
 def rules_appimage_development_deps():
     """Declare http_archive deps needed to run tests of rules_appimage."""
+
+    # aspect_bazel_lib is needed by rules_pycross (which is not used by tests in WORKSPACE) and with_cfg.bzl
     maybe(
         http_archive,
         name = "aspect_bazel_lib",
