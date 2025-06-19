@@ -76,6 +76,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+    - runs: false # debug. remove
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
     - uses: pre-commit/action@v3.0.1
