@@ -98,9 +98,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "with_cfg.bzl",
-        sha256 = "8cef6d78b169ebbab6601e95d9736d41254c02b7b6384edc8373808e4b1d7534",
-        strip_prefix = "with_cfg.bzl-0.9.2",
-        url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.9.2/with_cfg.bzl-v0.9.2.tar.gz",
+        sha256 = "bdabfc8b5b14b1b08833aa2c50c9b2a00ce94a8917a72e069bb468137b5363fe",
+        strip_prefix = "with_cfg.bzl-0.10.2",
+        url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.10.2/with_cfg.bzl-v0.10.2.tar.gz",
     )
     maybe(
         http_archive,
