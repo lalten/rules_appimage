@@ -82,5 +82,8 @@ jobs:
   required:
     runs-on: ubuntu-latest
     needs: [test, examples, determinism, lint]  # this automatically depends on all matrix jobs
+    if: always()  # Never skip, even if dependencies failed (which would otherwise make this one *skip*)
     steps:
-    - run: echo "All dependent jobs are required to pass"
+    - name: Fail if any ancestor job failed
+      if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+      run: exit 1
