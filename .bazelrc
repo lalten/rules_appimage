@@ -16,3 +16,7 @@ test --test_env=NO_CLEANUP=1
 test --test_env="PYTEST_ADDOPTS=--color=yes --capture=tee-sys --tb=short --showlocals -ra --verbose --verbose"
 test --test_output=errors
 test --test_verbose_timeout_warnings
+
+# Use GitHub http registry instead of BCR mirror
+# TODO: remove this once 4.6.1 is available via the default mirror...
+common --registry https://raw.githubusercontent.com/bazelbuild/bazel-central-registry/refs/heads/main

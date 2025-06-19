@@ -36,7 +36,7 @@ def _rules_appimage_workspace_deps():
         build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
         sha256 = "94201754b36121a9f022a190c75f718441df15402df32c2b520ca331a107511c",
         strip_prefix = "squashfs-tools-4.6.1/squashfs-tools",
-        url = "https://github.com/plougher/squashfs-tools/archive/refs/tags/4.6.1.tar.gz",
+        url = "https://github.com/plougher/squashfs-tools/releases/download/4.6.1/squashfs-tools-4.6.1.tar.gz",
     )
 
     # zstd is a dep of squashfs-tools
