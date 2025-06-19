@@ -12,7 +12,7 @@ def test_symlinks() -> None:
         assert target.exists(), f"Broken link: {link} -> {target}"
 
     # Now do an actual import
-    import humanize
+    import humanize  # noqa: PLC0415 (`import` should be at the top-level of a file)
 
     assert humanize
 
