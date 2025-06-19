@@ -7,6 +7,9 @@ import sys
 from pathlib import Path
 
 import pytest
+from python.runfiles import Runfiles
+
+_FILE_PROG = Runfiles.Create().Rlocation("libmagic/file")
 
 APPIMAGE = str(Path.cwd() / "tests/appimage_py")
 _TMPDIR = os.environ.get("TEST_TMPDIR", "")
@@ -25,7 +28,7 @@ EXPECTED_FILE = {
 
 def test_file() -> None:
     """Test that the appimage has the expected magic."""
-    cmd = ["file", "--dereference", APPIMAGE]
+    cmd = [_FILE_PROG, "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
     uname_arch = platform.uname().machine
     expected = f"tests/appimage_py: {EXPECTED_FILE[uname_arch]}"

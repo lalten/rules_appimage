@@ -133,7 +133,11 @@ py_test(
     name = "test_appimage",
     size = "small",
     srcs = ["test_appimage.py"],
-    data = [":appimage_py"],
+    data = [
+        ":appimage_py",
+        "@libmagic//:file",
+        "@rules_python//python:runfiles",
+    ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [requirement("pytest")],
 )
