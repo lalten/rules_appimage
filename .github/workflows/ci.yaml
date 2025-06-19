@@ -82,5 +82,6 @@ jobs:
   required:
     runs-on: ubuntu-latest
     needs: [test, examples, determinism, lint]  # this automatically depends on all matrix jobs
+    if: always()
     steps:
     - run: echo "All dependent jobs are required to pass"
