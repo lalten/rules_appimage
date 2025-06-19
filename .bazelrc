@@ -19,4 +19,5 @@ test --test_verbose_timeout_warnings
 
 # Use GitHub http registry instead of BCR mirror
 # TODO: remove this once 4.6.1 is available via the default mirror...
-common --registry https://raw.githubusercontent.com/bazelbuild/bazel-central-registry/refs/heads/main
+# TODO: revert to main
+common --registry https://raw.githubusercontent.com/lalten/bazel-central-registry/refs/heads/squashfs-47
