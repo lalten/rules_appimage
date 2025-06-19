@@ -1,6 +1,8 @@
 load("@rules_appimage_py_deps//:requirements.bzl", "requirement")
 load("@rules_cc//cc:defs.bzl", "cc_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//appimage:appimage.bzl", "appimage", "appimage_test")
 load(":testrules.bzl", "declared_symlink", "runfiles_symlink", "transitioned_cc_binary")
 

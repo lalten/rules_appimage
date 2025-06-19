@@ -1,4 +1,6 @@
 load("@rules_appimage//appimage:appimage.bzl", "appimage")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 sh_binary(
     name = "entrypoint",
