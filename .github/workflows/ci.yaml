@@ -76,7 +76,6 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - run: false # debug. remove
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
     - uses: pre-commit/action@v3.0.1
@@ -85,7 +84,6 @@ jobs:
     needs: [test, examples, determinism, lint]  # this automatically depends on all matrix jobs
     if: always() # Never skip, even if dependencies failed (which would otherwise make this one *skip*)
     steps:
-    - run: echo ${{needs.*.result}} # debug. remove
     - name: Fail if any ancestor job failed
       if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
       run: exit 1
