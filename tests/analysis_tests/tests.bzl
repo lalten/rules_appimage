@@ -1,12 +1,13 @@
 """Tests using rules_testing."""
 
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:util.bzl", "util")
 load("//appimage:appimage.bzl", "appimage")
 
 def _basic(name):
     util.helper_target(
-        native.sh_binary,
+        sh_binary,
         name = "%s_binary" % name,
         srcs = ["program.sh"],
     )
