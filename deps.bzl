@@ -53,9 +53,9 @@ def _rules_appimage_workspace_deps():
     maybe(
         http_archive,
         name = "rules_python",
-        sha256 = "2cc26bbd53854ceb76dd42a834b1002cd4ba7f8df35440cf03482e045affc244",
-        strip_prefix = "rules_python-1.3.0",
-        url = "https://github.com/bazelbuild/rules_python/releases/download/1.3.0/rules_python-1.3.0.tar.gz",
+        sha256 = "9f9f3b300a9264e4c77999312ce663be5dee9a56e361a1f6fe7ec60e1beef9a3",
+        strip_prefix = "rules_python-1.4.1",
+        url = "https://github.com/bazelbuild/rules_python/releases/download/1.4.1/rules_python-1.4.1.tar.gz",
     )
 
 def rules_appimage_development_deps():
@@ -98,9 +98,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "with_cfg.bzl",
-        sha256 = "8cef6d78b169ebbab6601e95d9736d41254c02b7b6384edc8373808e4b1d7534",
-        strip_prefix = "with_cfg.bzl-0.9.2",
-        url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.9.2/with_cfg.bzl-v0.9.2.tar.gz",
+        sha256 = "bdabfc8b5b14b1b08833aa2c50c9b2a00ce94a8917a72e069bb468137b5363fe",
+        strip_prefix = "with_cfg.bzl-0.10.2",
+        url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.10.2/with_cfg.bzl-v0.10.2.tar.gz",
     )
     maybe(
         http_archive,
