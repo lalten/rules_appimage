@@ -47,7 +47,7 @@ cc_library(
     defines = _DEFINES,
     linkopts = _LINKOPTS,
     deps = [
-        "@bazel_tools//third_party/zlib",
+        "@zlib",
         "@zstd",
     ],
 )
