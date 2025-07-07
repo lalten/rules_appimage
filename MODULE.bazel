@@ -6,7 +6,7 @@ module(
 )
 
 bazel_dep(name = "platforms", version = "0.0.11")
-bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_cc", version = "0.1.2")
 bazel_dep(name = "rules_python", version = "1.4.1")
 bazel_dep(name = "rules_shell", version = "0.5.0")
 bazel_dep(name = "squashfs-tools", version = "4.7")

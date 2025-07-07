@@ -39,6 +39,16 @@ def _rules_appimage_workspace_deps():
         url = "https://github.com/plougher/squashfs-tools/releases/download/4.7/squashfs-tools-4.7.tar.gz",
     )
 
+    # zlib is a dep of squashfs-tools
+    maybe(
+        http_archive,
+        name = "zlib",
+        build_file = "@rules_appimage//third_party:zlib.BUILD",
+        sha256 = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
+        strip_prefix = "zlib-1.3.1",
+        url = "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz",
+    )
+
     # zstd is a dep of squashfs-tools
     maybe(
         http_archive,
@@ -61,6 +71,24 @@ def _rules_appimage_workspace_deps():
 def rules_appimage_development_deps():
     """Declare http_archive deps needed to run tests of rules_appimage."""
 
+    # bazel_features is needed by with_cfg.bzl
+    maybe(
+        http_archive,
+        name = "bazel_features",
+        sha256 = "07bd2b18764cdee1e0d6ff42c9c0a6111ffcbd0c17f0de38e7f44f1519d1c0cd",
+        strip_prefix = "bazel_features-1.32.0",
+        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.32.0/bazel_features-v1.32.0.tar.gz",
+    )
+
+    # jq.bzl is needed by aspect_bazel_lib
+    maybe(
+        http_archive,
+        name = "jq.bzl",
+        sha256 = "7b63435aa19cc6a0cfd1a82fbdf2c7a2f0a94db1a79ff7a4469ffa94286261ab",
+        strip_prefix = "jq.bzl-0.1.0",
+        url = "https://github.com/bazel-contrib/jq.bzl/releases/download/v0.1.0/jq.bzl-v0.1.0.tar.gz",
+    )
+
     # aspect_bazel_lib is needed by rules_pycross (which is not used by tests in WORKSPACE) and with_cfg.bzl
     maybe(
         http_archive,
@@ -72,9 +100,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "rules_cc",
-        sha256 = "712d77868b3152dd618c4d64faaddefcc5965f90f5de6e6dd1d5ddcd0be82d42",
-        strip_prefix = "rules_cc-0.1.1",
-        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.1.1/rules_cc-0.1.1.tar.gz",
+        sha256 = "d62624b45e0912713dcd3b8e30ba6ae55418ed6bf99e6d135cd61b8addae312b",
+        strip_prefix = "rules_cc-0.1.2",
+        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.1.2/rules_cc-0.1.2.tar.gz",
     )
     maybe(
         http_archive,
