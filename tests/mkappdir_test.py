@@ -94,13 +94,13 @@ def test_to_pseudofile_def_lines() -> None:
             "a": "d 755 0 0",
             "a/b": "d 755 0 0",
             "a/b/c": "d 755 0 0",
-            "a/b/c/d": f'l "{base}/dir/space file"',
+            "a/b/c/d": f'h "{base}/dir/space file"',
         }
-        assert mkdef(src, Path("dst"), True) == {"dst": f'l "{base}/dir/space file"'}
+        assert mkdef(src, Path("dst"), True) == {"dst": f'h "{base}/dir/space file"'}
         assert mkdef(dangling, Path("dst"), True) == {"dst": "s 0 0 0 ../invalid"}
         assert mkdef(dangling, Path("dst"), False) == {"dst": "s 0 0 0 ../invalid"}
         assert mkdef(link, Path("dst"), True) == {"dst": "s 0 0 0 dir/space file"}
-        assert mkdef(link, Path("dst"), False) == {"dst": f'l "{base}/dir/space file"'}
+        assert mkdef(link, Path("dst"), False) == {"dst": f'h "{base}/dir/space file"'}
 
 
 if __name__ == "__main__":
