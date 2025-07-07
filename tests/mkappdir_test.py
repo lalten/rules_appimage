@@ -88,19 +88,17 @@ def test_to_pseudofile_def_lines() -> None:
         link = Path("space link")
         link.symlink_to(src)
 
-        base = Path(tmp_dir).resolve()  # this is needed for macOS, which prefixes /private
-
         assert mkdef(src, Path("a/b/c/d"), True) == {
             "a": "d 755 0 0",
             "a/b": "d 755 0 0",
             "a/b/c": "d 755 0 0",
-            "a/b/c/d": f'h "{base}/dir/space file"',
+            "a/b/c/d": 'h "dir/space file"',
         }
-        assert mkdef(src, Path("dst"), True) == {"dst": f'h "{base}/dir/space file"'}
+        assert mkdef(src, Path("dst"), True) == {"dst": 'h "dir/space file"'}
         assert mkdef(dangling, Path("dst"), True) == {"dst": "s 0 0 0 ../invalid"}
         assert mkdef(dangling, Path("dst"), False) == {"dst": "s 0 0 0 ../invalid"}
         assert mkdef(link, Path("dst"), True) == {"dst": "s 0 0 0 dir/space file"}
-        assert mkdef(link, Path("dst"), False) == {"dst": f'h "{base}/dir/space file"'}
+        assert mkdef(link, Path("dst"), False) == {"dst": 'h "space link"'}
 
 
 if __name__ == "__main__":
