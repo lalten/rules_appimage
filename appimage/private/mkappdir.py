@@ -149,7 +149,7 @@ def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> di
     Pseudo file definition formats used here:
     "filename d mode uid gid"               create a directory
     "filename f mode uid gid command"       create file from stdout of command
-    "filename l filename"                   create file from copy (hard-link) of filename
+    "filename h filename"                   create file from copy (hard-link) of filename
     "filename s mode uid gid symlink"       create a symbolic link (mode is ignored)
     """
     operations = {dir.as_posix(): "d 755 0 0" for dir in get_all_parent_dirs(dst)}
@@ -160,7 +160,7 @@ def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> di
     ):
         operations[dst.as_posix()] = f"s 0 0 0 {src.readlink()}"
     elif src.is_file():
-        operations[dst.as_posix()] = f'l "{src.resolve()}"'
+        operations[dst.as_posix()] = f'h "{src}"'
     elif src.is_dir():
         operations[dst.as_posix()] = f"d {src.lstat().st_mode & 0o777:o} 0 0"
     elif not src.exists():
@@ -370,7 +370,7 @@ def write_appdir_pseudofile_defs(manifest: Path, apprun: Path, runfiles_manifest
     """Write a mksquashfs pf file representing the AppDir."""
     pseudofile_defs = make_appdir_pseudofile_defs(manifest, runfiles_manifest)
     lines = [
-        f"AppRun l {apprun.resolve()}",
+        f"AppRun h {apprun}",
         *sorted(f'"{k}" {v}' for k, v in pseudofile_defs.items()),
         "",
     ]
