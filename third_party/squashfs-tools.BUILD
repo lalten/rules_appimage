@@ -1,30 +1,39 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 _COPTS = [
-    "-O2",  # squashfs-tools/Makefile#L219
     "-std=gnu17",  # GNU extensions are at play
     "-pthread",
-    "--no-warnings",  # We don't care about third-party warnings
 ]
 
 _LINKOPTS = [
     "-lpthread",
 ]
 
+_COMPRESSORS = [
+    "gzip",
+    "lz4",
+    "xz",
+    "zstd",
+    # "lzo",  # Not available on BCR yet
+]
+
 _DEFINES = [
     'COMP_DEFAULT=\\"gzip\\"',
+    'COMPRESSORS=\\"' + "\\n".join(_COMPRESSORS) + '\\"',
     'DATE=\\"redacted\\"',
+    'DECOMPRESSORS=\\"' + "\\n".join(_COMPRESSORS) + '\\"',
     'VERSION=\\"redacted\\"',
     'YEAR=\\"redacted\\"',
     "_FILE_OFFSET_BITS=64",
     "_GNU_SOURCE",
     "_LARGEFILE_SOURCE",
-    "GZIP_SUPPORT",
-    "REPRODUCIBLE_DEFAULT",
+    "SMALL_READER_THREADS=4",
+    "BLOCK_READER_THREADS=4",
+    "MAX_READER_THREADS=1024",
     "XATTR_DEFAULT",
     "XATTR_SUPPORT",
-    "ZSTD_SUPPORT",
-]
+    "XATTR_OS_SUPPORT",
+] + [compressor.upper() + "_SUPPORT" for compressor in _COMPRESSORS]
 
 cc_library(
     name = "common",
@@ -36,17 +45,20 @@ cc_library(
         exclude = [
             "mksquashfs.c",
             "unsquash*",
-            "lz4*",
-            "lzma*",
-            "lzo*",
-            "xz*",
+            "lzo_wrapper.*",
+            "lzma_wrapper.c",  # using lzma_xz_wrapper instead
+            "xz_wrapper_extended.c",
         ],
     ),
     hdrs = ["squashfs_fs.h"],
     copts = _COPTS,
-    defines = _DEFINES,
     linkopts = _LINKOPTS,
+    local_defines = _DEFINES,
     deps = [
+        "@lz4",
+        "@lz4//:lz4_hc",
+        "@xz",
+        "@xz//:lzma",
         "@zlib",
         "@zstd",
     ],
@@ -60,8 +72,8 @@ cc_binary(
         "mksquashfs_error.h",
     ],
     copts = _COPTS,
-    defines = _DEFINES,
     linkopts = _LINKOPTS,
+    local_defines = _DEFINES,
     visibility = ["//visibility:public"],
     deps = [":common"],
 )
@@ -70,8 +82,8 @@ cc_binary(
     name = "unsquashfs",
     srcs = glob(["unsquash*"]),
     copts = _COPTS,
-    defines = _DEFINES,
     linkopts = _LINKOPTS,
+    local_defines = _DEFINES,
     visibility = ["//visibility:public"],
     deps = [":common"],
 )
