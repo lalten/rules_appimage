@@ -1,4 +1,4 @@
-""" Toolchain for the AppImage runtime """
+"""Toolchain for the AppImage runtime."""
 
 def _appimage_toolchain_impl(ctx):
     return [platform_common.ToolchainInfo(

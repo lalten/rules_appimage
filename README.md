@@ -30,6 +30,8 @@ rules_appimage aims to be compatible and test with the last two [Bazel LTS relea
 
 ### Usage
 
+See the [rule documentation](docs/defs.md).
+
 There is an example workspace in [`examples/`](https://github.com/lalten/rules_appimage/blob/main/examples/README.md).
 
 To package a binary target into an AppImage, add an `appimage` rule in a `BUILD` file and point it at the target.
