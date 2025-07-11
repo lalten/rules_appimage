@@ -1,7 +1,31 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_appimage//appimage:toolchain.bzl", "appimage_toolchain")
 load("//:deps.bzl", "ARCHS")
-load("toolchain.bzl", "appimage_toolchain")
 
 package(default_visibility = ["//visibility:public"])
+
+bzl_library(
+    name = "defs",
+    srcs = ["defs.bzl"],
+    deps = [
+        ":appimage",
+        ":toolchain",
+    ],
+)
+
+bzl_library(
+    name = "appimage",
+    srcs = ["appimage.bzl"],
+    deps = [
+        "//appimage/private:mkapprun",
+        "//appimage/private:runfiles",
+    ],
+)
+
+bzl_library(
+    name = "toolchain",
+    srcs = ["toolchain.bzl"],
+)
 
 toolchain_type(name = "appimage_toolchain_type")
 
