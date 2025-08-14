@@ -100,9 +100,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "rules_cc",
-        sha256 = "d62624b45e0912713dcd3b8e30ba6ae55418ed6bf99e6d135cd61b8addae312b",
-        strip_prefix = "rules_cc-0.1.2",
-        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.1.2/rules_cc-0.1.2.tar.gz",
+        sha256 = "ae244f400218f4a12ee81658ff246c0be5cb02c5ca2de5519ed505a6795431e9",
+        strip_prefix = "rules_cc-0.2.0",
+        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.2.0/rules_cc-0.2.0.tar.gz",
     )
     maybe(
         http_archive,
