@@ -36,7 +36,7 @@ def _rules_appimage_workspace_deps():
         build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
         sha256 = "f1605ef720aa0b23939a49ef4491f6e734333ccc4bda4324d330da647e105328",
         strip_prefix = "squashfs-tools-4.7/squashfs-tools",
-        url = "https://github.com/plougher/squashfs-tools/releases/download/4.7/squashfs-tools-4.7.tar.gz",
+        url = "https://github.com/plougher/squashfs-tools/releases/download/4.7.2/squashfs-tools-4.7.tar.gz",
     )
 
     # zlib is a dep of squashfs-tools
