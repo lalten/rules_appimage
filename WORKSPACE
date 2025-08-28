@@ -35,7 +35,7 @@ oci_pull(
 
 oci_pull(
     name = "distroless-cc",
-    digest = "sha256:ab14dfad5239a33d5a413a9c045803d71717e4c44c01c62a8073732e5c9cc1e1",  # "debug-nonroot" as of 2025-03-03
+    digest = "sha256:d4e8c4c18626ce7c09104d3b39d9e5541ced61de7fb398a455cb09ae5a7b3598",  # "debug-nonroot" as of 2025-03-03
     image = "gcr.io/distroless/cc-debian12",
     platforms = ["linux/amd64"],
 )
