@@ -93,9 +93,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "aspect_bazel_lib",
-        sha256 = "3522895fa13b97e8b27e3b642045682aa4233ae1a6b278aad6a3b483501dc9f2",
-        strip_prefix = "bazel-lib-2.20.0",
-        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.20.0/bazel-lib-v2.20.0.tar.gz",
+        sha256 = "f525668442e4b19ae10d77e0b5ad15de5807025f321954dfb7065c0fe2429ec1",
+        strip_prefix = "bazel-lib-2.21.1",
+        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.1/bazel-lib-v2.21.1.tar.gz",
     )
     maybe(
         http_archive,
