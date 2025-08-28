@@ -93,9 +93,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "aspect_bazel_lib",
-        sha256 = "3522895fa13b97e8b27e3b642045682aa4233ae1a6b278aad6a3b483501dc9f2",
-        strip_prefix = "bazel-lib-2.20.0",
-        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.20.0/bazel-lib-v2.20.0.tar.gz",
+        sha256 = "f525668442e4b19ae10d77e0b5ad15de5807025f321954dfb7065c0fe2429ec1",
+        strip_prefix = "bazel-lib-2.21.1",
+        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.1/bazel-lib-v2.21.1.tar.gz",
     )
     maybe(
         http_archive,
@@ -114,9 +114,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "rules_shell",
-        sha256 = "99bfc7aaefd1ed69613bbd25e24bf7871d68aeafca3a6b79f5f85c0996a41355",
-        strip_prefix = "rules_shell-0.5.1",
-        url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.5.1/rules_shell-v0.5.1.tar.gz",
+        sha256 = "fce2a7a974aa70e9367068122e19c39a6a27a5aca30698bcf9030beb529612b6",
+        strip_prefix = "rules_shell-0.6.0",
+        url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.6.0/rules_shell-v0.6.0.tar.gz",
     )
     maybe(
         http_archive,
