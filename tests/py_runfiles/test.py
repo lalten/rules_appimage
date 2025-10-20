@@ -21,6 +21,7 @@ def test_dir_based() -> None:
     repo_mapping = r.Rlocation("_repo_mapping")
     assert repo_mapping is not None, "repo_mapping not found"
     assert Path(repo_mapping).is_file(), f"_repo_mapping not found at {repo_mapping}"
+    assert repo_mapping.endswith("test.runfiles/_repo_mapping"), f"_repo_mapping at unexpected path {repo_mapping}"
 
     file = r.Rlocation("appimage_runtime_aarch64/file/downloaded")
     assert file is not None, "runfile not found"
