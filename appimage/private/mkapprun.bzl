@@ -59,6 +59,14 @@ def _make_apprun_setup_content(ctx):
     apprun_lines.append('BUILD_WORKING_DIRECTORY="${BUILD_WORKING_DIRECTORY=$OWD}"')
     apprun_lines.append("export BUILD_WORKING_DIRECTORY")
 
+    # Some environment variables set by Bazel at runtime that interfere with runfiles resolution need to be unset.
+    # This can be important when running an AppImage under Bazel (e.g. for integration tests)
+    # https://github.com/bazelbuild/bazel/blob/8.4.2/src/main/java/com/google/devtools/build/lib/runtime/commands/RunCommand.java#L193
+    apprun_lines.append("unset JAVA_RUNFILES")
+    apprun_lines.append("unset RUNFILES_MANIFEST_FILE")
+    apprun_lines.append("unset RUNFILES_MANIFEST_ONLY")
+    apprun_lines.append("unset TEST_SRCDIR")
+
     # Explicitly set RUNFILES_DIR to the runfiles dir of the binary instead of the appimage rule itself
     apprun_lines.append('thisdir="${0%/*}"')  # Same as "$(dirname "$0")"
     apprun_lines.append('workdir="$thisdir/%s"' % get_workdir(ctx))
