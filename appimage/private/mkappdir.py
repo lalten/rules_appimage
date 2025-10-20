@@ -316,6 +316,15 @@ def make_appdir_pseudofile_defs(manifest: Path, runfiles_manifest: Path) -> dict
     runfiles_manifest_dst = manifest_data.files_to_run.runfiles_manifest_short_path
     manifest_data.files.append(_ManifestCopy(src=runfiles_manifest.as_posix(), dst=runfiles_manifest_dst))
 
+    # Runfiles libraries will look for a file named "_repo_mapping" at the root of the runfiles dir.
+    repo_mapping_linkname = Path(manifest_data.files_to_run.runfiles_manifest_short_path).with_name("_repo_mapping")
+    manifest_data.relative_symlinks.append(
+        _ManifestLink(
+            linkname=repo_mapping_linkname.as_posix(),
+            target=f"../{manifest_data.files_to_run.repo_mapping_basename}",
+        )
+    )
+
     operations: dict[str, str] = {}
 
     for empty_file in manifest_data.empty_files:
