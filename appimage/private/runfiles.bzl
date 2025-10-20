@@ -137,6 +137,8 @@ def collect_runfiles_info(ctx):
         # For @foo//bar/baz:blah this would translate to /app/bar/baz/blah.runfiles/foo/external
         # This is needed until --nolegacy_external_runfiles is not supported anymore
         _reference_dir(ctx) + "/external": _runfiles_dir(ctx),
+        # Symlink the _repo_mapping so that runfiles libraries can find it
+        _runfiles_dir(ctx) + "/_repo_mapping": repo_mapping.short_path,
     })
 
     runfiles_manifest = ctx.attr.binary[DefaultInfo].files_to_run.runfiles_manifest
