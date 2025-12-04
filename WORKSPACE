@@ -28,7 +28,7 @@ load("@rules_oci//oci:pull.bzl", "oci_pull")
 # Keep in sync with MODULE.bazel
 oci_pull(
     name = "python3-slim",
-    digest = "sha256:69ce3aed05675d284bee807e7c45e560e98db21fb1e4c670252b4ee0f2496b6d",  # "3.12-slim" as of 2025-01-25
+    digest = "sha256:595140b768992c05b096570e5ae487a02a2c6b3ae23ba33ce0fc34b99579c98e",  # "3.12-slim" as of 2025-01-25
     image = "docker.io/library/python",
     platforms = ["linux/amd64"],
 )
