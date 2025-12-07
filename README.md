@@ -165,7 +165,7 @@ There are a few other good ways to get you application and all its runfiles into
   Will always extract runfiles, no way to mount them like appimages do with squashfuse.
   No Bazel rules, but a CLI tool that could be used in a `genrule`.
   Check out @alloveras's talk at BazelCon 2023!
-- https://github.com/blaizard/rules_bundle: Same goal, uses a custom runtime that self-extracts (i.e no self-mounting)
+- <https://github.com/blaizard/rules_bundle>: Same goal, uses a custom runtime that self-extracts (i.e no self-mounting)
 
 ## Contributing
 
