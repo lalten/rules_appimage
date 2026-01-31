@@ -113,6 +113,9 @@ appimage_test(
         ":appimage_data_filegroup",
     ],
     env = {"APPIMAGE_EXTRACT_AND_RUN": "1"},  # Another way to run if no libfuse2 is available
+    #  Tagging this no-remote because the Buildbuddy Remote Execution on the BCR CI complains:
+    #  AppImage tests/appimage_test_py failed: Exec failed due to IOException: The file type of 'tests/dir/link_to_bin_sh' is not supported.
+    tags = ["no-remote"],
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -129,6 +132,9 @@ appimage(
         "appimage data file.txt",
         ":appimage_data_filegroup",
     ],
+    #  Tagging this no-remote because the Buildbuddy Remote Execution on the BCR CI complains:
+    #  AppImage tests/appimage_py failed: Exec failed due to IOException: The file type of 'tests/dir/link_to_bin_sh' is not supported.
+    tags = ["no-remote"],
 )
 
 py_test(

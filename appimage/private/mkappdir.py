@@ -58,6 +58,9 @@ def relative_path(target: Path, origin: Path) -> Path:
     try:
         return target.resolve().relative_to(origin.resolve())
     except ValueError:  # target does not start with origin
+        if origin.parent == origin:
+            # We've reached "/" or "." - the target will now always be relative
+            return target
         return Path("..").joinpath(relative_path(target, origin.parent))
 
 

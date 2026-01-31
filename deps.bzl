@@ -34,9 +34,9 @@ def _rules_appimage_workspace_deps():
         http_archive,
         name = "squashfs-tools",
         build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
-        sha256 = "4672b5c47d9418d3a5ae5b243defc6d9eae8275b9771022247c6a6082c815914",
-        strip_prefix = "squashfs-tools-4.7.2/squashfs-tools",
-        url = "https://github.com/plougher/squashfs-tools/releases/download/4.7.2/squashfs-tools-4.7.2.tar.gz",
+        sha256 = "91c49f9a1ed972ad00688a38222119e2baf49ba74cf5fda05729a79d7d59d335",
+        strip_prefix = "squashfs-tools-4.7.4/squashfs-tools",
+        url = "https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz",
     )
 
     # zlib is a dep of squashfs-tools
@@ -63,9 +63,9 @@ def _rules_appimage_workspace_deps():
     maybe(
         http_archive,
         name = "rules_python",
-        sha256 = "0a1cefefb4a7b550fb0b43f54df67d6da95b7ba352637669e46c987f69986f6a",
-        strip_prefix = "rules_python-1.5.3",
-        url = "https://github.com/bazelbuild/rules_python/releases/download/1.5.3/rules_python-1.5.3.tar.gz",
+        sha256 = "f609f341d6e9090b981b3f45324d05a819fd7a5a56434f849c761971ce2c47da",
+        strip_prefix = "rules_python-1.7.0",
+        url = "https://github.com/bazelbuild/rules_python/releases/download/1.7.0/rules_python-1.7.0.tar.gz",
     )
 
 def rules_appimage_development_deps():
@@ -75,34 +75,34 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "bazel_features",
-        sha256 = "c41853e3b636c533b86bf5ab4658064e6cc9db0a3bce52cbff0629e094344ca9",
-        strip_prefix = "bazel_features-1.33.0",
-        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.33.0/bazel_features-v1.33.0.tar.gz",
+        sha256 = "adc8ddf121917f197f75c5245dfa8d7b1619f10a1002e25062b093b7957f2798",
+        strip_prefix = "bazel_features-1.37.0",
+        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.37.0/bazel_features-v1.37.0.tar.gz",
     )
 
     # jq.bzl is needed by aspect_bazel_lib
     maybe(
         http_archive,
         name = "jq.bzl",
-        sha256 = "7b63435aa19cc6a0cfd1a82fbdf2c7a2f0a94db1a79ff7a4469ffa94286261ab",
-        strip_prefix = "jq.bzl-0.1.0",
-        url = "https://github.com/bazel-contrib/jq.bzl/releases/download/v0.1.0/jq.bzl-v0.1.0.tar.gz",
+        sha256 = "21617eb71fb775a748ef5639131ab943ef39946bd2a4ce96ea60b03f985db0c5",
+        strip_prefix = "jq.bzl-0.4.0",
+        url = "https://github.com/bazel-contrib/jq.bzl/releases/download/v0.4.0/jq.bzl-v0.4.0.tar.gz",
     )
 
     # aspect_bazel_lib is needed by rules_pycross (which is not used by tests in WORKSPACE) and with_cfg.bzl
     maybe(
         http_archive,
         name = "aspect_bazel_lib",
-        sha256 = "f525668442e4b19ae10d77e0b5ad15de5807025f321954dfb7065c0fe2429ec1",
-        strip_prefix = "bazel-lib-2.21.1",
-        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.1/bazel-lib-v2.21.1.tar.gz",
+        sha256 = "53cadea9109e646a93ed4dc90c9bbcaa8073c7c3df745b92f6a5000daf7aa3da",
+        strip_prefix = "bazel-lib-2.21.2",
+        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.2/bazel-lib-v2.21.2.tar.gz",
     )
     maybe(
         http_archive,
         name = "rules_cc",
-        sha256 = "ae244f400218f4a12ee81658ff246c0be5cb02c5ca2de5519ed505a6795431e9",
-        strip_prefix = "rules_cc-0.2.0",
-        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.2.0/rules_cc-0.2.0.tar.gz",
+        sha256 = "472ddca8cec1e64ad78e4f0cabbec55936a3baddbe7bef072764ca91504bd523",
+        strip_prefix = "rules_cc-0.2.13",
+        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.2.13/rules_cc-0.2.13.tar.gz",
     )
     maybe(
         http_archive,
@@ -114,16 +114,16 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "rules_shell",
-        sha256 = "fce2a7a974aa70e9367068122e19c39a6a27a5aca30698bcf9030beb529612b6",
-        strip_prefix = "rules_shell-0.6.0",
-        url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.6.0/rules_shell-v0.6.0.tar.gz",
+        sha256 = "e6b87c89bd0b27039e3af2c5da01147452f240f75d505f5b6880874f31036307",
+        strip_prefix = "rules_shell-0.6.1",
+        url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.6.1/rules_shell-v0.6.1.tar.gz",
     )
     maybe(
         http_archive,
         name = "rules_testing",
-        sha256 = "89feaf18d6e2fc07ed7e34510058fc8d48e45e6d2ff8a817a718e8c8e4bcda0e",
-        strip_prefix = "rules_testing-0.8.0",
-        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.8.0/rules_testing-v0.8.0.tar.gz",
+        sha256 = "281b69eed71e2b95cefc284ee5a1a9f7c5088141b58f2508be910eb22f13b986",
+        strip_prefix = "rules_testing-0.9.0",
+        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.9.0/rules_testing-v0.9.0.tar.gz",
     )
     maybe(
         http_archive,
