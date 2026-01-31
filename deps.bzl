@@ -135,7 +135,7 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "container_structure_test",
-        sha256 = "c91a76f7b4949775941f8308ee7676285555ae4756ec1ec990c609c975a55f93",
-        strip_prefix = "container-structure-test-1.19.3",
-        url = "https://github.com/GoogleContainerTools/container-structure-test/archive/refs/tags/v1.19.3.tar.gz",
+        sha256 = "186bb1493ebb3c597e53b2a7abd5460c683c63d404e44a64223d26bb3315841d",
+        strip_prefix = "container-structure-test-1.22.1",
+        url = "https://github.com/GoogleContainerTools/container-structure-test/archive/refs/tags/v1.22.1.tar.gz",
     )
