@@ -44,11 +44,11 @@ jobs:
           os: macos
           external_dependency_system: bzlmod
           flags:
-        - bazel-version: rolling
+        - bazel-version: 9.x
           os: ubuntu
           external_dependency_system: bzlmod
           flags:
-        - bazel-version: rolling
+        - bazel-version: 9.x
           os: macos
           external_dependency_system: bzlmod
           flags:
@@ -72,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [7.x, 8.x, rolling]
+        bazel-version: [7.x, 8.x, 9.x]
     steps:
     - uses: actions/checkout@v4
     - run: examples/integration_test.sh
