@@ -129,7 +129,7 @@ def collect_runfiles_info(ctx):
     symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
     symlinks = {_final_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in symlinks_list}
     root_symlinks_list = depset(transitive = [_default_root_symlinks(ctx.attr.binary)] + [_default_root_symlinks(d) for d in ctx.attr.data]).to_list()
-    symlinks.update({sl.path: sl.target for sl in root_symlinks_list})
+    symlinks.update({sl.path: sl.target_file for sl in root_symlinks_list})
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.
         get_entrypoint(ctx): _final_file_path(ctx, ctx.executable.binary),
