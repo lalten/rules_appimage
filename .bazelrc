@@ -3,7 +3,8 @@ build --bes_results_url=https://app.buildbuddy.io/invocation/
 build --color=yes
 build --incompatible_strict_action_env
 build --keep_going
-build --remote_cache=grpcs://remote.buildbuddy.io
+common --remote_cache=grpcs://remote.buildbuddy.io
+common --remote_cache_compression
 build --remote_header=x-buildbuddy-api-key=0LJeHmVUer32UyTzco3I # Public readonly key # pragma: allowlist secret
 build --remote_timeout=3600
 build --strategy CopyToDirectory=standalone  # Work around "Copying files to directory rules_oci~~oci~python3-slim_linux_amd64/layout failed"
