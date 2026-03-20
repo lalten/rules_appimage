@@ -44,6 +44,14 @@ jobs:
           os: macos
           external_dependency_system: bzlmod
           flags:
+        - bazel-version: 9.x
+          os: ubuntu
+          external_dependency_system: bzlmod
+          flags:
+        - bazel-version: 9.x
+          os: macos
+          external_dependency_system: bzlmod
+          flags:
     steps:
     - uses: actions/checkout@v4
     - name: Use BuildBuddy RW API key instead of public readonly key
@@ -64,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel-version: [7.x, 8.x]
+        bazel-version: [7.x, 8.x, 9.x]
     steps:
     - uses: actions/checkout@v4
     - run: examples/integration_test.sh
