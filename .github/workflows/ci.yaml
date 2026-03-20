@@ -53,7 +53,7 @@ jobs:
           external_dependency_system: bzlmod
           flags:
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Use BuildBuddy RW API key instead of public readonly key
       run: sed -i.bak 's#x-buildbuddy-api-key=.*#x-buildbuddy-api-key=${{ env.BUILDBUDDY_RW_API_KEY }}#' .bazelrc
       if: ${{ env.BUILDBUDDY_RW_API_KEY }}
@@ -74,17 +74,17 @@ jobs:
       matrix:
         bazel-version: [7.x, 8.x, 9.x]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - run: examples/integration_test.sh
   determinism:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - run: tests/determinism/reproducible_shas.sh
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v6
     - uses: pre-commit/action@v3.0.1
   required:
