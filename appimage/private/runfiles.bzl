@@ -132,7 +132,7 @@ def collect_runfiles_info(ctx):
     # Handle symlinks. See https://bazel.build/extending/rules#runfiles_symlinks
     symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
     symlinks = {_final_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in symlinks_list}
-    
+
     root_symlinks_list = depset(transitive = [_default_root_symlinks(ctx.attr.binary)] + [_default_root_symlinks(d) for d in ctx.attr.data]).to_list()
     symlinks.update({_final_root_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in root_symlinks_list})
 
