@@ -79,6 +79,10 @@ def _final_symlink_path(ctx, sl):
     """The final location that this symlink needs to exist at for the foo_binary target to properly execute."""
     return "/".join([_reference_dir(ctx), sl.path])
 
+def _final_root_symlink_path(ctx, sl):
+    """The final location that this root symlink needs to exist at for the foo_binary target to properly execute."""
+    return "/".join([_runfiles_dir(ctx), sl.path])
+
 def _default_runfiles(dep):
     return dep[DefaultInfo].default_runfiles.files
 
@@ -128,8 +132,15 @@ def collect_runfiles_info(ctx):
     # Handle symlinks. See https://bazel.build/extending/rules#runfiles_symlinks
     symlinks_list = depset(transitive = [_default_symlinks(ctx.attr.binary)] + [_default_symlinks(d) for d in ctx.attr.data]).to_list()
     symlinks = {_final_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in symlinks_list}
+
     root_symlinks_list = depset(transitive = [_default_root_symlinks(ctx.attr.binary)] + [_default_root_symlinks(d) for d in ctx.attr.data]).to_list()
-    symlinks.update({sl.path: sl.target_file for sl in root_symlinks_list})
+    symlinks.update({_final_root_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in root_symlinks_list})
+
+    # Root symlink target files may not be in default_runfiles.files, must ensure they're in the file map.
+    root_symlink_files = [sl.target_file for sl in root_symlinks_list]
+    for rslf in root_symlink_files:
+        file_map.setdefault(rslf.path, _final_file_path(ctx, rslf))
+
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.
         get_entrypoint(ctx): _final_file_path(ctx, ctx.executable.binary),
@@ -153,6 +164,6 @@ def collect_runfiles_info(ctx):
         tree_artifacts = [struct(src = src, dst = dst) for src, dst in tree_artifacts_map.items()],
     )
     return struct(
-        files = runfiles_list + [repo_mapping, runfiles_manifest],
+        files = runfiles_list + root_symlink_files + [repo_mapping, runfiles_manifest],
         manifest = manifest,
     )
