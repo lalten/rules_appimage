@@ -136,6 +136,11 @@ def collect_runfiles_info(ctx):
     root_symlinks_list = depset(transitive = [_default_root_symlinks(ctx.attr.binary)] + [_default_root_symlinks(d) for d in ctx.attr.data]).to_list()
     symlinks.update({_final_root_symlink_path(ctx, sl): _final_file_path(ctx, sl.target_file) for sl in root_symlinks_list})
 
+    # Root symlink target files may not be in default_runfiles.files, must ensure they're in the file map.
+    root_symlink_files = [sl.target_file for sl in root_symlinks_list]
+    for rslf in root_symlink_files:
+        file_map.setdefault(rslf.path, _final_file_path(ctx, rslf))
+
     symlinks.update({
         # Create a symlink from the entrypoint to where it will actually be put under runfiles.
         get_entrypoint(ctx): _final_file_path(ctx, ctx.executable.binary),
@@ -159,6 +164,6 @@ def collect_runfiles_info(ctx):
         tree_artifacts = [struct(src = src, dst = dst) for src, dst in tree_artifacts_map.items()],
     )
     return struct(
-        files = runfiles_list + [repo_mapping, runfiles_manifest],
+        files = runfiles_list + root_symlink_files + [repo_mapping, runfiles_manifest],
         manifest = manifest,
     )
