@@ -1,5 +1,6 @@
 {
   "integrity": "",
   "strip_prefix": "{REPO}-{VERSION}",
-  "url": "https://github.com/{OWNER}/{REPO}/releases/download/{TAG}/{REPO}-{VERSION}.tar.gz"
+  "url": "https://github.com/{OWNER}/{REPO}/releases/download/{TAG}/{REPO}-{VERSION}.tar.gz",
+  "docs_url": "https://github.com/{OWNER}/{REPO}/releases/download/{TAG}/{REPO}-{TAG}.docs.tar.gz"
 }
