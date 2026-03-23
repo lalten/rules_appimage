@@ -34,9 +34,9 @@ def _rules_appimage_workspace_deps():
         http_archive,
         name = "squashfs-tools",
         build_file = "@rules_appimage//third_party:squashfs-tools.BUILD",
-        sha256 = "91c49f9a1ed972ad00688a38222119e2baf49ba74cf5fda05729a79d7d59d335",
-        strip_prefix = "squashfs-tools-4.7.4/squashfs-tools",
-        url = "https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz",
+        sha256 = "547b7b7f4d2e44bf91b6fc554664850c69563701deab9fd9cd7e21f694c88ea6",
+        strip_prefix = "squashfs-tools-4.7.5/squashfs-tools",
+        url = "https://github.com/plougher/squashfs-tools/releases/download/4.7.5/squashfs-tools-4.7.5.tar.gz",
     )
 
     # zlib is a dep of squashfs-tools
