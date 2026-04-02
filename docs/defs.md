@@ -36,7 +36,7 @@ load("@rules_appimage//appimage:defs.bzl", "appimage_test")
 appimage_test(<a href="#appimage_test-name">name</a>, <a href="#appimage_test-data">data</a>, <a href="#appimage_test-binary">binary</a>, <a href="#appimage_test-build_args">build_args</a>, <a href="#appimage_test-env">env</a>)
 </pre>
 
-Package your binary into an AppImage and register it as Bazel test target.
+Package your test target into an AppImage.
 
 **ATTRIBUTES**
 
