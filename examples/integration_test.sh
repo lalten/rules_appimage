@@ -20,3 +20,8 @@ elif [[ $output != "Hello, World!" ]]; then
     echo "Unexpected output: $output"
     exit 1
 fi
+
+rm -rf squashfs-root
+./hello.appimage --appimage-extract
+./squashfs-root/AppRun 
+rm -rf squashfs-root
