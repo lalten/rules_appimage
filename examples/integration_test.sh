@@ -28,6 +28,7 @@ check_output() {
 # Check that the AppImage can be executed and produces the expected output
 check_output ./hello.appimage
 
-# Check that calling the AppRun script inside the AppImage with a relative path produces the expected output
+# Check that calling the AppRun script inside the AppImage with a relative and absolute path produces the expected output
 ./hello.appimage --appimage-extract
 check_output ./squashfs-root/AppRun
+check_output "$(realpath ./squashfs-root/AppRun)"
