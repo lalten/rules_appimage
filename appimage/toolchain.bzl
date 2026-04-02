@@ -10,4 +10,8 @@ appimage_toolchain = rule(
     attrs = {
         "appimage_runtime": attr.label(allow_single_file = True),
     },
+    doc = """Declare an AppImage toolchain wrapping a platform-specific AppImage runtime binary.
+
+A separate toolchain target should be registered for each supported CPU architecture, constrained to the matching platform, so that the `appimage()` rule automatically selects the correct runtime for the target platform.
+""",
 )

@@ -13,7 +13,7 @@ No existing Bazel targets have to be modified.
 The `appimage` rule has been used successfully with `py_binary`, `ruby_binary`, `sh_binary`, and `cc_binary`.
 In fact, any _lang_\_binary should be compatible.
 
-AppImages are executable ELF format files with a static runtime at the front and a compressed SquashFS image containing the application files at the back.
+AppImages are executable ELF files with a static runtime at the front and a compressed SquashFS image containing the application files at the back.
 When run, the runtime will use FUSE to mount the SquashFS image and run the application from there.
 Alternatively, the runtime can extract the files into a temporary directory and run the application from there.
 There is no extra extraction or installation step.
@@ -27,12 +27,9 @@ See also [Alternatives](#alternatives) below.
 See the [latest release notes](https://github.com/lalten/rules_appimage/releases/latest) for a snippet to add to your `MODULE.bazel` or `WORKSPACE`.
 
 rules_appimage aims to be compatible and test with the last two [Bazel LTS releases](https://bazel.build/release) but is likely to work with older versions as well.
+See [CI config](.github/workflows/) for continuously tested versions.
 
 ### Usage
-
-See the [rule documentation](docs/defs.md).
-
-There is an example workspace in [`examples/`](https://github.com/lalten/rules_appimage/blob/main/examples/README.md).
 
 To package a binary target into an AppImage, add an `appimage` rule in a `BUILD` file and point it at the target.
 
@@ -45,9 +42,12 @@ appimage(
 )
 ```
 
-There is also a `appimage_test` rule that takes the same arguments but runs the appimage as a Bazel test target.
+There is also an `appimage_test` rule that takes the same arguments but runs the AppImage as a Bazel test target.
+For more details, see the [rule documentation](docs/defs.md).
 
-## How to run the appimage artifact
+There is also an example workspace in [`examples/`](./examples/README.md).
+
+## Running AppImages
 
 ### Via Bazel
 
@@ -84,8 +84,8 @@ Hello, world!
 
 ### AppImage CLI args
 
-There are certain [AppImage CLI args](https://github.com/AppImage/AppImageKit#command-line-arguments).
-They'll still work. Try `--appimage-help`.
+rules_appimage supports [AppImage CLI args](https://github.com/AppImage/AppImageKit#command-line-arguments).
+Try `--appimage-help`.
 
 ```sh
 ❯ bazel run -- //tests:appimage_py --appimage-version
@@ -97,8 +97,7 @@ AppImage runtime version: https://github.com/lalten/type2-runtime/releases/tag/b
 
 ### `$PWD` is a `Read-only file system`
 
-When the AppImage is run, it will mount contained the SquashFS image via FUSE as read-only file system.
-
+When the AppImage is run, it will mount the contained SquashFS image via FUSE as read-only file system.
 If this causes problems, you can:
 
 - Write to `$BUILD_WORKING_DIRECTORY` instead, which is set by Bazel when running `bazel run`, and set by `rules_appimage` when running as pure AppImage.
@@ -106,9 +105,9 @@ If this causes problems, you can:
 
 ### Missing `fusermount`
 
-rules_appimage builds `type-2 AppImages` using a statically-linked appimage runtime.
+rules_appimage builds [type-2 AppImages](https://github.com/AppImage/type2-runtime) using a statically-linked AppImage runtime.
 The only runtime dependency is either `fusermount` (from fuse2) or `fusermount3` (from fuse3).
-If neither is not available, you'll get an error like this:
+If neither is available, you'll get an error like this:
 
 ```sh
 fuse: failed to exec fusermount3: No such file or directory
@@ -127,7 +126,7 @@ In this case, you can:
 - Run the application with `--appimage-extract-and-run` as the first command-line argument.
 - Set the `APPIMAGE_EXTRACT_AND_RUN` environment variable.
 
-The latter two options will cause the appimage to extract the files instead of mounting them directly.
+The latter two options will cause the AppImage to extract the files instead of mounting them directly.
 This may take slightly longer and consume more disk space.
 
 ### Missing runtime deps
@@ -135,7 +134,7 @@ This may take slightly longer and consume more disk space.
 The AppImage will only be as portable/hermetic/reproducible as the rest of your Bazel build is.
 
 Example: Without a hermetic Python toolchain your target will use the system's Python interpreter.
-If your program needs Python >=3.8 but you run the appimage on a host that uses Python 3.6 by default, you might get an error like this:
+If your program needs Python >=3.8 but you run the AppImage on a host that uses Python 3.6 by default, you might get an error like this:
 
 ```sh
   File "/tmp/appimage_extracted_544993ad2a5919e445b618f1fe009e53/test_py.runfiles/rules_appimage/tests/test.py", line 10
@@ -146,39 +145,23 @@ SyntaxError: invalid syntax
 
 Check <https://thundergolfer.com/bazel/python/2021/06/25/a-basic-python-bazel-toolchain/> if you would like to know more.
 
-### Something isn't right about my appimage, how can I debug?
+### Something isn't right about my AppImage, how can I debug?
 
-An easy way to understand what is happening inside the appimage is to run the application with the `--appimage-extract` cli arg.
+An easy way to inspect what is inside the AppImage is to run it with the `--appimage-extract` CLI arg.
 This will extract the bundled squashfs blob into a `squashfs-root` dir in the current working directory.
 
 You can look at those files and see exactly what's going on.
-In fact, you can even run `squashfs-root/AppRun` and it will run exactly the same as with the packaged appimage.
+In fact, you can even run `squashfs-root/AppRun` and it will run exactly the same as with the packaged AppImage.
 This can be very handy when rebuilding the Bazel target is not the best option but you need to modify a file inside.
 
 ## Alternatives
 
-There are a few other good ways to get you application and all its runfiles into a single portable executable.
+There are a few other good ways to get your application and all its runfiles into a single portable executable.
 
 - python_zip / par_binary / subpar: Only applicable to Python. Needs system Python to extract contained zip on startup, which can be slow for large apps. Bazel's builtin ijar zipper will segfault on very large (multiple GB) runfiles.
 - [Kickoff Launcher](https://github.com/nimbus-build/kickoff):
-  Very similar idea to appimages, but works also for Windows and macOS.
-  Will always extract runfiles, no way to mount them like appimages do with squashfuse.
+  Similar idea to the AppImage runtime, but works also on Windows and macOS.
+  Will always self-extract runfiles, no way to self-mount them like the AppImage runtime.
   No Bazel rules, but a CLI tool that could be used in a `genrule`.
-  Check out @alloveras's talk at BazelCon 2023!
-- <https://github.com/blaizard/rules_bundle>: Same goal, uses a custom runtime that self-extracts (i.e no self-mounting)
-
-## Contributing
-
-Issue reports and pull requests are welcome.
-
-Please test your changes:
-
-```sh
-bazel test //...
-```
-
-And run the [linters/formatters](.github/workflows/ci.yaml):
-
-```sh
-pre-commit run --all-files
-```
+  Check out [@alloveras's talk at BazelCon 2023](https://www.youtube.com/watch?v=Y1e4XgDeE9E&list=PLxNYxgaZ8Rsefrwb_ySGRi_bvQejpO_Tj&index=40)!
+- <https://github.com/blaizard/rules_bundle>: Same goal, uses a custom runtime that self-extracts (i.e no self-mounting) instead of using AppImage.

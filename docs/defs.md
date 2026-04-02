@@ -12,7 +12,7 @@ load("@rules_appimage//appimage:defs.bzl", "appimage")
 appimage(<a href="#appimage-name">name</a>, <a href="#appimage-data">data</a>, <a href="#appimage-binary">binary</a>, <a href="#appimage-build_args">build_args</a>, <a href="#appimage-env">env</a>)
 </pre>
 
-
+Package your binary into an AppImage.
 
 **ATTRIBUTES**
 
@@ -36,7 +36,7 @@ load("@rules_appimage//appimage:defs.bzl", "appimage_test")
 appimage_test(<a href="#appimage_test-name">name</a>, <a href="#appimage_test-data">data</a>, <a href="#appimage_test-binary">binary</a>, <a href="#appimage_test-build_args">build_args</a>, <a href="#appimage_test-env">env</a>)
 </pre>
 
-
+Package your test target into an AppImage.
 
 **ATTRIBUTES**
 
@@ -60,7 +60,9 @@ load("@rules_appimage//appimage:defs.bzl", "appimage_toolchain")
 appimage_toolchain(<a href="#appimage_toolchain-name">name</a>, <a href="#appimage_toolchain-appimage_runtime">appimage_runtime</a>)
 </pre>
 
+Declare an AppImage toolchain wrapping a platform-specific AppImage runtime binary.
 
+A separate toolchain target should be registered for each supported CPU architecture, constrained to the matching platform, so that the `appimage()` rule automatically selects the correct runtime for the target platform.
 
 **ATTRIBUTES**
 
