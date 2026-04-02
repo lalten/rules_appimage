@@ -99,5 +99,5 @@ appimage_test = rule(
     toolchains = ["//appimage:appimage_toolchain_type"],
     doc = """
 Package your binary into an AppImage and register it as Bazel test target.
-""",
+    doc = "Package your test target into an AppImage.",
 )

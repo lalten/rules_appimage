@@ -160,8 +160,8 @@ There are a few other good ways to get your application and all its runfiles int
 
 - python_zip / par_binary / subpar: Only applicable to Python. Needs system Python to extract contained zip on startup, which can be slow for large apps. Bazel's builtin ijar zipper will segfault on very large (multiple GB) runfiles.
 - [Kickoff Launcher](https://github.com/nimbus-build/kickoff):
-  Very similar idea to AppImages, but works also for Windows and macOS.
-  Will always extract runfiles, no way to mount them like AppImages do with squashfuse. <!-- Is this why you prefer AppImage? -->
+  Similar idea to the AppImage runtime, but works also on Windows and macOS.
+  Will always self-extract runfiles, no way to self-mount them like the AppImage runtime.
   No Bazel rules, but a CLI tool that could be used in a `genrule`.
   Check out [@alloveras's talk at BazelCon 2023](https://www.youtube.com/watch?v=Y1e4XgDeE9E&list=PLxNYxgaZ8Rsefrwb_ySGRi_bvQejpO_Tj&index=40)!
 - <https://github.com/blaizard/rules_bundle>: Same goal, uses a custom runtime that self-extracts (i.e no self-mounting) instead of using AppImage.
