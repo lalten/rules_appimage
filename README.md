@@ -45,7 +45,7 @@ appimage(
 There is also an `appimage_test` rule that takes the same arguments but runs the AppImage as a Bazel test target.
 For more details, see the [rule documentation](docs/defs.md).
 
-There is also an example workspace in [`examples/`](https://github.com/lalten/rules_appimage/blob/main/examples/README.md).
+There is also an example workspace in [`examples/`](./examples/README.md).
 
 ## Running AppImages
 
