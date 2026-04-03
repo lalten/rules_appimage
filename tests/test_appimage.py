@@ -16,11 +16,11 @@ _ENV = os.environ.copy()
 _ENV.update({"TMPDIR": _TMPDIR})
 
 EXPECTED_FILE = {
-    "x86_64": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV)",
-    "aarch64": "ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV)",
-    "i386": "ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV)",
-    "armv7l": "ELF 32-bit LSB executable, ARM, version 1 (SYSV)",
-    "arm": "ELF 32-bit LSB executable, ARM, version 1 (SYSV)",
+    "x86_64": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped",
+    "aarch64": "ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped",
+    "i386": "ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, stripped",
+    "armv7l": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
+    "arm": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
 }
 
 FILE_PROGRAM = runfiles.Create().Rlocation("libmagic/file")
