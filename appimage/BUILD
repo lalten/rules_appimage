@@ -4,7 +4,10 @@ load("//:deps.bzl", "ARCHS")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(glob(["*.bzl"]), visibility = ["//docs:__pkg__"])
+exports_files(
+    glob(["*.bzl"]),
+    visibility = ["//docs:__pkg__"],
+)
 
 bzl_library(
     name = "defs",
