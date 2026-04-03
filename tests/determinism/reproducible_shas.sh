@@ -15,12 +15,14 @@ trap 'rm -rf "$tempdir"' EXIT
 bazel query "$query" >"$targets"
 bazel cquery "$query" --output files >"$files"
 
-bazel build --action_env=X=1 --remote_cache= --disk_cache= --target_pattern_file="$targets"
+bazel clean
+bazel build --remote_cache= --disk_cache= --target_pattern_file="$targets" --platforms=//:linux_x86_64
 xargs --arg-file="$files" sha256sum | tee "$tempdir/shas0.txt"
 
 xargs --arg-file="$files" rm -f
 
-bazel build --action_env=X=2 --remote_cache= --disk_cache= --target_pattern_file="$targets"
+bazel clean
+bazel build --remote_cache= --disk_cache= --target_pattern_file="$targets" --platforms=//:linux_x86_64
 xargs --arg-file="$files" sha256sum | tee "$tempdir/shas1.txt"
 
 diff -u "$tempdir/shas0.txt" "$tempdir/shas1.txt"
