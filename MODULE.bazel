@@ -78,7 +78,7 @@ use_repo(lock_repos, "pdm_deps")
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
 oci.pull(
     name = "python3-slim",
-    digest = "sha256:ffebef43892dd36262fa2b042eddd3320d5510a21f8440dce0a650a3c124b51d",  # "3.12-slim" as of 2025-01-25
+    digest = "sha256:fb83750094b46fd6b8adaa80f66e2302ecbe45d513f6cece637a841e1025b4ca",  # "3.14-slim" as of 2026-04-03
     image = "docker.io/library/python",
     platforms = [
         "linux/amd64",
@@ -87,8 +87,8 @@ oci.pull(
 )
 oci.pull(
     name = "distroless-cc",
-    digest = "sha256:ab14dfad5239a33d5a413a9c045803d71717e4c44c01c62a8073732e5c9cc1e1",  # "debug-nonroot" as of 2025-03-03
-    image = "gcr.io/distroless/cc-debian12",
+    digest = "sha256:d47b319b1047dff7cdee335e3e61468f3610fac20060653aabe3786d6ecba621",  # "debug-nonroot" as of 2026-04-03
+    image = "gcr.io/distroless/cc-debian13",
     platforms = [
         "linux/amd64",
         "linux/arm64/v8",
