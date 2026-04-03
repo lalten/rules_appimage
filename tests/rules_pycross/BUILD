@@ -36,4 +36,8 @@ container_structure_test(
     timeout = "short",
     configs = ["test_appimage_isolated.yaml"],
     image = "container_structure_test_image",
+    platform = select({
+        "@platforms//cpu:aarch64": "linux/arm64",
+        "//conditions:default": "linux/amd64",
+    }),
 )

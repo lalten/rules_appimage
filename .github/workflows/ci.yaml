@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
-permissions: read-all
+permissions:
+  contents: read
+  actions: write
 jobs:
   test:
     name: test (${{ matrix.bazel-version }}, ${{ matrix.os }}, ${{ matrix.external_dependency_system }})
@@ -64,10 +66,8 @@ jobs:
           common ${{ matrix.flags }}
 
     # Don't want to bother with hundreds of lines of Workspace setup for the rules_pycross compat test
-    - if: matrix.external_dependency_system == 'workspace' || matrix.os == 'macos'
+    - if: matrix.external_dependency_system == 'workspace'
       run: echo "tests/rules_pycross" >> .bazelignore
-    - if: matrix.os == 'macos'
-      run: echo "tests/cc_runfiles/container" >> .bazelignore
     - run: bazel test //...
   examples:
     runs-on: ubuntu-latest
@@ -94,6 +94,11 @@ jobs:
         bazelisk-cache: true
         repository-cache: true
     - run: tests/determinism/reproducible_shas.sh
+    - if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: determinism-artifacts
+        path: ${{ runner.temp }}/determinism-test/
   lint:
     runs-on: ubuntu-latest
     steps:
