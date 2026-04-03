@@ -36,7 +36,4 @@ bazel build --remote_cache= --disk_cache= --target_pattern_file="$targets" --pla
 xargs --arg-file="$files" sha256sum | tee "$tempdir/shas1.txt"
 archive_outputs "$files" "$tempdir/build1"
 
-mkdir -p "$tempdir/build1"
-xargs --arg-file="$files" -I{} cp {} "$tempdir/build1/"
-
 diff -u "$tempdir/shas0.txt" "$tempdir/shas1.txt"
