@@ -14,7 +14,7 @@ targets="$tempdir/targets"
 files="$tempdir/files"
 
 bazel query "$query" >"$targets"
-bazel cquery "$query" --output files >"$files"
+bazel cquery "$query" --platforms=//:linux_x86_64 --output files >"$files"
 
 bazel clean
 bazel build --remote_cache= --disk_cache= --target_pattern_file="$targets" --platforms=//:linux_x86_64
