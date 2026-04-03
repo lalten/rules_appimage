@@ -2,6 +2,8 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
+exports_files(glob(["*.bzl"]), visibility = ["//docs:__pkg__"])
+
 bzl_library(
     name = "mkapprun",
     srcs = ["mkapprun.bzl"],
