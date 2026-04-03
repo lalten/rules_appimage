@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
-permissions: read-all
+permissions:
+  contents: read
+  actions: write
 jobs:
   test:
     name: test (${{ matrix.bazel-version }}, ${{ matrix.os }}, ${{ matrix.external_dependency_system }})
