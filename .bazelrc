@@ -6,6 +6,7 @@ build --keep_going
 common --remote_cache=grpcs://remote.buildbuddy.io
 common --remote_cache_compression
 common --experimental_remote_downloader=grpcs://remote.buildbuddy.io
+common --experimental_remote_cache_eviction_retries=5
 build --remote_header=x-buildbuddy-api-key=0LJeHmVUer32UyTzco3I # Public readonly key # pragma: allowlist secret
 build --remote_timeout=3600
 build --strategy CopyToDirectory=standalone  # Work around "Copying files to directory rules_oci~~oci~python3-slim_linux_amd64/layout failed"
