@@ -7,7 +7,7 @@
 set -euxo pipefail
 
 query='kind("appimage rule", //...)'
-tempdir="${1:-/tmp/determinism-test}"
+tempdir="${RUNNER_TEMP:-/tmp}/determinism-test"
 rm -rf "$tempdir"
 mkdir -p "$tempdir"
 targets="$tempdir/targets"

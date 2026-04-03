@@ -93,7 +93,7 @@ jobs:
       with:
         bazelisk-cache: true
         repository-cache: true
-    - run: tests/determinism/reproducible_shas.sh "$RUNNER_TEMP/determinism-test"
+    - run: tests/determinism/reproducible_shas.sh
     - if: failure()
       uses: actions/upload-artifact@v4
       with:
