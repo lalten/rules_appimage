@@ -38,14 +38,20 @@ oci_pull(
     name = "python3-slim",
     digest = "sha256:fb83750094b46fd6b8adaa80f66e2302ecbe45d513f6cece637a841e1025b4ca",  # "3.14-slim" as of 2026-04-03
     image = "docker.io/library/python",
-    platforms = ["linux/amd64", "linux/arm64/v8"],
+    platforms = [
+        "linux/amd64",
+        "linux/arm64/v8",
+    ],
 )
 
 oci_pull(
     name = "distroless-cc",
     digest = "sha256:d47b319b1047dff7cdee335e3e61468f3610fac20060653aabe3786d6ecba621",  # "debug-nonroot" as of 2026-04-03
     image = "gcr.io/distroless/cc-debian13",
-    platforms = ["linux/amd64", "linux/arm64/v8"],
+    platforms = [
+        "linux/amd64",
+        "linux/arm64/v8",
+    ],
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
