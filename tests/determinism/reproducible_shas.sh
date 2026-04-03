@@ -16,18 +16,24 @@ files="$tempdir/files"
 bazel query "$query" >"$targets"
 bazel cquery "$query" --platforms=//:linux_x86_64 --output files >"$files"
 
+archive_outputs() {
+  local srcs="$1"
+  local dest="$2"
+  while IFS= read -r file; do
+    target="$dest/$file"
+    mkdir -p "$(dirname "$target")"
+    cp "$file" "$target"
+  done <"$srcs"
+}
+
 bazel clean
 bazel build --remote_cache= --disk_cache= --target_pattern_file="$targets" --platforms=//:linux_x86_64
 xargs --arg-file="$files" sha256sum | tee "$tempdir/shas0.txt"
-
-mkdir -p "$tempdir/build0"
-xargs --arg-file="$files" -I{} mv {} "$tempdir/build0/"
+archive_outputs "$files" "$tempdir/build0"
 
 bazel clean
 bazel build --remote_cache= --disk_cache= --target_pattern_file="$targets" --platforms=//:linux_x86_64
 xargs --arg-file="$files" sha256sum | tee "$tempdir/shas1.txt"
-
-mkdir -p "$tempdir/build1"
-xargs --arg-file="$files" -I{} cp {} "$tempdir/build1/"
+archive_outputs "$files" "$tempdir/build1"
 
 diff -u "$tempdir/shas0.txt" "$tempdir/shas1.txt"
