@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from python.runfiles import runfiles
 
 APPIMAGE = str(Path.cwd() / "tests/appimage_py")
 _TMPDIR = os.environ.get("TEST_TMPDIR", "")
@@ -22,14 +23,15 @@ EXPECTED_FILE = {
     "arm": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
 }
 
+FILE_PROGRAM = runfiles.Create().Rlocation("libmagic/file")
+
 
 def test_file() -> None:
     """Test that the appimage has the expected magic."""
-    cmd = ["file", "--dereference", APPIMAGE]
+    cmd = [FILE_PROGRAM, "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
     uname_arch = platform.uname().machine
-    expected = f"tests/appimage_py: {EXPECTED_FILE[uname_arch]}"
-    assert expected in out
+    assert EXPECTED_FILE[uname_arch] in out
 
 
 def test_run() -> None:
