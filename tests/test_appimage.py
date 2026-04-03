@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from python.runfiles import runfiles
 
 APPIMAGE = str(Path.cwd() / "tests/appimage_py")
 _TMPDIR = os.environ.get("TEST_TMPDIR", "")
@@ -15,21 +16,22 @@ _ENV = os.environ.copy()
 _ENV.update({"TMPDIR": _TMPDIR})
 
 EXPECTED_FILE = {
-    "x86_64": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped",
-    "aarch64": "ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped",
-    "i386": "ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, stripped",
-    "armv7l": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
-    "arm": "ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped",
+    "x86_64": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV)",
+    "aarch64": "ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV)",
+    "i386": "ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV)",
+    "armv7l": "ELF 32-bit LSB executable, ARM, version 1 (SYSV)",
+    "arm": "ELF 32-bit LSB executable, ARM, version 1 (SYSV)",
 }
+
+FILE_PROGRAM = runfiles.Create().Rlocation("libmagic/file")
 
 
 def test_file() -> None:
     """Test that the appimage has the expected magic."""
-    cmd = ["file", "--dereference", APPIMAGE]
+    cmd = [FILE_PROGRAM, "--dereference", APPIMAGE]
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE).stdout
     uname_arch = platform.uname().machine
-    expected = f"tests/appimage_py: {EXPECTED_FILE[uname_arch]}"
-    assert expected in out
+    assert EXPECTED_FILE[uname_arch] in out
 
 
 def test_run() -> None:

@@ -14,6 +14,7 @@ bazel_dep(name = "squashfs-tools", version = "4.7.5")
 
 bazel_dep(name = "bazel_lib", version = "3.2.2", dev_dependency = True)
 bazel_dep(name = "container_structure_test", version = "1.22.1", dev_dependency = True)
+bazel_dep(name = "libmagic", version = "5.46.bcr.4", dev_dependency = True)
 bazel_dep(name = "rules_oci", version = "2.3.0", dev_dependency = True)
 bazel_dep(name = "rules_pkg", version = "1.2.0", dev_dependency = True)
 bazel_dep(name = "rules_pycross", version = "0.8.1", dev_dependency = True)
