@@ -37,7 +37,7 @@ container_structure_test(
     configs = ["test_appimage_isolated.yaml"],
     image = "container_structure_test_image",
     platform = select({
-        "@platforms//cpu:x86_64": "linux/amd64",
         "@platforms//cpu:aarch64": "linux/arm64",
+        "@platforms//cpu:x86_64": "linux/amd64",
     }),
 )
