@@ -21,6 +21,12 @@ bazel_dep(name = "rules_testing", version = "0.9.0", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
 bazel_dep(name = "with_cfg.bzl", version = "0.14.6", dev_dependency = True)
 
+single_version_override(
+    module_name = "stardoc",
+    patches = ["//third_party:stardoc.diff"],  # https://github.com/bazelbuild/stardoc/pull/303
+    version = "0.8.1",
+)
+
 rules_appimage = use_extension("//:extensions.bzl", "appimage_ext_dependencies")
 use_repo(
     rules_appimage,
