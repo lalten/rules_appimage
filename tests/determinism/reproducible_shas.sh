@@ -17,13 +17,13 @@ bazel query "$query" >"$targets"
 bazel cquery "$query" --platforms=//:linux_x86_64 --output files >"$files"
 
 archive_outputs() {
-  local srcs="$1"
-  local dest="$2"
-  while IFS= read -r file; do
-    target="$dest/$file"
-    mkdir -p "$(dirname "$target")"
-    cp "$file" "$target"
-  done <"$srcs"
+    local srcs="$1"
+    local dest="$2"
+    while IFS= read -r file; do
+        target="$dest/$file"
+        mkdir -p "$(dirname "$target")"
+        cp "$file" "$target"
+    done <"$srcs"
 }
 
 bazel clean
