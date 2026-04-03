@@ -10,6 +10,7 @@ sh_binary(
 appimage(
     name = "test.appimage",
     binary = ":entrypoint",
+    target_compatible_with = ["@platforms//os:linux"],
 )
 
 sh_test(
