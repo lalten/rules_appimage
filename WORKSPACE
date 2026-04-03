@@ -54,14 +54,14 @@ py_repositories()
 
 python_register_toolchains(
     name = "rules_appimage_python",
-    python_version = "3.12",
+    python_version = "3.14",
 )
 
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "rules_appimage_py_deps",
-    python_interpreter_target = "@python_3_12_host//:python",
+    python_interpreter_target = "@python_3_14_host//:python",
     requirements_lock = "@rules_appimage//:requirements.txt",
 )
 
