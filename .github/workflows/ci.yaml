@@ -94,6 +94,11 @@ jobs:
         bazelisk-cache: true
         repository-cache: true
     - run: tests/determinism/reproducible_shas.sh
+    - if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: determinism-artifacts
+        path: ${{ runner.temp }}/determinism-test/
   lint:
     runs-on: ubuntu-latest
     steps:
