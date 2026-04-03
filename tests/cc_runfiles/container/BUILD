@@ -57,7 +57,7 @@ container_structure_test(
     image = "container_structure_test_image",
     platform = select({
         "@platforms//cpu:aarch64": "linux/arm64",
-        "@platforms//cpu:x86_64": "linux/amd64",
+        "//conditions:default": "linux/amd64",
     }),
     target_compatible_with = ["@platforms//os:linux"],
 )
