@@ -13,7 +13,7 @@
 new file mode 100644
 --- /dev/null
 +++ stardoc/stardoc_with_diff_test.bzl
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,84 @@
 +load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 +load("@bazel_skylib//rules:write_file.bzl", "write_file")
 +load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
@@ -80,10 +80,8 @@ new file mode 100644
 +    content = ["#!/usr/bin/env bash", "cd ${BUILD_WORKSPACE_DIRECTORY}"]
 +    data = []
 +    for r in native.existing_rules().values():
-+        if r["kind"] == "stardoc":
-+            doc_gen = r["out"]
-+            if doc_gen.startswith(":"):
-+                doc_gen = doc_gen[1:]
++        if r["kind"] == "stardoc_markdown_renderer":
++            doc_gen = r["name"] + ".md"
 +            doc_dest = doc_gen.replace("-docgen.md", ".md")
 +            data.append(doc_gen)
 +            content.append("cp -fv bazel-bin/{0}/{1} {2}".format(docs_folder, doc_gen, doc_dest))
