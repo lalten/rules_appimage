@@ -14,7 +14,7 @@ appimage(<a href="#appimage-name">name</a>, <a href="#appimage-data">data</a>, <
 
 Package your binary into an AppImage.
 
-Inspect intermediate build artifacts with `--output_groups=appimage_debug
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
 
 **ATTRIBUTES**
 
@@ -40,7 +40,7 @@ appimage_test(<a href="#appimage_test-name">name</a>, <a href="#appimage_test-da
 
 Package your test target into an AppImage.
 
-Inspect intermediate build artifacts with `--output_groups=appimage_debug
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
 
 **ATTRIBUTES**
 

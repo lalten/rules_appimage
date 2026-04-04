@@ -92,7 +92,7 @@ appimage = rule(
     doc = """\
 Package your binary into an AppImage.
 
-Inspect intermediate build artifacts with `--output_groups=appimage_debug
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
 """,
 )
 
@@ -104,6 +104,6 @@ appimage_test = rule(
     doc = """\
 Package your test target into an AppImage.
 
-Inspect intermediate build artifacts with `--output_groups=appimage_debug
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
 """,
 )
