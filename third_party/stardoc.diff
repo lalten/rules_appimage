@@ -82,7 +82,7 @@ new file mode 100644
 +    for r in native.existing_rules().values():
 +        if r["kind"] == "stardoc_markdown_renderer":
 +            doc_gen = r["name"] + ".md"
-+            doc_dest = doc_gen.replace("-docgen.md", ".md")
++            doc_dest = "{}/{}".format(docs_folder, doc_gen.replace("-docgen.md", ".md"))
 +            data.append(doc_gen)
 +            content.append("cp -fv bazel-bin/{0}/{1} {2}".format(docs_folder, doc_gen, doc_dest))
 +
