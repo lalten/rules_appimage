@@ -68,7 +68,7 @@ def _make_apprun_setup_content(ctx):
     apprun_lines.append("unset TEST_SRCDIR")
 
     # Explicitly set RUNFILES_DIR to the runfiles dir of the binary instead of the appimage rule itself
-    apprun_lines.append('thisdir="${0%/*}"')  # Same as "$(dirname "$0")"
+    apprun_lines.append('thisdir="$(cd "${0%/*}" && pwd)"')  # Absolute path to the directory containing AppRun
     apprun_lines.append('workdir="$thisdir/%s"' % get_workdir(ctx))
     apprun_lines.append('RUNFILES_DIR="${workdir%/*}"')  # Get parent directory of workdir
     apprun_lines.append("export RUNFILES_DIR")
