@@ -6,6 +6,14 @@ rules_appimage_deps()
 
 rules_appimage_development_deps()
 
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
+
+load("@rules_cc//cc:extensions.bzl", "compatibility_proxy_repo")
+
+compatibility_proxy_repo()
+
 load("@rules_shell//shell:repositories.bzl", "rules_shell_dependencies", "rules_shell_toolchains")
 
 rules_shell_dependencies()
@@ -28,16 +36,22 @@ load("@rules_oci//oci:pull.bzl", "oci_pull")
 # Keep in sync with MODULE.bazel
 oci_pull(
     name = "python3-slim",
-    digest = "sha256:69ce3aed05675d284bee807e7c45e560e98db21fb1e4c670252b4ee0f2496b6d",  # "3.12-slim" as of 2025-01-25
+    digest = "sha256:fb83750094b46fd6b8adaa80f66e2302ecbe45d513f6cece637a841e1025b4ca",  # "3.14-slim" as of 2026-04-03
     image = "docker.io/library/python",
-    platforms = ["linux/amd64"],
+    platforms = [
+        "linux/amd64",
+        "linux/arm64/v8",
+    ],
 )
 
 oci_pull(
     name = "distroless-cc",
-    digest = "sha256:ab14dfad5239a33d5a413a9c045803d71717e4c44c01c62a8073732e5c9cc1e1",  # "debug-nonroot" as of 2025-03-03
-    image = "gcr.io/distroless/cc-debian12",
-    platforms = ["linux/amd64"],
+    digest = "sha256:d47b319b1047dff7cdee335e3e61468f3610fac20060653aabe3786d6ecba621",  # "debug-nonroot" as of 2026-04-03
+    image = "gcr.io/distroless/cc-debian13",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64/v8",
+    ],
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
@@ -46,14 +60,14 @@ py_repositories()
 
 python_register_toolchains(
     name = "rules_appimage_python",
-    python_version = "3.12",
+    python_version = "3.14",
 )
 
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "rules_appimage_py_deps",
-    python_interpreter_target = "@python_3_12_host//:python",
+    python_interpreter_target = "@python_3_14_host//:python",
     requirements_lock = "@rules_appimage//:requirements.txt",
 )
 

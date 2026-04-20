@@ -17,3 +17,7 @@ test --test_env=NO_CLEANUP=1
 test --test_env="PYTEST_ADDOPTS=--color=yes --capture=tee-sys --tb=short --showlocals -ra --verbose --verbose"
 test --test_output=errors
 test --test_verbose_timeout_warnings
+
+common --enable_platform_specific_config
+build:macos --deleted_packages=tests/rules_pycross,tests/cc_runfiles/container
+build:macos --macos_minimum_os=10.15

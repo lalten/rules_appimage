@@ -147,18 +147,55 @@ Check <https://thundergolfer.com/bazel/python/2021/06/25/a-basic-python-bazel-to
 
 ### Something isn't right about my AppImage, how can I debug?
 
+#### Have the AppImage extract itself
+
 An easy way to inspect what is inside the AppImage is to run it with the `--appimage-extract` CLI arg.
+
+```sh
+❯ ./program.appimage --appimage-extract
+```
+
 This will extract the bundled squashfs blob into a `squashfs-root` dir in the current working directory.
 
 You can look at those files and see exactly what's going on.
 In fact, you can even run `squashfs-root/AppRun` and it will run exactly the same as with the packaged AppImage.
 This can be very handy when rebuilding the Bazel target is not the best option but you need to modify a file inside.
 
+#### Inspect intermediate build artifacts
+
+rules_appimage also supports the `appimage_debug` output group.
+This makes intermediate build artifacts available:
+
+```sh
+❯ bazel build --output_groups=appimage_debug //tests:appimage_py
+INFO: Found 1 target...
+Target //tests:appimage_py up-to-date:
+  bazel-bin/tests/appimage_py.manifest.json
+  bazel-bin/tests/appimage_py.runfiles_manifest.txt
+  bazel-bin/tests/appimage_py.pseudofile_defs.txt
+  bazel-bin/tests/appimage_py.sqfs
+```
+
+You can inspect the contents of the squashfs blob with `unsquashfs`:
+
+```sh
+❯ bazel run -- @squashfs-tools//:unsquashfs -f -d `pwd`/squashfs-root `pwd`/bazel-bin/tests/appimage_py.sqfs
+```
+
 ## Alternatives
 
 There are a few other good ways to get your application and all its runfiles into a single portable executable.
 
-- python_zip / par_binary / subpar: Only applicable to Python. Needs system Python to extract contained zip on startup, which can be slow for large apps. Bazel's builtin ijar zipper will segfault on very large (multiple GB) runfiles.
+### Language-specific
+
+- **Python**: `output_group = "python_zip_file"`; [`--build_python_zip`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/config_settings/#build_python_zip)/[`py_zipapp_binary`](https://rules-python.readthedocs.io/en/stable/api/rules_python/python/zipapp/py_zipapp_binary.html#py_zipapp_binary); [subpar `par_binary`](https://github.com/google/subpar): Only applicable to Python. Needs system Python to extract contained zip on startup, which can be slow for large apps. For the Bazel-builtin rule (deprecated) the builtin ijar zipper may segfault on very large (multiple GB) runfiles.
+- **C/C++**: <https://github.com/jondo2010/rules_cc_embed_binary>: Embed runfiles for cc targets. If you don't have complicated (transitive) dependencies and can manage all your runfiles with this you may also achieve a single portable binary.
+- **Rust**: <https://bazelbuild.github.io/rules_rust/rust.html#rust_binary-compile_data> rust_binary with compile_data to embed files via `include_str!` macro
+
+### Generic
+
+- <https://github.com/bazelbuild/rules_pkg>: provides ways to create tar/deb/rpm files that include all runfiles.
+  There have been recurring [issues](https://github.com/bazelbuild/rules_pkg/issues/871) regarding runfiles structure in the past.
 - [Kickoff Launcher](https://github.com/nimbus-build/kickoff):
   Similar idea to the AppImage runtime, but works also on Windows and macOS.
   Will always self-extract runfiles, no way to self-mount them like the AppImage runtime.

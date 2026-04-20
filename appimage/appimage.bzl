@@ -89,7 +89,11 @@ appimage = rule(
     attrs = _ATTRS,
     executable = True,
     toolchains = ["//appimage:appimage_toolchain_type"],
-    doc = "Package your binary into an AppImage.",
+    doc = """\
+Package your binary into an AppImage.
+
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
+""",
 )
 
 appimage_test = rule(
@@ -97,5 +101,9 @@ appimage_test = rule(
     attrs = _ATTRS,
     test = True,
     toolchains = ["//appimage:appimage_toolchain_type"],
-    doc = "Package your test target into an AppImage.",
+    doc = """\
+Package your test target into an AppImage.
+
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
+""",
 )
