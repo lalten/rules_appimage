@@ -70,6 +70,7 @@ jobs:
       run: echo "tests/rules_pycross" >> .bazelignore
     - run: bazel test //...
   examples:
+    name: examples (${{ matrix.bazel-version }}${{ matrix.extra-flags && ', no-dirname' || '' }})
     runs-on: ubuntu-latest
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
@@ -77,6 +78,10 @@ jobs:
       fail-fast: false
       matrix:
         bazel-version: [7.x, 8.x, 9.x]
+        extra-flags: ['']
+        include:
+        - bazel-version: 9.x
+          extra-flags: --no-dirname
     steps:
     - uses: actions/checkout@v6
     - uses: bazel-contrib/setup-bazel@0.19.0
@@ -84,7 +89,7 @@ jobs:
         bazelisk-cache: true
         disk-cache: ${{ github.workflow }}-examples
         repository-cache: true
-    - run: examples/integration_test.sh
+    - run: examples/integration_test.sh ${{ matrix.extra-flags }}
   determinism:
     runs-on: ubuntu-latest
     steps:
