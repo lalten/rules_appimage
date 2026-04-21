@@ -19,5 +19,4 @@ test --test_output=errors
 test --test_verbose_timeout_warnings
 
 common --enable_platform_specific_config
-build:macos --deleted_packages=tests/rules_pycross,tests/cc_runfiles/container
 build:macos --macos_minimum_os=10.15
