@@ -221,6 +221,7 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
             continue
 
         target = src.readlink()
+        first_same_dir_link_target_basename = None
 
         while target.is_symlink() and is_inside_bazel_cache(target):
             # This is a symlink residing inside the Bazel cache. Follow it to find where it actually points.
@@ -231,9 +232,24 @@ def _move_relative_symlinks_in_files_to_their_own_section(manifest_data: _Manife
             # Loop until we find a symlink chain end or a file that is not inside the Bazel cache.
             # Repository rules may have generated a symlink chain that should be be preserved.
             # Example: libfoo.so -> libfoo.so.1 -> libfoo.so.1.0.
-            target = target.readlink()
+            next_target = target.readlink()
+            # Track the first same-directory hop in the Bazel cache. This detects versioned soname
+            # symlink chains created by Bazel rules using ctx.actions.symlink(target_file=...) which
+            # produces absolute symlinks. E.g. libfoo.so -> libfoo.so.1 -> libfoo.so.1.0 where all
+            # three files live in the same output directory but are linked via absolute paths.
+            if (
+                first_same_dir_link_target_basename is None
+                and next_target.is_absolute()
+                and next_target.parent == target.parent
+            ):
+                first_same_dir_link_target_basename = next_target.name
+            target = next_target
 
-        if target.is_symlink():
+        if first_same_dir_link_target_basename is not None:
+            # Detected a versioned soname symlink chain inside the Bazel cache with absolute symlinks.
+            # Reconstruct the relative symlink using just the basename of the first same-dir target.
+            linkdst = Path(first_same_dir_link_target_basename)
+        elif target.is_symlink():
             linkdst = target.readlink()
         else:
             if not target.is_absolute():
