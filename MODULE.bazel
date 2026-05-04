@@ -12,7 +12,7 @@ bazel_dep(name = "rules_python", version = "1.9.0")
 bazel_dep(name = "rules_shell", version = "0.7.1")
 bazel_dep(name = "squashfs-tools", version = "4.7.5")
 
-bazel_dep(name = "bazel_lib", version = "3.2.2", dev_dependency = True)
+bazel_dep(name = "bazel_lib", version = "3.3.1", dev_dependency = True)
 bazel_dep(name = "container_structure_test", version = "1.22.1", dev_dependency = True)
 bazel_dep(name = "libmagic", version = "5.47", dev_dependency = True)
 bazel_dep(name = "rules_oci", version = "2.3.0", dev_dependency = True)
