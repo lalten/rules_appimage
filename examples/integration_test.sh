@@ -9,14 +9,12 @@ bazel build //:hello.appimage
 trap "rm -f hello.appimage; rm -rf squashfs-root" EXIT
 cp -f bazel-bin/hello.appimage .
 
-if [[ ${1:-} == "--no-dirname" ]]; then
-    # Shadow dirname with a shim that fails if called, to verify AppRun doesn't depend on it.
-    shim_dir="$(mktemp -d)"
-    trap 'rm -rf "$shim_dir"; rm -f hello.appimage; rm -rf squashfs-root' EXIT
-    printf '#!/bin/sh\necho "ERROR: dirname must not be called!" >&2\nexit 1\n' >"$shim_dir/dirname"
-    chmod +x "$shim_dir/dirname"
-    export PATH="$shim_dir:$PATH"
-fi
+# Shadow dirname with a shim that fails if called, to verify AppRun doesn't depend on it.
+shim_dir="$(mktemp -d)"
+trap 'rm -rf "$shim_dir"; rm -f hello.appimage; rm -rf squashfs-root' EXIT
+printf '#!/bin/sh\necho "ERROR: dirname must not be called!" >&2\nexit 1\n' >"$shim_dir/dirname"
+chmod +x "$shim_dir/dirname"
+export PATH="$shim_dir:$PATH"
 
 ls -lah hello.appimage
 
