@@ -77,7 +77,7 @@ def _appimage_impl(ctx):
     ]
 
 _ATTRS = {
-    "binary": attr.label(executable = True, cfg = "target"),
+    "binary": attr.label(mandatory = True, executable = True, cfg = "target"),
     "build_args": attr.string_list(),
     "data": attr.label_list(allow_files = True, doc = "Any additional data that will be made available inside the appimage"),
     "env": attr.string_dict(doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests"),
