@@ -1,7 +1,7 @@
 """Rule for creating AppImages."""
 
 load("@rules_appimage//appimage/private:mkapprun.bzl", "make_apprun")
-load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info")
+load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info", "get_merged_env")
 
 MKSQUASHFS_ARGS = [
     "-exit-on-error",
@@ -61,10 +61,7 @@ def _appimage_impl(ctx):
     )
 
     # Take the `binary` env and add the appimage target's env on top of it
-    env = {}
-    if RunEnvironmentInfo in ctx.attr.binary:
-        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
-    env.update(ctx.attr.env)
+    env = get_merged_env(ctx)
 
     return [
         DefaultInfo(
