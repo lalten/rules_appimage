@@ -3,14 +3,42 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
-ARCHS = {"aarch64": "aarch64", "armv7e-m": "armhf", "i386": "i686", "x86_64": "x86_64"}
-
-RUNTIME_SHAS = {
-    "aarch64": "df1dcce6992a23cdf8728e88ed24f71b3c385f6384f3484ff66f45b9c97f00f2",
-    "armhf": "dc6a546bd38a2df4cc6b14b0f2bcf925b0452e8a70d05b6027a631d60d26039b",
-    "i686": "480017cfe6fa81785954c4ea39e4d06bc3b8fc287a55082ae781069c5d399116",
-    "x86_64": "b86ac7572bb0b3ead120b09430a9dbeadde2f76ae54c1e30659cb54992d60ec1",
+# The AppImage runtimes, keyed by the @platforms//cpu constraint name of the target they run on.
+# The key determines the name of the http_file repo (@appimage_runtime_<key>), the name of the
+# toolchain (//appimage:appimage_linux_<key>) and the cpu constraint the toolchain is compatible with.
+ARCHS = {
+    "aarch64": struct(
+        runtime = "aarch64",
+        sha256 = "df1dcce6992a23cdf8728e88ed24f71b3c385f6384f3484ff66f45b9c97f00f2",
+    ),
+    "armv7": struct(
+        runtime = "armhf",
+        sha256 = "dc6a546bd38a2df4cc6b14b0f2bcf925b0452e8a70d05b6027a631d60d26039b",
+    ),
+    "i386": struct(
+        runtime = "i686",
+        sha256 = "480017cfe6fa81785954c4ea39e4d06bc3b8fc287a55082ae781069c5d399116",
+    ),
+    "x86_64": struct(
+        runtime = "x86_64",
+        sha256 = "b86ac7572bb0b3ead120b09430a9dbeadde2f76ae54c1e30659cb54992d60ec1",
+    ),
 }
+
+# Additional @platforms//cpu constraint names that can run the runtime of one of the ARCHS above.
+# These get their own toolchain but reuse the existing repo instead of downloading the same file twice.
+ARCH_ALIASES = {
+    # @platforms//cpu:arm is an alias of :aarch32, a constraint value distinct from :armv7.
+    "arm": "armv7",
+}
+
+def _cpu_archs():
+    """Map every supported @platforms//cpu constraint name to the ARCHS key of the runtime it uses."""
+    cpu_archs = {arch: arch for arch in ARCHS}
+    cpu_archs.update(ARCH_ALIASES)
+    return cpu_archs
+
+CPU_ARCHS = _cpu_archs()
 
 def rules_appimage_deps():
     """Declare http_archive deps needed in the WORKSPACE version of rules_appimage."""
@@ -19,13 +47,13 @@ def rules_appimage_deps():
 
 def rules_appimage_common_deps():
     """Declare http_archive deps needed for both the WORKSPACE and Bzlmod version of rules_appimage."""
-    for arch, runtime_arch in ARCHS.items():
+    for arch, info in ARCHS.items():
         maybe(
             http_file,
             name = "appimage_runtime_" + arch,
             executable = True,
-            sha256 = RUNTIME_SHAS[runtime_arch],
-            urls = ["https://github.com/lalten/type2-runtime/releases/download/build-2022-10-03-c5c7b07/runtime-{}".format(runtime_arch)],
+            sha256 = info.sha256,
+            urls = ["https://github.com/lalten/type2-runtime/releases/download/build-2022-10-03-c5c7b07/runtime-{}".format(info.runtime)],
         )
 
 def _rules_appimage_workspace_deps():
