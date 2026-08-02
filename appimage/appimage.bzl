@@ -1,7 +1,7 @@
 """Rule for creating AppImages."""
 
 load("@rules_appimage//appimage/private:mkapprun.bzl", "make_apprun")
-load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info")
+load("@rules_appimage//appimage/private:runfiles.bzl", "collect_runfiles_info", "get_merged_env")
 
 MKSQUASHFS_ARGS = [
     "-exit-on-error",
@@ -61,10 +61,7 @@ def _appimage_impl(ctx):
     )
 
     # Take the `binary` env and add the appimage target's env on top of it
-    env = {}
-    if RunEnvironmentInfo in ctx.attr.binary:
-        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
-    env.update(ctx.attr.env)
+    env = get_merged_env(ctx)
 
     return [
         DefaultInfo(
@@ -77,8 +74,8 @@ def _appimage_impl(ctx):
     ]
 
 _ATTRS = {
-    "binary": attr.label(executable = True, cfg = "target"),
-    "build_args": attr.string_list(),
+    "binary": attr.label(mandatory = True, executable = True, cfg = "target", doc = "The executable that is packaged and run inside the appimage, e.g. `//path/to:my_binary`"),
+    "build_args": attr.string_list(doc = "Extra arguments passed to `mksquashfs` when building the appimage, e.g. `['-comp', 'xz']`"),
     "data": attr.label_list(allow_files = True, doc = "Any additional data that will be made available inside the appimage"),
     "env": attr.string_dict(doc = "Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests"),
     "_mkappimage": attr.label(default = "//appimage/private:mkappimage", executable = True, cfg = "exec"),
@@ -89,7 +86,11 @@ appimage = rule(
     attrs = _ATTRS,
     executable = True,
     toolchains = ["//appimage:appimage_toolchain_type"],
-    doc = "Package your binary into an AppImage.",
+    doc = """\
+Package your binary into an AppImage.
+
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
+""",
 )
 
 appimage_test = rule(
@@ -97,5 +98,9 @@ appimage_test = rule(
     attrs = _ATTRS,
     test = True,
     toolchains = ["//appimage:appimage_toolchain_type"],
-    doc = "Package your test target into an AppImage.",
+    doc = """\
+Package your test target into an AppImage.
+
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
+""",
 )

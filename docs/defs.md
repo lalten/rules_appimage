@@ -14,6 +14,8 @@ appimage(<a href="#appimage-name">name</a>, <a href="#appimage-data">data</a>, <
 
 Package your binary into an AppImage.
 
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
+
 **ATTRIBUTES**
 
 
@@ -21,8 +23,8 @@ Package your binary into an AppImage.
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="appimage-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="appimage-data"></a>data |  Any additional data that will be made available inside the appimage   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
-| <a id="appimage-binary"></a>binary |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
-| <a id="appimage-build_args"></a>build_args |  -   | List of strings | optional |  `[]`  |
+| <a id="appimage-binary"></a>binary |  The executable that is packaged and run inside the appimage, e.g. `//path/to:my_binary`   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="appimage-build_args"></a>build_args |  Extra arguments passed to `mksquashfs` when building the appimage, e.g. `['-comp', 'xz']`   | List of strings | optional |  `[]`  |
 | <a id="appimage-env"></a>env |  Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests   | <a href="https://bazel.build/rules/lib/core/dict">Dictionary: String -> String</a> | optional |  `{}`  |
 
 
@@ -38,6 +40,8 @@ appimage_test(<a href="#appimage_test-name">name</a>, <a href="#appimage_test-da
 
 Package your test target into an AppImage.
 
+Inspect intermediate build artifacts with `--output_groups=appimage_debug`
+
 **ATTRIBUTES**
 
 
@@ -45,8 +49,8 @@ Package your test target into an AppImage.
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="appimage_test-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="appimage_test-data"></a>data |  Any additional data that will be made available inside the appimage   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
-| <a id="appimage_test-binary"></a>binary |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
-| <a id="appimage_test-build_args"></a>build_args |  -   | List of strings | optional |  `[]`  |
+| <a id="appimage_test-binary"></a>binary |  The executable that is packaged and run inside the appimage, e.g. `//path/to:my_binary`   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="appimage_test-build_args"></a>build_args |  Extra arguments passed to `mksquashfs` when building the appimage, e.g. `['-comp', 'xz']`   | List of strings | optional |  `[]`  |
 | <a id="appimage_test-env"></a>env |  Runtime environment variables. See https://bazel.build/reference/be/common-definitions#common-attributes-tests   | <a href="https://bazel.build/rules/lib/core/dict">Dictionary: String -> String</a> | optional |  `{}`  |
 
 

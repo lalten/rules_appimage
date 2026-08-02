@@ -101,5 +101,30 @@ def test_to_pseudofile_def_lines() -> None:
         assert mkdef(link, Path("dst"), False) == {"dst": 'h "space link"'}
 
 
+def test_to_pseudofile_def_lines_quote_in_name() -> None:
+    mkdef = mkappdir.to_pseudofile_def_lines
+    with tempfile.TemporaryDirectory() as tmp_dir, cd(tmp_dir):
+        src = Path('dir/quote"file')
+        src.parent.mkdir(parents=True, exist_ok=True)
+        src.touch(0o601)
+
+        assert mkdef(src, Path("dst"), True) == {"dst": 'h "dir/quote\\"file"'}
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("plain", '"plain"'),
+        ("with space", '"with space"'),
+        ('with"quote', '"with\\"quote"'),
+        ("with\\backslash", '"with\\\\backslash"'),
+        ('"quoted"', '"\\"quoted\\""'),
+        (Path('dir/quote"file'), '"dir/quote\\"file"'),
+    ],
+)
+def test_quote_pseudofile_field(value: str | Path, expected: str) -> None:
+    assert mkappdir.quote_pseudofile_field(value) == expected
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

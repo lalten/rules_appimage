@@ -1,15 +1,11 @@
 """Implementation of apprun rule."""
 
-load("//appimage/private:runfiles.bzl", "get_entrypoint", "get_workdir")
+load("//appimage/private:runfiles.bzl", "get_entrypoint", "get_merged_env", "get_workdir")
 
 def _make_env_sh(ctx):
     env_file = ctx.actions.declare_file(ctx.attr.name + "-env.sh")
 
-    # Take the `binary` env and add the appimage target's env on top of it
-    env = {}
-    if RunEnvironmentInfo in ctx.attr.binary:
-        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
-    env.update(ctx.attr.env)
+    env = get_merged_env(ctx)
 
     # Export the current environment to a file so that it can be re-sourced in AppRun
     cmd = " | ".join([
@@ -68,7 +64,7 @@ def _make_apprun_setup_content(ctx):
     apprun_lines.append("unset TEST_SRCDIR")
 
     # Explicitly set RUNFILES_DIR to the runfiles dir of the binary instead of the appimage rule itself
-    apprun_lines.append('thisdir="${0%/*}"')  # Same as "$(dirname "$0")"
+    apprun_lines.append('thisdir="$(cd "${0%/*}" && pwd)"')  # Absolute path to the directory containing AppRun
     apprun_lines.append('workdir="$thisdir/%s"' % get_workdir(ctx))
     apprun_lines.append('RUNFILES_DIR="${workdir%/*}"')  # Get parent directory of workdir
     apprun_lines.append("export RUNFILES_DIR")

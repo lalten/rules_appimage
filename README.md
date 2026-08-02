@@ -147,12 +147,40 @@ Check <https://thundergolfer.com/bazel/python/2021/06/25/a-basic-python-bazel-to
 
 ### Something isn't right about my AppImage, how can I debug?
 
+#### Have the AppImage extract itself
+
 An easy way to inspect what is inside the AppImage is to run it with the `--appimage-extract` CLI arg.
+
+```sh
+❯ ./program.appimage --appimage-extract
+```
+
 This will extract the bundled squashfs blob into a `squashfs-root` dir in the current working directory.
 
 You can look at those files and see exactly what's going on.
 In fact, you can even run `squashfs-root/AppRun` and it will run exactly the same as with the packaged AppImage.
 This can be very handy when rebuilding the Bazel target is not the best option but you need to modify a file inside.
+
+#### Inspect intermediate build artifacts
+
+rules_appimage also supports the `appimage_debug` output group.
+This makes intermediate build artifacts available:
+
+```sh
+❯ bazel build --output_groups=appimage_debug //tests:appimage_py
+INFO: Found 1 target...
+Target //tests:appimage_py up-to-date:
+  bazel-bin/tests/appimage_py.manifest.json
+  bazel-bin/tests/appimage_py.runfiles_manifest.txt
+  bazel-bin/tests/appimage_py.pseudofile_defs.txt
+  bazel-bin/tests/appimage_py.sqfs
+```
+
+You can inspect the contents of the squashfs blob with `unsquashfs`:
+
+```sh
+❯ bazel run -- @squashfs-tools//:unsquashfs -f -d `pwd`/squashfs-root `pwd`/bazel-bin/tests/appimage_py.sqfs
+```
 
 ## Alternatives
 
