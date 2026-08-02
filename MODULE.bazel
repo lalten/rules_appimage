@@ -42,7 +42,7 @@ rules_appimage = use_extension("//:extensions.bzl", "appimage_ext_dependencies")
 use_repo(
     rules_appimage,
     "appimage_runtime_aarch64",
-    "appimage_runtime_armv7e-m",
+    "appimage_runtime_armv7",
     "appimage_runtime_i386",
     "appimage_runtime_x86_64",
 )

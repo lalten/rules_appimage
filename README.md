@@ -47,6 +47,11 @@ For more details, see the [rule documentation](docs/defs.md).
 
 There is also an example workspace in [`examples/`](./examples/README.md).
 
+### Supported target architectures
+
+rules_appimage ships an AppImage runtime for the `@platforms//cpu` constraints `aarch64`, `arm`, `armv7`, `i386`, and `x86_64`.
+The matching toolchain is picked automatically based on the target platform.
+
 ## Running AppImages
 
 ### Via Bazel
