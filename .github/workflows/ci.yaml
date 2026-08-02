@@ -85,6 +85,23 @@ jobs:
         disk-cache: ${{ github.workflow }}-examples
         repository-cache: true
     - run: examples/integration_test.sh
+  toolchains:
+    name: toolchains (${{ matrix.cpu }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cpu: [aarch64, arm, armv7, i386, x86_64]
+    steps:
+    - uses: actions/checkout@v6
+    - uses: bazel-contrib/setup-bazel@0.19.0
+      with:
+        bazelisk-cache: true
+        disk-cache: ${{ github.workflow }}-toolchains
+        repository-cache: true
+    # Makes sure every registered toolchain (including the deprecated default one) resolves and
+    # points at an AppImage runtime repo that actually gets declared.
+    - run: bazel build --platforms=//:linux_${{ matrix.cpu }} //appimage:all
   determinism:
     runs-on: ubuntu-latest
     steps:
@@ -107,7 +124,7 @@ jobs:
     - uses: pre-commit/action@v3.0.1
   required:
     runs-on: ubuntu-latest
-    needs: [test, examples, determinism, lint]  # this automatically depends on all matrix jobs
+    needs: [test, examples, toolchains, determinism, lint]  # this automatically depends on all matrix jobs
     if: always()  # Never skip, even if dependencies failed (which would otherwise make this one *skip*)
     steps:
     - name: Fail if any ancestor job failed
