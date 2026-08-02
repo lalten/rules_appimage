@@ -47,6 +47,36 @@ For more details, see the [rule documentation](docs/defs.md).
 
 There is also an example workspace in [`examples/`](./examples/README.md).
 
+### Supported target architectures
+
+rules_appimage ships an AppImage runtime for each of these `@platforms//cpu` constraints:
+
+| cpu constraint | toolchain | runtime |
+| --- | --- | --- |
+| `aarch64` (a.k.a. `arm64`) | `@rules_appimage//appimage:appimage_linux_aarch64_toolchain` | `runtime-aarch64` |
+| `armv7` | `@rules_appimage//appimage:appimage_linux_armv7_toolchain` | `runtime-armhf` |
+| `arm` (a.k.a. `aarch32`) | `@rules_appimage//appimage:appimage_linux_arm_toolchain` | `runtime-armhf` |
+| `i386` | `@rules_appimage//appimage:appimage_linux_i386_toolchain` | `runtime-i686` |
+| `x86_64` | `@rules_appimage//appimage:appimage_linux_x86_64_toolchain` | `runtime-x86_64` |
+
+All of them are registered by `register_toolchains("@rules_appimage//appimage:all")` and are picked
+automatically based on the target platform.
+
+> [!NOTE]
+> The 32-bit ARM toolchain used to be constrained to `@platforms//cpu:armv7e-m`, which is a
+> microcontroller (Cortex-M4/M7) profile that no Linux target platform uses.
+> It is now constrained to `@platforms//cpu:armv7`, with an additional toolchain for the generic
+> `@platforms//cpu:arm` constraint.
+> If you listed `@rules_appimage//appimage:appimage_linux_armv7e-m_toolchain` in
+> `register_toolchains()`, use `@rules_appimage//appimage:appimage_linux_armv7_toolchain` instead.
+> Likewise, the `@appimage_runtime_armv7e-m` repo is now called `@appimage_runtime_armv7`.
+
+> [!WARNING]
+> The `@rules_appimage//appimage:default_appimage` toolchain is deprecated.
+> It is not constrained to any platform and hardcodes the target cpu to runtime mapping at analysis
+> time, so it cannot support platforms other than the ones listed above.
+> Use the per-architecture toolchains instead.
+
 ## Running AppImages
 
 ### Via Bazel
