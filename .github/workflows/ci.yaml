@@ -18,22 +18,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
+        # The containerized tests transition to musl platforms built with the hermetic LLVM
+        # toolchain, which requires Bazel 8+, so those packages are excluded on Bazel 7.
         - bazel-version: 7.x
           os: ubuntu
           external_dependency_system: bzlmod
-          flags: --enable_bzlmod
+          flags: --enable_bzlmod --deleted_packages=tests/rules_pycross,tests/cc_runfiles/container
         - bazel-version: 7.x
           os: ubuntu
           external_dependency_system: workspace
-          flags:
+          flags: --deleted_packages=tests/rules_pycross,tests/cc_runfiles/container
         - bazel-version: 7.x
           os: macos
           external_dependency_system: bzlmod
-          flags: --enable_bzlmod
+          flags: --enable_bzlmod --deleted_packages=tests/rules_pycross,tests/cc_runfiles/container
         - bazel-version: 7.x
           os: macos
           external_dependency_system: workspace
-          flags:
+          flags: --deleted_packages=tests/rules_pycross,tests/cc_runfiles/container
         - bazel-version: 8.x
           os: ubuntu
           external_dependency_system: bzlmod

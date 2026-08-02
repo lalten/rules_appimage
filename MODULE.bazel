@@ -23,8 +23,12 @@ bazel_dep(name = "rules_testing", version = "0.9.0", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
 bazel_dep(name = "with_cfg.bzl", version = "0.14.6", dev_dependency = True)
 
+# Register LLVM-based cc toolchains for musl libc target platforms only. The containerized tests
+# transition their binaries to @llvm//platforms:linux_*_musl so they run in any Linux container,
+# including when building on macOS. Restricting the toolchains to musl target platforms keeps the
+# regular host builds on the default cc toolchain.
 register_toolchains(
-    "@llvm//toolchain:all",
+    "//tests/toolchains:all",
     dev_dependency = True,
 )
 

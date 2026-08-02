@@ -14,7 +14,10 @@ targets="$tempdir/targets"
 files="$tempdir/files"
 
 bazel query "$query" >"$targets"
-bazel cquery "$query" --platforms=//:linux_x86_64 --output files >"$files"
+# config(..., target) restricts to the top-level target configuration, so that additional
+# configurations created by platform transitions (e.g. platform_transition_filegroup) don't
+# list output files that a top-level `bazel build` won't produce.
+bazel cquery "config($query, target)" --platforms=//:linux_x86_64 --output files >"$files"
 
 archive_outputs() {
     local srcs="$1"
