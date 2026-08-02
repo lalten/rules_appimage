@@ -4,6 +4,7 @@
     "config:recommended",
     "schedule:weekly"
   ],
+  "rebaseWhen": "conflicted",
   "pip_requirements": {
     "enabled": false
   },
