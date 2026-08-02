@@ -68,4 +68,8 @@ container_structure_test(
         "@platforms//cpu:aarch64": "linux/arm64",
         "//conditions:default": "linux/amd64",
     }),
+    # Needs a Docker daemon to load and run the image. macOS CI runners don't have one, so this
+    # test is filtered there via --test_tag_filters=-requires-docker (the cross-build itself is
+    # still verified because the image is built on macOS as well).
+    tags = ["requires-docker"],
 )
