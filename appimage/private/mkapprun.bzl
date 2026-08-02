@@ -1,15 +1,11 @@
 """Implementation of apprun rule."""
 
-load("//appimage/private:runfiles.bzl", "get_entrypoint", "get_workdir")
+load("//appimage/private:runfiles.bzl", "get_entrypoint", "get_merged_env", "get_workdir")
 
 def _make_env_sh(ctx):
     env_file = ctx.actions.declare_file(ctx.attr.name + "-env.sh")
 
-    # Take the `binary` env and add the appimage target's env on top of it
-    env = {}
-    if RunEnvironmentInfo in ctx.attr.binary:
-        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
-    env.update(ctx.attr.env)
+    env = get_merged_env(ctx)
 
     # Export the current environment to a file so that it can be re-sourced in AppRun
     cmd = " | ".join([

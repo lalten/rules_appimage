@@ -95,6 +95,23 @@ def _default_symlinks(dep):
 def _default_root_symlinks(dep):
     return dep[DefaultInfo].default_runfiles.root_symlinks
 
+def get_merged_env(ctx):
+    """Merge the `binary` target's runtime env with the appimage/apprun target's own env.
+
+    Take the `binary` env and add the appimage target's env on top of it.
+
+    Args:
+        ctx: Bazel runtime context
+
+    Returns:
+        dict of merged environment variables.
+    """
+    env = {}
+    if RunEnvironmentInfo in ctx.attr.binary:
+        env.update(ctx.attr.binary[RunEnvironmentInfo].environment)
+    env.update(ctx.attr.env)
+    return env
+
 def get_workdir(ctx):
     return "/".join([_runfiles_dir(ctx), ctx.attr.binary.label.workspace_name or ctx.workspace_name])
 
