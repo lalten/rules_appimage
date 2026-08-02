@@ -1,3 +1,4 @@
+load("@bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@rules_appimage//appimage:appimage.bzl", "appimage")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
@@ -13,14 +14,13 @@ cc_binary(
         "//tests/cc_runfiles:file.txt",
         "@appimage_runtime_aarch64//file",
     ],
-    linkopts = ["-static"],  # avoid issues with glibcxx version mismatch inside the container
+    target_compatible_with = ["@platforms//os:linux"],
     deps = ["@rules_cc//cc/runfiles"],
 )
 
 appimage(
     name = "bin.appimage",
     binary = ":bin",
-    tags = ["requires-fakeroot"],
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -50,14 +50,22 @@ oci_image(
     ],
 )
 
+platform_transition_filegroup(
+    name = "container_structure_test_image_linux",
+    srcs = [":container_structure_test_image"],
+    target_platform = select({
+        "@platforms//cpu:aarch64": "@llvm//platforms:linux_aarch64_musl",
+        "//conditions:default": "@llvm//platforms:linux_amd64_musl",
+    }),
+)
+
 container_structure_test(
     name = "container_structure_test",
     timeout = "short",
     configs = ["test_appimage_isolated.yaml"],
-    image = "container_structure_test_image",
+    image = ":container_structure_test_image_linux",
     platform = select({
         "@platforms//cpu:aarch64": "linux/arm64",
         "//conditions:default": "linux/amd64",
     }),
-    target_compatible_with = ["@platforms//os:linux"],
 )
