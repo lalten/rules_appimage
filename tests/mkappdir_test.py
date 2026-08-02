@@ -119,9 +119,10 @@ def test_to_pseudofile_def_lines_quote_in_name() -> None:
         ('with"quote', '"with\\"quote"'),
         ("with\\backslash", '"with\\\\backslash"'),
         ('"quoted"', '"\\"quoted\\""'),
+        (Path('dir/quote"file'), '"dir/quote\\"file"'),
     ],
 )
-def test_quote_pseudofile_field(value: str, expected: str) -> None:
+def test_quote_pseudofile_field(value: str | Path, expected: str) -> None:
     assert mkappdir.quote_pseudofile_field(value) == expected
 
 

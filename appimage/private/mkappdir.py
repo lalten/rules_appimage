@@ -143,7 +143,7 @@ def get_all_parent_dirs(path: Path | str) -> list[Path]:
     return [Path(*parts[: i + 1]) for i in range(len(parts))]
 
 
-def quote_pseudofile_field(value: str) -> str:
+def quote_pseudofile_field(value: str | Path) -> str:
     """Quote a value for use as a filename field in a mksquashfs pseudo-file definition.
 
     mksquashfs toggles "in quotes" mode on every unescaped double quote character while scanning a filename
@@ -151,7 +151,7 @@ def quote_pseudofile_field(value: str) -> str:
     whole field is also wrapped in double quotes (to allow for spaces).
     See https://github.com/plougher/squashfs-tools/blob/d8cb82d/squashfs-tools/pseudo.c#L358-L390
     """
-    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    return '"' + os.fspath(value).replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
 def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> dict[str, str]:
@@ -174,7 +174,7 @@ def to_pseudofile_def_lines(src: Path, dst: Path, preserve_symlinks: bool) -> di
     ):
         operations[dst.as_posix()] = f"s 0 0 0 {src.readlink()}"
     elif src.is_file():
-        operations[dst.as_posix()] = f"h {quote_pseudofile_field(str(src))}"
+        operations[dst.as_posix()] = f"h {quote_pseudofile_field(src)}"
     elif src.is_dir():
         operations[dst.as_posix()] = f"d {src.lstat().st_mode & 0o777:o} 0 0"
     elif not src.exists():
@@ -384,7 +384,7 @@ def write_appdir_pseudofile_defs(manifest: Path, apprun: Path, runfiles_manifest
     """Write a mksquashfs pf file representing the AppDir."""
     pseudofile_defs = make_appdir_pseudofile_defs(manifest, runfiles_manifest)
     lines = [
-        f"AppRun h {quote_pseudofile_field(str(apprun))}",
+        f"AppRun h {quote_pseudofile_field(apprun)}",
         *sorted(f"{quote_pseudofile_field(k)} {v}" for k, v in pseudofile_defs.items()),
         "",
     ]
