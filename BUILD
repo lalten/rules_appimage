@@ -8,6 +8,7 @@ load("//:deps.bzl", "CPU_ARCHS")
         "@platforms//os:linux",
         "@platforms//cpu:" + cpu,
     ],
+    visibility = ["//:__subpackages__"],
 ) for cpu in CPU_ARCHS.keys()]
 
 compile_pip_requirements(

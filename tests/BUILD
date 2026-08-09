@@ -155,6 +155,7 @@ py_test(
 appimage(
     name = "external_bin.appimage",
     binary = "@rules_python//tools:wheelmaker",
+    target_compatible_with = ["@platforms//os:linux"],
 )
 
 sh_test(
