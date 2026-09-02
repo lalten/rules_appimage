@@ -121,9 +121,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "bazel_lib",
-        sha256 = "3d62bf30b95b71a566d9ebca50ee78d370b12522d244235b41166f65b142705d",
-        strip_prefix = "bazel-lib-3.2.2",
-        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v3.2.2/bazel-lib-v3.2.2.tar.gz",
+        sha256 = "c75f8c375f9f2c73a565dba188f91a4e8d7ca16dd2b6152d3886c26bbf1c6532",
+        strip_prefix = "bazel-lib-3.7.2",
+        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v3.7.2/bazel-lib-v3.7.2.tar.gz",
     )
     maybe(
         http_archive,
