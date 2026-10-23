@@ -134,9 +134,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "rules_cc",
-        sha256 = "283fa1cdaaf172337898749cf4b9b1ef5ea269da59540954e51fba0e7b8f277a",
-        strip_prefix = "rules_cc-0.2.17",
-        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.2.17/rules_cc-0.2.17.tar.gz",
+        sha256 = "6bcf1b46d9e629cbe4c96d7bfc56f61034c2193b7b16001201282ea50bef5d91",
+        strip_prefix = "rules_cc-0.2.27",
+        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.2.27/rules_cc-0.2.27.tar.gz",
     )
     maybe(
         http_archive,
