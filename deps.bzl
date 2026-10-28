@@ -103,9 +103,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "bazel_features",
-        sha256 = "adfdb3cffab3a99a63363d844d559a81965d2b61a6062dd51a3d2478d416768f",
-        strip_prefix = "bazel_features-1.45.0",
-        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.45.0/bazel_features-v1.45.0.tar.gz",
+        sha256 = "790b660c9cb35adb91071a4f6e62d29988a7383cbb948b39aa7c0065eea1e035",
+        strip_prefix = "bazel_features-1.54.1",
+        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.54.1/bazel_features-v1.54.1.tar.gz",
     )
 
     # jq.bzl is needed by bazel_lib
