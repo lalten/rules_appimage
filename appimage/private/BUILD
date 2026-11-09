@@ -4,6 +4,7 @@ load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 py_binary(
     name = "mkappdir",
     srcs = ["mkappdir.py"],
+    legacy_create_init = 0,
     visibility = ["//visibility:public"],
 )
 
