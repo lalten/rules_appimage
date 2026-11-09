@@ -22,6 +22,7 @@ bzl_library(
 py_binary(
     name = "mkappdir",
     srcs = ["mkappdir.py"],
+    legacy_create_init = 0,
     visibility = ["//visibility:public"],
 )
 
