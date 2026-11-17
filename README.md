@@ -98,6 +98,30 @@ Try `--appimage-help`.
 AppImage runtime version: https://github.com/lalten/type2-runtime/releases/tag/build-2022-10-03-c5c7b07
 ```
 
+### Multiple executables in one AppImage
+
+An AppImage can bundle additional executables that are selected by the name the AppImage is invoked as (`$ARGV0`),
+similar to how BusyBox works:
+
+```py
+appimage(
+    name = "tools.appimage",
+    binary = ":main",
+    argv0_binaries = {
+        "my_tool": ":my_tool",
+        "other_tool": ":other_tool",
+    },
+)
+```
+
+```sh
+❯ ln -s tools.appimage my_tool
+❯ ./my_tool --help  # runs :my_tool
+❯ ./tools.appimage  # runs :main
+```
+
+All executables share one runfiles tree, so they run with the same working directory and `RUNFILES_DIR`.
+
 ## Troubleshooting
 
 ### `$PWD` is a `Read-only file system`

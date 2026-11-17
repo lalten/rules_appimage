@@ -74,6 +74,21 @@ def _appimage_impl(ctx):
     ]
 
 _ATTRS = {
+    "argv0_binaries": attr.string_keyed_label_dict(
+        cfg = "target",
+        doc = """\
+Additional executables to run instead of `binary`, keyed by the name the appimage is invoked as, e.g.
+`{"my_tool": "//path/to:my_tool"}`.
+
+The AppImage runtime exports the path the appimage was invoked with as `$ARGV0`. If its basename matches one of the
+keys, the corresponding executable is run instead of `binary`. This makes it possible to ship several programs in one
+appimage and select among them with symlinks, e.g. `ln -s my.appimage my_tool`.
+
+The runfiles of these executables are merged into the runfiles tree of `binary`, so the working directory and
+`RUNFILES_DIR` are the same whichever executable runs. The environment is that of `binary` combined with `env`;
+the environment of the executables listed here is not applied.
+""",
+    ),
     "binary": attr.label(mandatory = True, executable = True, cfg = "target", doc = "The executable that is packaged and run inside the appimage, e.g. `//path/to:my_binary`"),
     "build_args": attr.string_list(doc = "Extra arguments passed to `mksquashfs` when building the appimage, e.g. `['-comp', 'xz']`"),
     "data": attr.label_list(allow_files = True, doc = "Any additional data that will be made available inside the appimage"),

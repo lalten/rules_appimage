@@ -1,6 +1,6 @@
 """Implementation of apprun rule."""
 
-load("//appimage/private:runfiles.bzl", "get_entrypoint", "get_merged_env", "get_workdir")
+load("//appimage/private:runfiles.bzl", "get_argv0_entrypoints", "get_entrypoint", "get_merged_env", "get_workdir")
 
 def _make_env_sh(ctx):
     env_file = ctx.actions.declare_file(ctx.attr.name + "-env.sh")
@@ -72,10 +72,24 @@ def _make_apprun_setup_content(ctx):
     # Run under runfiles
     apprun_lines.append('cd "$workdir"')
 
+    # Launch one of the argv0_binaries if the appimage was invoked under its name. $ARGV0 is the path the appimage was
+    # invoked with, as exported by the AppImage runtime. It is unset when AppRun is run directly, e.g. after
+    # --appimage-extract, in which case `binary` runs.
+    argv0_entrypoints = get_argv0_entrypoints(ctx)
+    if argv0_entrypoints:
+        apprun_lines.append('case "${ARGV0##*/}" in')
+        for name, rlocation_path in argv0_entrypoints:
+            apprun_lines.append('%s) exec "$RUNFILES_DIR"/%s "$@" ;;' % (_shell_quote(name), _shell_quote(rlocation_path)))
+        apprun_lines.append("esac")
+
     # Launch the actual binary
     apprun_lines.append('exec "./%s" "$@"' % get_entrypoint(ctx))
 
     return "\n".join(apprun_lines) + "\n"
+
+def _shell_quote(s):
+    """Quote `s` so that a POSIX shell takes it literally, also as a `case` pattern."""
+    return "'" + s.replace("'", "'\\''") + "'"
 
 def _make_apprun_setup(ctx):
     apprun_file_trailer = ctx.actions.declare_file(ctx.attr.name + "-apprun-setup.sh")
