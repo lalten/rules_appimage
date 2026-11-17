@@ -5,7 +5,7 @@ set -euxo pipefail
 appimage="$PWD/tests/argv0_binaries/test.appimage"
 bindir="$TEST_TMPDIR/bin"
 mkdir -p "$bindir"
-for name in alt "it's alt" unknown; do
+for name in alt "it's alt" wheelmaker unknown; do
     ln -s "$appimage" "$bindir/$name"
 done
 
@@ -29,6 +29,9 @@ for mode in fuse extract-and-run; do
     [[ "$(run "$bindir/it's alt" a b)" == "$expected" ]]
     [[ "$(cd "$bindir" && run ./alt a b)" == "$expected" ]]
     [[ "$(run alt a b)" == "$expected" ]]
+
+    # A py_binary from an external repo finds its interpreter and runfiles in the shared tree
+    [[ "$(run wheelmaker --help)" == *"--name"* ]]
 done
 unset APPIMAGE_EXTRACT_AND_RUN
 

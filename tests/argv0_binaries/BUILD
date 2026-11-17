@@ -22,6 +22,7 @@ appimage(
     argv0_binaries = {
         "alt": ":alt",
         "it's alt": ":alt",
+        "wheelmaker": "@rules_python//tools:wheelmaker",  # py_binary from an external repo
     },
     binary = ":main",
 )
