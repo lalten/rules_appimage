@@ -12,14 +12,92 @@ on:
         required: true
         type: string
 jobs:
+  # Generates the BCR entry, uploads its attestations to the (still draft) GitHub release and pushes the entry to the
+  # registry fork. It does not open the BCR pull request: the BCR presubmit starts as soon as the PR exists and
+  # downloads the release archive anonymously, which is a 404 for as long as the release is a draft.
   publish:
     uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.7.0
     with:
       tag_name: ${{ inputs.tag_name }}
       registry_fork: lalten/bazel-central-registry
+      open_pull_request: false
     permissions:
       attestations: write
       contents: write
       id-token: write
     secrets:
       publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
+
+  # Publishes the draft release once all assets are uploaded, and only then opens the BCR pull request.
+  open-pull-request:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to publish the draft release
+    env:
+      TAG_NAME: ${{ inputs.tag_name }}
+      REGISTRY: bazelbuild/bazel-central-registry
+      REGISTRY_FORK_OWNER: lalten
+      MODULE_NAME: rules_appimage
+    steps:
+    - name: Publish the draft release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -o errexit -o nounset -o pipefail
+        IS_DRAFT=$(gh release view "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --json isDraft --jq .isDraft)
+        if [[ "${IS_DRAFT}" == true ]]; then
+          gh release edit "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --draft=false
+        else
+          echo "Release ${TAG_NAME} is already published"
+        fi
+    - name: Wait for the release archive to be publicly downloadable
+      run: |
+        set -o errexit -o nounset -o pipefail
+        URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${MODULE_NAME}-${TAG_NAME}.tar.gz"
+        for attempt in $(seq 1 30); do
+          if curl --fail --silent --location --head --output /dev/null "${URL}"; then
+            echo "${URL} is available"
+            exit 0
+          fi
+          echo "Attempt ${attempt}: ${URL} is not available yet"
+          sleep 10
+        done
+        echo "::error::${URL} did not become available"
+        exit 1
+    - name: Open pull request
+      env:
+        PUBLISH_TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
+      run: |-
+        set -o errexit -o nounset -o pipefail
+
+        # Same title, body and branch name as the upstream publish workflow would use.
+        REQUEST_BODY=$(jq --null-input \
+          --arg title "${MODULE_NAME}@${TAG_NAME#v}" \
+          --arg body "Release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG_NAME}"$'\n\n'"_Automated by [Publish to BCR](https://github.com/bazel-contrib/publish-to-bcr)_" \
+          --arg head "${REGISTRY_FORK_OWNER}:${MODULE_NAME}-${TAG_NAME}" \
+          '{title: $title, body: $body, head: $head, base: "main", maintainer_can_modify: true, draft: true}')
+        RESPONSE_BODY=$(mktemp)
+        RESPONSE_CODE=$(curl \
+          --location \
+          --silent \
+          --output "${RESPONSE_BODY}" \
+          --write-out "%{http_code}" \
+          --request POST \
+          --header "Accept: application/vnd.github+json" \
+          --header "Authorization: Bearer ${PUBLISH_TOKEN}" \
+          --header "X-GitHub-Api-Version: 2022-11-28" \
+          "https://api.github.com/repos/${REGISTRY}/pulls" \
+          --data "${REQUEST_BODY}"
+        )
+        if [[ "${RESPONSE_CODE}" == 201 ]]; then
+          PULL_REQUEST_URL=$(jq --raw-output .html_url <"${RESPONSE_BODY}")
+          echo "Created pull request ${PULL_REQUEST_URL}"
+          echo "${PULL_REQUEST_URL}" >> "${GITHUB_STEP_SUMMARY}"
+        elif [[ "${RESPONSE_CODE}" == 422 && "$(jq -r ".errors[0].message" <"${RESPONSE_BODY}")" == *"already exists"* ]]; then
+          echo "A pull request for ${REGISTRY_FORK_OWNER}:${MODULE_NAME}-${TAG_NAME} already exists."
+        else
+          echo "Failed to create pull request; received status ${RESPONSE_CODE}"
+          cat "${RESPONSE_BODY}"
+          exit 1
+        fi
