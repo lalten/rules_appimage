@@ -86,6 +86,32 @@ def _argv0_binaries_invalid_name_impl(env, target):
         matching.str_matches('*"sub/dir" is not a valid file name*'),
     )
 
+def _argv0_binaries_own_name(name):
+    util.helper_target(
+        sh_binary,
+        name = "%s_binary" % name,
+        srcs = ["program.sh"],
+    )
+
+    util.helper_target(
+        appimage,
+        name = "%s.appimage" % name,
+        argv0_binaries = {"%s.appimage" % name: ":%s_binary" % name},
+        binary = ":%s_binary" % name,
+    )
+
+    analysis_test(
+        name = name,
+        impl = _argv0_binaries_own_name_impl,
+        target = ":%s.appimage" % name,
+        expect_failure = True,
+    )
+
+def _argv0_binaries_own_name_impl(env, target):
+    env.expect.that_target(target).failures().contains_predicate(
+        matching.str_matches("*is the name of the appimage itself*"),
+    )
+
 def _argv0_binaries_not_executable(name):
     util.helper_target(
         sh_binary,
@@ -127,6 +153,7 @@ def appimage_test_suite(name):
             _basic,
             _argv0_binaries,
             _argv0_binaries_invalid_name,
+            _argv0_binaries_own_name,
             _argv0_binaries_not_executable,
         ],
     )

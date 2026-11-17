@@ -73,8 +73,8 @@ def _make_apprun_setup_content(ctx):
     apprun_lines.append('cd "$workdir"')
 
     # Launch one of the argv0_binaries if the appimage was invoked under its name. $ARGV0 is the path the appimage was
-    # invoked with, as exported by the AppImage runtime. It is unset when AppRun is run directly, e.g. after
-    # --appimage-extract, in which case `binary` runs.
+    # invoked with, as exported by the AppImage runtime. When AppRun is run directly, e.g. after --appimage-extract,
+    # $ARGV0 is whatever the caller's environment holds: usually unset, in which case `binary` runs.
     argv0_entrypoints = get_argv0_entrypoints(ctx)
     if argv0_entrypoints:
         apprun_lines.append('case "${ARGV0##*/}" in')
