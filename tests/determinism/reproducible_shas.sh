@@ -6,7 +6,8 @@
 
 set -euxo pipefail
 
-query='kind("appimage rule", //...)'
+# Manual targets are excluded, as they are not built by //... either. Some are expected to fail analysis.
+query='kind("appimage rule", //...) except attr(tags, "\bmanual\b", //...)'
 tempdir="${RUNNER_TEMP:-/tmp}/determinism-test"
 rm -rf "$tempdir"
 mkdir -p "$tempdir"
@@ -14,7 +15,8 @@ targets="$tempdir/targets"
 files="$tempdir/files"
 
 bazel query "$query" >"$targets"
-bazel cquery "$query" --platforms=//:linux_x86_64 --output files >"$files"
+# cquery analyzes everything its expression mentions, so pass it the targets themselves rather than the query.
+bazel cquery "set($(tr '\n' ' ' <"$targets"))" --platforms=//:linux_x86_64 --output files >"$files"
 
 archive_outputs() {
     local srcs="$1"
