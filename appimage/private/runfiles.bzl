@@ -137,6 +137,8 @@ def get_argv0_entrypoints(ctx):
     entrypoints = []
     for name, target in sorted(ctx.attr.argv0_binaries.items()):
         _validate_argv0_name(name)
+        if name == ctx.label.name:
+            fail("argv0_binaries: %r is the name of the appimage itself, so `binary` would never run" % name)
         entrypoints.append((name, _rlocation_path(ctx, _argv0_executable(name, target))))
     return entrypoints
 
