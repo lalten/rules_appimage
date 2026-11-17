@@ -112,9 +112,9 @@ def rules_appimage_development_deps():
     maybe(
         http_archive,
         name = "jq.bzl",
-        sha256 = "e2eab5410b2eecc72f01d73590c58aefeddbb696ddf9d9c34dcee02dd79625ab",
-        strip_prefix = "jq.bzl-0.6.1",
-        url = "https://github.com/bazel-contrib/jq.bzl/releases/download/v0.6.1/jq.bzl-v0.6.1.tar.gz",
+        sha256 = "69963aeaa6ca5f9c1a2810c6e5253c37828c515fb82f39526bccf36f01cd791c",
+        strip_prefix = "jq.bzl-0.8.0",
+        url = "https://github.com/bazel-contrib/jq.bzl/releases/download/v0.8.0/jq.bzl-v0.8.0.tar.gz",
     )
 
     # bazel_lib is needed by rules_pycross (which is not used by tests in WORKSPACE) and with_cfg.bzl
